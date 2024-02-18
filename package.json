@@ -1,0 +1,47 @@
+{
+  "private": true,
+  "name": "hask-ai",
+  "description": "Search as you type",
+  "version": "1.0.0",
+  "author": "Bayangmbe Mounmo <bayangp0@gmail.com>",
+  "main": "app/background.js",
+  "scripts": {
+    "dev": "nextron",
+    "build": "nextron build",
+    "build:all": "nextron build --all",
+    "build:linux": "nextron build --linux --x64",
+    "build:mac_x64": "nextron build --mac --x64",
+    "build:mac_arm64": "nextron build --mac --arm64",
+    "build:win32": "nextron build --win --ia32",
+    "build:win64": "nextron build --win --x64",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.deepfile.deepfile",
+    "linux": {
+      "target": "deb"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "resources/df.icns"
+    }
+  },
+  "dependencies": {
+    "electron-serve": "^1.1.0",
+    "electron-store": "^8.1.0",
+    "react-redux": "^9.1.0",
+    "redux": "^5.0.1"
+  },
+  "devDependencies": {
+    "@electron/notarize": "^2.2.1",
+    "autoprefixer": "^10.4.7",
+    "electron": "^20.1.0",
+    "electron-builder": "^23.3.3",
+    "next": "^12.2.5",
+    "nextron": "^8.2.0",
+    "postcss": "^8.4.13",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.1.8"
+  }
+}

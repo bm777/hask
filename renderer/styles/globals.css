@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    body {
+        -webkit-app-region: drag;
+    }
+    main {
+        -webkit-app-region: no-drag;
+    }
+}
+

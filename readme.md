@@ -23,7 +23,8 @@ Just configure the pplx api token and you are good to go.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/bm777/hask-ai.git
+git clone https://github.com/bm777/hask.git
+cd hask
 npm i
 npm run dev
 

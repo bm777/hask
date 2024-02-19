@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export default function Settings() {
     const [token, setToken] = useState("");
+    const [modelType, setModelType] = useState("");
 
     useEffect(() => {
         const _token = localStorage.getItem("pplx-token");
@@ -31,8 +32,9 @@ export default function Settings() {
             </div>
 
             <div className="border-t border-gray-400 flex-1 flex flex-col items-center ">
-                <div className="w-full mt-5 gap-1 flex justify-center">
-                    <div className="h-7 flex items-center">
+                <div className="w-full mt-5 gap-1 flex justify-center">title</div>
+                <div className="w-full mt-1 gap-1 flex justify-center border border-green-500">
+                    <div className="h-7 w-[30%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">PPLX API token:</p>
                     </div>
                     <div className="h-7 w-[50%] flex items-center border border-gray-500 rounded">
@@ -43,7 +45,22 @@ export default function Settings() {
                                 className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
                             />  
                     </div>
-                    <div onClick={handleSave} className=" border border-[#561D2A] bg-[#FFB2BE] px-4 hover:cursor-pointer text-[#561D2A] rounded text-sm flex items-center justify-center">Save</div>
+                </div>
+                <div className="w-full mt-1 gap-1 flex justify-center border border-green-500">
+                    <div className="h-7 w-[30%] flex items-center">
+                        <p className="w-full text-right text-gray-500 text-sm font-medium ">model:</p>
+                    </div>
+                    <div className="h-7 w-[50%] flex items-center border border-gray-500 rounded">
+                        <input
+                                onChange={handleTokenChange}
+                                value={token}
+                                placeholder="Paste your PPLX API token here..."
+                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
+                            />  
+                    </div>
+                </div>
+                <div className="w-full mt-5 gap-1 flex justify-center border border-green-500">
+                    <div onClick={handleSave} className=" border border-[#561D2A] bg-[#FFB2BE] px-10 hover:cursor-pointer text-[#561D2A] rounded text-sm flex items-center justify-center">Save</div>
                 </div>
 
                 <div className="w-full mt-5 gap-1 flex justify-center fixed bottom-5">

@@ -15,8 +15,7 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 ## Release
 It is available for Windows, Mac, and Linux.
-
-Just configure the pplx api token and you are good to go.
+[Download page](https://github.com/bm777/hask/releases)
 
 
 ## Installation and Usage

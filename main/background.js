@@ -36,7 +36,7 @@ if (isProd) {
       mainWindow.show();
     }
   }); 
-  mainWindow.toggleDevTools();
+  // mainWindow.toggleDevTools();
 
   if (isProd) {
     await mainWindow.loadURL('app://./hask.html');

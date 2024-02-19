@@ -19,11 +19,15 @@
   "build": {
     "appId": "com.deepfile.deepfile",
     "linux": {
-      "target": "deb"
+      "target": "deb",
+      "icon": "resources/icon.png"
     },
     "mac": {
       "target": "dmg",
-      "icon": "resources/df.icns"
+      "icon": "resources/icon.icns"
+    },
+    "win": {
+      "icon": "resources/icon.ico"
     }
   },
   "dependencies": {

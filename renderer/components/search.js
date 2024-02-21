@@ -13,6 +13,7 @@ export default function Search() {
     const [expanded, setExpanded] = useState(false);
     const [searching, setSearching] = useState(false);
     const [token, setToken] = useState("");
+    const [model, setModel] = useState("pplx-7b-online");
     const [imageUrl, setImageUrl] = useState('');
 
     let inputRef = useRef(null);
@@ -24,9 +25,11 @@ export default function Search() {
         }
         if(window !== undefined) {
             const _token = localStorage.getItem("pplx-token");
+            const _model = localStorage.getItem("pplx-model");
             console.log(_token);
-            if (_token) {
+            if (_token && _model) {
                 setToken(_token);
+                setModel(_model);
             }
         }
         return () => { 

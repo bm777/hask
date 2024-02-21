@@ -8,7 +8,7 @@ export async function searchPPLX(query, token, model) {
             authorization: auth
         },
         body: JSON.stringify({
-            model: 'pplx-7b-online',
+            model: model ? model : 'pplx-7b-online',
             messages: [{role: 'system', content: 'Be consistent with your answers.'}, {role: 'user', content: query}],
             temperature: 1
         })

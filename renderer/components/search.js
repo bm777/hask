@@ -48,7 +48,7 @@ export default function Search() {
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
-        const result = await searchPPLX(query, token);
+        const result = await searchPPLX(query, token, model);
         if (result.error) {
             // console.error("Error in handleSearch", result);
             ipcRenderer.send('warning', "The API is not valid", "Please check your API key and try again.");

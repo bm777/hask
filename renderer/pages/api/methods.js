@@ -1,4 +1,4 @@
-export async function searchPPLX(query, token) {
+export async function searchPPLX(query, token, model) {
     const auth = 'Bearer ' +token
     const options = {
         method: 'POST',

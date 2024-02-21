@@ -101,7 +101,6 @@ async function createSettingsWindow() {
 }
 
 
-
 (async () => {
   await app.whenReady();
 

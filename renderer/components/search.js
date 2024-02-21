@@ -1,8 +1,13 @@
 import { useState, useRef, useEffect  } from "react";
 import { searchPPLX, parseLink } from "../pages/api/methods";
 
+let ipcRenderer;
+if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+    ipcRenderer = window.require("electron").ipcRenderer;
+}
 
-export default function DF() {
+
+export default function Search() {
     const [query, setQuery] = useState("");
     const [answer, setAnswer] = useState("");
     const [expanded, setExpanded] = useState(false);
@@ -19,9 +24,14 @@ export default function DF() {
         }
         if(window !== undefined) {
             const _token = localStorage.getItem("pplx-token");
+            console.log(_token);
             if (_token) {
                 setToken(_token);
             }
+        }
+        return () => { 
+            ipcRenderer.removeAllListeners('window-blur') 
+            ipcRenderer.removeAllListeners('warning')
         }
 
     }, []);
@@ -40,10 +50,10 @@ export default function DF() {
         setSearching(true);
         const result = await searchPPLX(query, token);
         if (result.error) {
-            console.error(result.error);
+            // console.error("Error in handleSearch", result);
+            ipcRenderer.send('warning', "The API is not valid", "Please check your API key and try again.");
             return;
         }
-        // console.log(result.choices)
         const lines = result.choices.split('\n');
 
         const imagePattern = /!\[([^\]]*)]\(([^)]*)\)/g;
@@ -70,10 +80,15 @@ export default function DF() {
         setSearching(false);
     }
 
+    // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
+    const blur = () => {
+        ipcRenderer.send('window-blur');
+    }
+
     return (
         <div className="bg-[#00000000] h-[100vh] w-full flex flex-col">
-            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative">
-                <div className="w-11 h-11 mx-[5px]  rounded-full flex items-center justify-center">
+            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative draggable">
+                <div className="w-11 h-11 mx-[5px] rounded-full flex items-center justify-center">
                     <div className="w-7 h-7 bg-[#FFB2BE] rounded flex items-center justify-center">
                         <div className="h-[60%] w-[3px] bg-[#561D2A]"></div>
                     </div>
@@ -118,8 +133,15 @@ export default function DF() {
                 :
                 null
             }
+            {
+                (!expanded && query === "") &&
+                <main className={"w-full flex flex-col flex-1 -mt-3 ] overflow-auto no-scrollbar"} onClick={blur} >
+                    <div className="mt-3 w-0 mb-1 border-b border-b-bg-[#e0e5f6] bg-[#e0e5f600] border-gray-0 fixed"></div>
 
-            {/* <div className="w-full bg-[#808080] h-[57px]"></div> */}
+                </main>
+            }
+
+            
         </div>
     );
 }

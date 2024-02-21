@@ -6,11 +6,11 @@
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
-    body {
+    .draggable {
         -webkit-app-region: drag;
     }
-    main {
+    /* main {
         -webkit-app-region: no-drag;
-    }
+    } */
 }
 

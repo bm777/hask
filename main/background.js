@@ -1,4 +1,4 @@
-import { app, globalShortcut, Menu } from 'electron';
+import { app, globalShortcut, Menu, ipcMain, dialog } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 
@@ -11,13 +11,20 @@ if (isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
+const options = (title, message) => {
+  return {
+    type: 'info',
+    title: title,
+    message: message,
+    buttons: ['Ok']
+  }
+}
 
-(async () => {
-  await app.whenReady();
-
+async function createMainWindow() {
   const mainWindow = createWindow('21éeé', {
     width: 750,
     height: 480,
+    alwaysOnTop: true,
     resizable: false,
     maximizable: false,
     minimizable: false,
@@ -29,14 +36,38 @@ if (isProd) {
   mainWindow.on('blur', (e) => {
     mainWindow.hide();
   });
+  ipcMain.on('window-blur', (e) => {
+    mainWindow.hide();
+  });
+
+  ipcMain.on('warning', (e, title, message) => {
+    // open the dialog and check if the user has clicked the ok button
+    dialog.showMessageBox(mainWindow, options(title, message)).then((result) => {
+      console.log(result);
+      if (result.response === 0) {
+        // open settings window
+        if (!settingsWindow || settingsWindow.isDestroyed()) {
+          createSettingsWindow();
+        } else {
+          settingsWindow.focus();
+        }
+      }
+    }
+    );
+  })
+
   globalShortcut.register('Option+X', () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
     } else {
       mainWindow.show();
     }
-  }); 
-  // mainWindow.toggleDevTools();
+  })
+
+  // --------> mainWindow.toggleDevTools();
+  mainWindow.setAlwaysOnTop(true, "floating");
+  mainWindow.setVisibleOnAllWorkspaces(true);
+  // mainWindow.setFullScreenable(false);
 
   if (isProd) {
     await mainWindow.loadURL('app://./hask.html');
@@ -45,80 +76,105 @@ if (isProd) {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/hask`);
   }
-})();
+  return mainWindow;
+}
 
-const isMac = process.platform === 'darwin'
-const template = [
-  {
-    label: 'Hask AI',
-    submenu: [
-      isMac ? { role: 'quit' } : { role: 'quit' }
-    ]
-  },
-  {
-    label: 'Edit',
-    submenu: [
-      { role: 'undo' },
-      { role: 'redo' },
-      { type: 'separator' },
-      { role: 'cut' },
-      { role: 'copy' },
-      { role: 'paste' },
-      { role: 'delete' },
-      { type: 'separator' },
-      { role: 'selectAll' }
-    ]
-  },
-  {
-    label: 'Settings',
-    submenu: [
-      {
-        label: 'Open Seettings',
-        accelerator: 'CmdOrCtrl+,',
-        click: async () => {
-          if (!settingsWindow || settingsWindow.isDestroyed()) {
-              settingsWindow = createWindow('2er', {
-                  width: 750,
-                  height: 480,
-                  resizable: false,
-                  maximizable: false,
-                  minimizable: false,
-                  frame: true
-              });
+async function createSettingsWindow() {
+  console.log("creating settings window");
+  settingsWindow = createWindow('2er', {
+    width: 750,
+    height: 480,
+    alwaysOnTop: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    frame: true
+  });
 
-              if (isProd) {
-                  await settingsWindow.loadURL('app://./settings.html');
-              } else {
-                  const port = process.argv[2];
-                  await settingsWindow.loadURL(`http://localhost:${port}/settings`);
-              }
-          } else {
-              // If the settings window is already open, bring it to focus
-              settingsWindow.focus();
+  if (isProd) {
+    await settingsWindow.loadURL('app://./settings.html');
+  } else {
+    const port = process.argv[2];
+    await settingsWindow.loadURL(`http://localhost:${port}/settings`);
+  }
+  return settingsWindow;
+}
+
+
+
+(async () => {
+  await app.whenReady();
+
+  const mainWindow = await createMainWindow();
+
+  const isMac = process.platform === 'darwin'
+  
+  const template = [
+    {
+      label: 'Hask AI',
+      submenu: [
+        isMac ? { role: 'quit' } : { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'Settings',
+      submenu: [
+        {
+          label: 'Open Seettings',
+          accelerator: 'CmdOrCtrl+,',
+          click: async () => {
+            if (!settingsWindow || settingsWindow.isDestroyed()) {
+              await createSettingsWindow();
+            } else {
+                // If the settings window is already open, bring it to focus
+                settingsWindow.focus();
+            }
+            // settingsWindow.toggleDevTools()
           }
         }
-      }
-    ]
-  },
-  {
-    role: 'help',
-    submenu: [
-      {
-        label: 'Learn More',
-        click: async () => {
-          const { shell } = require('electron')
-          await shell.openExternal('https://github.com/bm777/hask')
+      ]
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click: async () => {
+            const { shell } = require('electron')
+            await shell.openExternal('https://github.com/bm777/hask')
+          }
         }
-      }
-    ]
-  }
-]
+      ]
+    }
+  ]
 
-const menu = Menu.buildFromTemplate(template)
-Menu.setApplicationMenu(menu)
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 
-app.on('window-all-closed', (e) => {
-  app.quit()
-  e.preventDefault()
-});
+  // keeping the app on top of a fullscreen app
+  app.dock.hide();
+
+
+  app.on('window-all-closed', (e) => {
+    app.quit()
+    e.preventDefault()
+  });
+  
+})();
+
+
 

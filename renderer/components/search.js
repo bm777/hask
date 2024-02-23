@@ -68,7 +68,7 @@ export default function Search() {
             setSearching(false);
         });
         ipcRenderer.on("search-error", (e, error) => {
-            console.log("Error", error);
+            
             setSearching(false);
         });
 

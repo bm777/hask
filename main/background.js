@@ -12,7 +12,7 @@ if (isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
-const options = (title, message) => {
+const _options = (title, message) => {
   return {
     type: 'info',
     title: title,
@@ -21,6 +21,20 @@ const options = (title, message) => {
   }
 }
 
+async function showDialog(title, message) {
+  console.log("============================", title, message);
+  dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
+    console.log("============================", result);
+    if (result.response === 0) {
+      // open settings window
+      if (!settingsWindow || settingsWindow.isDestroyed()) {
+        // createSettingsWindow();
+      } else {
+        settingsWindow.focus();
+      }
+    }
+  });
+}
 async function createMainWindow() {
   const mainWindow = createWindow('21éeé', {
     width: 750,
@@ -42,7 +56,7 @@ async function createMainWindow() {
   });
 
   ipcMain.on("search", async (event, query, model, token) => {
-    console.log("searching for", query, model, token);
+    console.log("searching for", query, model);
     const auth = 'Bearer ' + token
     const options = {
       method: 'POST',
@@ -77,7 +91,7 @@ async function createMainWindow() {
                 try {
                   const json = JSON.parse(string);
                   event.sender.send('search-result', json['data:']["choices"][0]["message"]["content"]);
-                } catch (error) { console.error('Error:', error); }
+                } catch (error) { console.error('Error:==============', error); }
             }
       });
       stream.on('end', () => {
@@ -85,27 +99,24 @@ async function createMainWindow() {
           event.sender.send('search-end');
       });
   
-  } catch( error ) {
-      console.error(error);
-      event.sender.send('search-error', chunk.toString());
-  }
+    } catch( error ) {
+      console.error("Error in searchPPLX", error.message);
+        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then((result) => {
+          
+          if (result.response === 0) {
+            if (!settingsWindow || settingsWindow.isDestroyed()) {
+              createSettingsWindow();
+            } else {
+              settingsWindow.focus();
+            }
+          }
+        });
+      }
   })
 
 
-  ipcMain.on('warning', (e, title, message) => {
-    // open the dialog and check if the user has clicked the ok button
-    dialog.showMessageBox(mainWindow, options(title, message)).then((result) => {
-      console.log(result);
-      if (result.response === 0) {
-        // open settings window
-        if (!settingsWindow || settingsWindow.isDestroyed()) {
-          // createSettingsWindow();
-        } else {
-          settingsWindow.focus();
-        }
-      }
-    }
-    );
+  ipcMain.on('warning', async (e, title, message) => {
+    await showDialog(title, message);
   })
 
   globalShortcut.register('Option+X', () => {

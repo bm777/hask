@@ -31,6 +31,7 @@
     }
   },
   "dependencies": {
+    "axios": "^1.6.7",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "react-redux": "^9.1.0",

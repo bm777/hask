@@ -1,27 +1,45 @@
 import { useState, useRef, useEffect  } from "react";
-import { searchPPLX, parseLink } from "../pages/api/methods";
+// import { optionsConstructor, parseLink } from "../pages/api/methods";
+import Answer from "./answer";
+
+let ipcRenderer;
+if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+    ipcRenderer = window.require("electron").ipcRenderer;
+}
 
 
-export default function DF() {
+export default function Search() {
     const [query, setQuery] = useState("");
     const [answer, setAnswer] = useState("");
     const [expanded, setExpanded] = useState(false);
     const [searching, setSearching] = useState(false);
     const [token, setToken] = useState("");
+    const [model, setModel] = useState("pplx-7b-online");
     const [imageUrl, setImageUrl] = useState('');
 
     let inputRef = useRef(null);
 
     useEffect(() => {
+
         if (inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
         }
         if(window !== undefined) {
             const _token = localStorage.getItem("pplx-token");
-            if (_token) {
+            const _model = localStorage.getItem("pplx-model");
+            console.log(_token);
+            if (_token && _model) {
                 setToken(_token);
+                setModel(_model);
             }
+        }
+        return () => { 
+            ipcRenderer.removeAllListeners('window-blur') 
+            ipcRenderer.removeAllListeners('warning')
+            ipcRenderer.removeAllListeners('search-result')
+            ipcRenderer.removeAllListeners('search-end')
+            ipcRenderer.removeAllListeners('search-error')
         }
 
     }, []);
@@ -38,42 +56,35 @@ export default function DF() {
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
-        const result = await searchPPLX(query, token);
-        if (result.error) {
-            console.error(result.error);
-            return;
-        }
-        // console.log(result.choices)
-        const lines = result.choices.split('\n');
 
-        const imagePattern = /!\[([^\]]*)]\(([^)]*)\)/g;
+        // const result = await searchPPLX(query, token, model);
+
+        ipcRenderer.send("search", query, model, token);
+        ipcRenderer.on("search-result", (e, result) => {   
+            setAnswer(result);
+        });
+        ipcRenderer.on("search-end", (e) => {
+            console.log("Search ended");
+            setSearching(false);
+        });
+        ipcRenderer.on("search-error", (e, error) => {
+            
+            setSearching(false);
+        });
 
 
-        // Detect bold text between **text** and format accordingly
-        const formattedLines = lines.map(line => {
-        
+    }
 
-                // if (line.includes("#")) {
-                //     const hashCount = line.match(/^#+/)[0].length;
-                //     const level = Math.min(hashCount, 6); // Limit maximum header level to h6
-                //     const headerTag = `h${level}`;
-                //     return `<${headerTag}>${line.slice(level).trim()}</${headerTag}>`;
-                // }
-                // return parseLink(line);
-                return line;
-            }
-        )
-        const formattedText = formattedLines.map(line => line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')).join('<br/>')
-        console.log(formattedText);
 
-        setAnswer(formattedText);
-        setSearching(false);
+    // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
+    const blur = () => {
+        ipcRenderer.send('window-blur');
     }
 
     return (
         <div className="bg-[#00000000] h-[100vh] w-full flex flex-col">
-            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative">
-                <div className="w-11 h-11 mx-[5px]  rounded-full flex items-center justify-center">
+            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative draggable">
+                <div className="w-11 h-11 mx-[5px] rounded-full flex items-center justify-center">
                     <div className="w-7 h-7 bg-[#FFB2BE] rounded flex items-center justify-center">
                         <div className="h-[60%] w-[3px] bg-[#561D2A]"></div>
                     </div>
@@ -108,18 +119,27 @@ export default function DF() {
                         <p className="ml-2 font-medium text-xl text-gray-600">Answer</p>
                     </div>
                     {
-                       ( !searching && answer !== "") ? 
-                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" dangerouslySetInnerHTML={{ __html: answer }}></div>
-                        :
-                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
+                       ( searching && answer === "") ? 
+                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
+                       :
+                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
+                            <Answer answer={answer} />
+                       </div>
                     }
                     
                 </main>
                 :
                 null
             }
+            {
+                (!expanded && query === "") &&
+                <main className={"w-full flex flex-col flex-1 -mt-3 ] overflow-auto no-scrollbar"} onClick={blur} >
+                    <div className="mt-3 w-0 mb-1 border-b border-b-bg-[#e0e5f6] bg-[#e0e5f600] border-gray-0 fixed"></div>
 
-            {/* <div className="w-full bg-[#808080] h-[57px]"></div> */}
+                </main>
+            }
+
+            
         </div>
     );
 }

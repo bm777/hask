@@ -22,13 +22,12 @@ const _options = (title, message) => {
 }
 
 async function showDialog(title, message) {
-  console.log("============================", title, message);
   dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
     console.log("============================", result);
     if (result.response === 0) {
       // open settings window
       if (!settingsWindow || settingsWindow.isDestroyed()) {
-        // createSettingsWindow();
+        createSettingsWindow();
       } else {
         settingsWindow.focus();
       }
@@ -56,7 +55,6 @@ async function createMainWindow() {
   });
 
   ipcMain.on("search", async (event, query, model, token) => {
-    console.log("searching for", query, model);
     const auth = 'Bearer ' + token
     const options = {
       method: 'POST',
@@ -95,12 +93,10 @@ async function createMainWindow() {
             }
       });
       stream.on('end', () => {
-          console.log('Stream ended.');
           event.sender.send('search-end');
       });
   
     } catch( error ) {
-      console.error("Error in searchPPLX", error.message);
         dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then((result) => {
           
           if (result.response === 0) {
@@ -129,18 +125,11 @@ async function createMainWindow() {
 
   ///////////////////////////////
 
-  
-  ///////////////////////////////
-
-  // --------> 
-  mainWindow.toggleDevTools();
-  mainWindow.setAlwaysOnTop(true, "floating");
-  mainWindow.setVisibleOnAllWorkspaces(true);
-  // mainWindow.setFullScreenable(false);
+  // --------> mainWindow.toggleDevTools();
+  // 
 
   if (isProd) {
     await mainWindow.loadURL('app://./hask.html');
-    // console.log("in production")
   } else {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/hask`);
@@ -149,7 +138,6 @@ async function createMainWindow() {
 }
 
 async function createSettingsWindow() {
-  console.log("creating settings window");
   settingsWindow = createWindow('2er', {
     width: 750,
     height: 480,
@@ -234,6 +222,9 @@ async function createSettingsWindow() {
   Menu.setApplicationMenu(menu)
 
   // keeping the app on top of a fullscreen app
+  mainWindow.setAlwaysOnTop(true, "floating", 1);
+  mainWindow.setVisibleOnAllWorkspaces(true);
+  // mainWindow.setFullScreenable(true);
   app.dock.hide();
 
 

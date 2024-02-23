@@ -1,16 +1,16 @@
-export async function searchPPLX(query, token, model) {
+export async function searchPPLXlegacy(query, token, model) {
     const auth = 'Bearer ' +token
     const options = {
         method: 'POST',
         headers: {
             accept: 'application/json',
-            'content-type': 'application/json',
+            'content-type': 'text/event-stream',
             authorization: auth
         },
         body: JSON.stringify({
             model: model ? model : 'pplx-7b-online',
             messages: [{role: 'system', content: 'Be consistent with your answers.'}, {role: 'user', content: query}],
-            temperature: 1
+            stream: true
         })
     }
 
@@ -29,6 +29,28 @@ export async function searchPPLX(query, token, model) {
         console.error("Error in searchPPLX", error.message);
         return {error: error};
     }
+}
+
+export const optionsConstructor = (url, key, model, query) => {
+    const auth = 'Bearer ' + key
+    return {
+        method: "POST",
+        url: url,
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          authorization: 'Bearer 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'
+        },
+        data: {
+          model: model,
+          messages: [
+            {role: 'system', content: 'Be precise and concise.'},
+            {role: 'user', content: query}
+          ],
+          stream: true
+        },
+        responseType: 'stream',
+      };
 }
 
 export const parseLink = (line) => {

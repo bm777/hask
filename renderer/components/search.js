@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect  } from "react";
-import { searchPPLX, parseLink } from "../pages/api/methods";
+// import { optionsConstructor, parseLink } from "../pages/api/methods";
+import Answer from "./answer";
 
 let ipcRenderer;
 if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
@@ -19,6 +20,7 @@ export default function Search() {
     let inputRef = useRef(null);
 
     useEffect(() => {
+
         if (inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
@@ -35,6 +37,9 @@ export default function Search() {
         return () => { 
             ipcRenderer.removeAllListeners('window-blur') 
             ipcRenderer.removeAllListeners('warning')
+            ipcRenderer.removeAllListeners('search-result')
+            ipcRenderer.removeAllListeners('search-end')
+            ipcRenderer.removeAllListeners('search-error')
         }
 
     }, []);
@@ -51,37 +56,25 @@ export default function Search() {
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
-        const result = await searchPPLX(query, token, model);
-        if (result.error) {
-            // console.error("Error in handleSearch", result);
-            ipcRenderer.send('warning', "The API is not valid", "Please check your API key and try again.");
-            return;
-        }
-        const lines = result.choices.split('\n');
 
-        const imagePattern = /!\[([^\]]*)]\(([^)]*)\)/g;
+        // const result = await searchPPLX(query, token, model);
+
+        ipcRenderer.send("search", query, model, token);
+        ipcRenderer.on("search-result", (e, result) => {   
+            setAnswer(result);
+        });
+        ipcRenderer.on("search-end", (e) => {
+            console.log("Search ended");
+            setSearching(false);
+        });
+        ipcRenderer.on("search-error", (e, error) => {
+            console.log("Error", error);
+            setSearching(false);
+        });
 
 
-        // Detect bold text between **text** and format accordingly
-        const formattedLines = lines.map(line => {
-        
-
-                // if (line.includes("#")) {
-                //     const hashCount = line.match(/^#+/)[0].length;
-                //     const level = Math.min(hashCount, 6); // Limit maximum header level to h6
-                //     const headerTag = `h${level}`;
-                //     return `<${headerTag}>${line.slice(level).trim()}</${headerTag}>`;
-                // }
-                // return parseLink(line);
-                return line;
-            }
-        )
-        const formattedText = formattedLines.map(line => line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')).join('<br/>')
-        console.log(formattedText);
-
-        setAnswer(formattedText);
-        setSearching(false);
     }
+
 
     // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
     const blur = () => {
@@ -126,10 +119,12 @@ export default function Search() {
                         <p className="ml-2 font-medium text-xl text-gray-600">Answer</p>
                     </div>
                     {
-                       ( !searching && answer !== "") ? 
-                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" dangerouslySetInnerHTML={{ __html: answer }}></div>
-                        :
-                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
+                       ( searching && answer === "") ? 
+                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
+                       :
+                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
+                            <Answer answer={answer} />
+                       </div>
                     }
                     
                 </main>

@@ -1,6 +1,7 @@
 import { app, globalShortcut, Menu, ipcMain, dialog } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
+import axios from 'axios';
 
 const isProd = process.env.NODE_ENV === 'production';
 let settingsWindow;
@@ -40,6 +41,56 @@ async function createMainWindow() {
     mainWindow.hide();
   });
 
+  ipcMain.on("search", async (event, query, model, token) => {
+    console.log("searching for", query, model, token);
+    const options = {
+      method: 'POST',
+      url: 'https://api.perplexity.ai/chat/completions',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: 'Bearer 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'
+      },
+      responseType: 'stream',
+      data: {
+        model: 'mistral-7b-instruct',
+        messages: [
+          {role: 'system', content: 'Be precise and concise.'},
+          {role: 'user', content: query}
+          // {role: 'user', content: 'explain me how to use useeffect in nextjs'}
+        ],
+        stream: true
+      }
+    };
+  
+    try {
+      const response = await axios.request(options)
+      const stream = response.data;
+      let string = '';
+  
+      stream.on('data', (chunk) => {
+          let chunked = chunk.toString();
+        
+            if (chunked.slice(0, 5) === 'data:') {
+                string = '{ "data:"' + chunked.slice(4, -1) + "}";
+                try {
+                  const json = JSON.parse(string);
+                  event.sender.send('search-result', json['data:']["choices"][0]["message"]["content"]);
+                } catch (error) { console.error('Error:', error); }
+            }
+      });
+      stream.on('end', () => {
+          console.log('Stream ended.');
+          event.sender.send('search-end');
+      });
+  
+  } catch( error ) {
+      console.error(error);
+      event.sender.send('search-error', chunk.toString());
+  }
+  })
+
+
   ipcMain.on('warning', (e, title, message) => {
     // open the dialog and check if the user has clicked the ok button
     dialog.showMessageBox(mainWindow, options(title, message)).then((result) => {
@@ -47,7 +98,7 @@ async function createMainWindow() {
       if (result.response === 0) {
         // open settings window
         if (!settingsWindow || settingsWindow.isDestroyed()) {
-          createSettingsWindow();
+          // createSettingsWindow();
         } else {
           settingsWindow.focus();
         }
@@ -64,7 +115,13 @@ async function createMainWindow() {
     }
   })
 
-  // --------> mainWindow.toggleDevTools();
+  ///////////////////////////////
+
+  
+  ///////////////////////////////
+
+  // --------> 
+  mainWindow.toggleDevTools();
   mainWindow.setAlwaysOnTop(true, "floating");
   mainWindow.setVisibleOnAllWorkspaces(true);
   // mainWindow.setFullScreenable(false);

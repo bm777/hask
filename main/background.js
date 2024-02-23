@@ -43,13 +43,14 @@ async function createMainWindow() {
 
   ipcMain.on("search", async (event, query, model, token) => {
     console.log("searching for", query, model, token);
+    const auth = 'Bearer ' + token
     const options = {
       method: 'POST',
       url: 'https://api.perplexity.ai/chat/completions',
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        authorization: 'Bearer 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'
+        authorization: auth
       },
       responseType: 'stream',
       data: {

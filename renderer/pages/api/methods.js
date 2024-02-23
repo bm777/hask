@@ -39,7 +39,7 @@ export const optionsConstructor = (url, key, model, query) => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
-          authorization: 'Bearer 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'
+          authorization: auth
         },
         data: {
           model: model,

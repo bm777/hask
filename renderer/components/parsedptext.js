@@ -6,9 +6,7 @@ const ParsedText = React.memo(({ children }) => {
     
     useEffect(() => {
         if (children) {
-        // const lines = children.split("\n")
-        console.log(children)
-        // setFormattedLines(children)
+
         }
     }, [children])
 
@@ -18,7 +16,13 @@ const ParsedText = React.memo(({ children }) => {
     
     return (
         <>
-            <span key={"index"}>{children}</span>
+            <span className="border border-green-600">
+                {
+                <span key={"index"}>
+                    {children}
+                </span>
+                }
+            </span>
         </>
     )
 })

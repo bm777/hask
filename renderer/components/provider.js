@@ -19,7 +19,7 @@ export default function Provider({ provider, active, handleTabChange }) {
         return (
                 <div onClick={() => handleTabChange(provider.toLowerCase())} className="px-2 flex flex-col justify-end relative ">
                     {
-                        hover &&
+                        ( hover && provider !== "Groq" && provider !== "Perplexity") &&
                         <div id='soon' className=" flex justify-end absolute top-0 duration-300 transform">
                             <span className="border border-[#f68193] bg-[#f6819331] rounded-full px-2 text-xs ml-5 -mb-2">soon</span>
                         </div>

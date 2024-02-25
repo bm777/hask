@@ -18,6 +18,7 @@ export default function Search() {
     const [imageUrl, setImageUrl] = useState('');
 
     let inputRef = useRef(null);
+    const scrollerRef = useRef(null);
 
     useEffect(() => {
 
@@ -62,13 +63,16 @@ export default function Search() {
         ipcRenderer.send("search", query, model, token);
         ipcRenderer.on("search-result", (e, result) => {   
             setAnswer(result);
+            if (scrollerRef.current) {
+                scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+            }
         });
         ipcRenderer.on("search-end", (e) => {
             console.log("Search ended");
             setSearching(false);
         });
         ipcRenderer.on("search-error", (e, error) => {
-            
+
             setSearching(false);
         });
 
@@ -102,7 +106,7 @@ export default function Search() {
             
             {
                 (expanded && query !== "") ?
-                <main className={"w-full flex flex-col flex-1 -mt-3 bg-[#e0e5f6] overflow-auto no-scrollbar"} >
+                <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar"} >
                     <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed"></div>
                     <div className="w-full mt-5 flex items-center">
                         {
@@ -123,7 +127,7 @@ export default function Search() {
                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
                        :
                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
-                            <Answer answer={answer} />
+                            <Answer key={"0"} answer={answer} />
                        </div>
                     }
                     
@@ -135,7 +139,6 @@ export default function Search() {
                 (!expanded && query === "") &&
                 <main className={"w-full flex flex-col flex-1 -mt-3 ] overflow-auto no-scrollbar"} onClick={blur} >
                     <div className="mt-3 w-0 mb-1 border-b border-b-bg-[#e0e5f6] bg-[#e0e5f600] border-gray-0 fixed"></div>
-
                 </main>
             }
 

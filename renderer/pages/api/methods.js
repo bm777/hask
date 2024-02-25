@@ -76,3 +76,27 @@ export function retrieve(provider) {
         return false;
     }
 }
+export function get_code_blocks(lines){
+    let insideCodeBlock = false;
+    let linesWithCodeBlocks = [];
+
+    for (const line of lines) {
+
+        if (line.startsWith("```")) {
+            if (!insideCodeBlock) {
+                insideCodeBlock = true;
+                linesWithCodeBlocks.push(line);
+            } else {
+                insideCodeBlock = false;
+                linesWithCodeBlocks[linesWithCodeBlocks.length - 1] += "\n" + line; // Append the line to the last element in the array
+            }
+        } else {
+            if (insideCodeBlock) {
+                linesWithCodeBlocks[linesWithCodeBlocks.length - 1] += "\n" + line;
+            } else {
+                linesWithCodeBlocks.push(line);
+            }
+        }
+    }
+    return linesWithCodeBlocks;
+}

@@ -13,9 +13,9 @@ export default function Settings() {
     const [pplxModel, setPplxModel] = useState("");
     const [pplxModels, setPplxModels] = useState(["pplx-7b-online", "pplx-70b-online"]);
 
-    // const [groqToken, setGroqToken] = useState("");
-    // const [groqModel, setGroqModel] = useState("");
-    // const [groqModels, setGroqModels] = useState(["Mixtral 8x7B-32k", "Llama 2 70B-4k"]);
+    const [groqToken, setGroqToken] = useState("");
+    const [groqModel, setGroqModel] = useState("");
+    const [groqModels, setGroqModels] = useState(["mixtral-8x7b-32768", "llama2-70b-4096"]);
 
     // const [openaiToken, setOpenaiToken] = useState("");
     // const [openaiModel, setOpenaiModel] = useState("");
@@ -39,11 +39,16 @@ export default function Settings() {
             console.log("model", _model);
             if (_token) { setToken(_token); setPplxToken(_token); }
             if (_model) { setModel(_model); setPplxModel(_model); setModels(pplxModels);}
-        } else { // if the provide is not provied or other model is stored
-            // setModels([]);
+        } else if (provider === "groq") {
+            const _token = localStorage.getItem("groq-token");
+            const _model = localStorage.getItem("groq-model");
+            if (_token) { setToken(_token); setGroqToken(_token); }
+            if (_model) { setModel(_model); setGroqModel(_model); setModels(groqModels);}
+        } else {
+
         }
     }
-    , []);
+    , [provider]);
 
     const handleTokenChange = (e) => { 
         setToken(e.target.value);
@@ -58,14 +63,23 @@ export default function Settings() {
             localStorage.setItem("pplx-token", token);
             localStorage.setItem("pplx-model", model);
             setLog("Configuration Saved!");
-            await new Promise(r => setTimeout(r, 4000));
+            await new Promise(r => setTimeout(r, 3000));
+            setLog("");
+        }
+        if (provider === "groq") {
+            console.log(provider, token, model);
+            localStorage.setItem("provider", provider);
+            localStorage.setItem("groq-token", token);
+            localStorage.setItem("groq-model", model);
+            setLog("Configuration Saved!");
+            await new Promise(r => setTimeout(r, 3000));
             setLog("");
         }
     }
 
     const handleTabChange = (provider) => {
         // temporary blockage of switching providers
-        if (provider !== "perplexity") {
+        if (provider !== "perplexity" && provider !== "groq") {
             return;
         }
         setProvider(provider);
@@ -73,8 +87,12 @@ export default function Settings() {
             setToken(pplxToken);
             setModel(pplxModel);
             setModels(pplxModels);
+        } else if (provider === "groq") {
+            setToken(groqToken);
+            setModel(groqModel);
+            setModels(groqModels);
         } else {
-            // setModels([]);
+
         }
     }
     return (
@@ -93,7 +111,7 @@ export default function Settings() {
                 <div className="w-full mt-1 gap-1 h-[50px] flex justify-center border-b border-gray-400 ">
 
                     <Provider active={provider === "perplexity"} provider={"Perplexity"} handleTabChange={handleTabChange} />
-                    <Provider active={provider === "-groq"} provider={"Groq"} handleTabChange={handleTabChange} />
+                    <Provider active={provider === "groq"} provider={"Groq"} handleTabChange={handleTabChange} />
                     <Provider active={provider === "-openai"} provider={"OpenAI"} handleTabChange={handleTabChange} />
                     <Provider active={provider === "-cohere"} provider={"Cohere"} handleTabChange={handleTabChange} />
 

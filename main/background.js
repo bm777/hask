@@ -45,7 +45,7 @@ async function showDialog(title, message) {
     if (result.response === 0) {
       // open settings window
       if (!settingsWindow || settingsWindow.isDestroyed()) {
-        createSettingsWindow();
+        settingsWindow = createSettingsWindow();
       } else {
         settingsWindow.focus();
       }
@@ -141,7 +141,7 @@ async function createMainWindow() {
         } else { // this else stands for the case when the data is not complete
 
           if (block_size >= 1) { 
-            const answer = get_content_block(blocks[blocks.length - 1]); 
+            const answer = get_content_block(blocks[blocks.length - 1]);
             event.sender.send('search-result', answer);
           }
           buffer += read_data; // no need anymore
@@ -158,11 +158,11 @@ async function createMainWindow() {
   
     } catch( error ) {
         console.log(error)
-        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then((result) => {
+        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
           
           if (result.response === 0) {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
-              createSettingsWindow();
+              settingsWindow = await createSettingsWindow();
             } else {
               settingsWindow.focus();
             }
@@ -256,7 +256,8 @@ async function createSettingsWindow() {
           accelerator: 'CmdOrCtrl+,',
           click: async () => {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
-              await createSettingsWindow();
+              const settings = await createSettingsWindow();
+              settings.toggleDevTools();
             } else {
                 // If the settings window is already open, bring it to focus
                 settingsWindow.focus();

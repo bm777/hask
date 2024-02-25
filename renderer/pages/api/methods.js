@@ -54,8 +54,9 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return line.replace(urlRegex, '<a href="$1" target="_blank" className="text-blue-600">$1</a>');
+    // const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // return line.replace(urlRegex, '<a href="$1" target="_blank" className="text-blue-600">$1</a>');
+    return line
 };
 export function store(provdider, models) {
     try {
@@ -83,6 +84,32 @@ export function get_code_blocks(lines){
     for (const line of lines) {
 
         if (line.startsWith("```")) {
+            if (!insideCodeBlock) {
+                insideCodeBlock = true;
+                linesWithCodeBlocks.push(line);
+            } else {
+                insideCodeBlock = false;
+                linesWithCodeBlocks[linesWithCodeBlocks.length - 1] += "\n" + line; // Append the line to the last element in the array
+            }
+        } else {
+            if (insideCodeBlock) {
+                linesWithCodeBlocks[linesWithCodeBlocks.length - 1] += "\n" + line;
+            } else {
+                linesWithCodeBlocks.push(line);
+            }
+        }
+    }
+    return linesWithCodeBlocks;
+}
+
+// get backtick code blocks
+export function get_backtick_block(lines){
+    let insideCodeBlock = false;
+    let linesWithCodeBlocks = [];
+
+    for (const line of lines) {
+
+        if (line.startsWith("`")) {
             if (!insideCodeBlock) {
                 insideCodeBlock = true;
                 linesWithCodeBlocks.push(line);

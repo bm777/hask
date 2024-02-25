@@ -30,13 +30,13 @@ export default function Settings() {
         // try to load the token and model from local storage
         const _provider = localStorage.getItem("provider");
         setProvider( _provider ? _provider : "perplexity" )
-        console.log(_provider, provider);
+        // console.log(_provider, provider);
 
         // check if provider is defined
         if (provider === "perplexity") {
             const _token = localStorage.getItem("pplx-token");
             const _model = localStorage.getItem("pplx-model");
-            console.log("model", _model);
+            // console.log("model", _model);
             if (_token) { setToken(_token); setPplxToken(_token); }
             if (_model) { setModel(_model); setPplxModel(_model); setModels(pplxModels);}
         } else if (provider === "groq") {
@@ -80,6 +80,7 @@ export default function Settings() {
     const handleTabChange = (provider) => {
         // temporary blockage of switching providers
         if (provider !== "perplexity" && provider !== "groq") {
+            // console.log("clicking on other providers is disabled")
             return;
         }
         setProvider(provider);
@@ -88,12 +89,14 @@ export default function Settings() {
             setModel(pplxModel);
             setModels(pplxModels);
         } else if (provider === "groq") {
+            console.log("setting groq: token", groqToken, "model", groqModel, "models", groqModels, "provider", provider);
             setToken(groqToken);
             setModel(groqModel);
             setModels(groqModels);
         } else {
 
         }
+        console.log("provider", provider, "token", token, "model", model, "models", models);
     }
     return (
         <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col">
@@ -110,10 +113,10 @@ export default function Settings() {
             <div className="border-t mt-1 border-gray-400 flex-1 flex flex-col items-center">
                 <div className="w-full mt-1 gap-1 h-[50px] flex justify-center border-b border-gray-400 ">
 
-                    <Provider active={provider === "perplexity"} provider={"Perplexity"} handleTabChange={handleTabChange} />
-                    <Provider active={provider === "groq"} provider={"Groq"} handleTabChange={handleTabChange} />
-                    <Provider active={provider === "-openai"} provider={"OpenAI"} handleTabChange={handleTabChange} />
-                    <Provider active={provider === "-cohere"} provider={"Cohere"} handleTabChange={handleTabChange} />
+                    <Provider active={provider === "perplexity"} _provider={"Perplexity"} handleTabChange={handleTabChange} />
+                    <Provider active={provider === "groq"} _provider={"Groq"} handleTabChange={handleTabChange} />
+                    <Provider active={provider === "-openai"} _provider={"OpenAI"} handleTabChange={handleTabChange} />
+                    <Provider active={provider === "-cohere"} _provider={"Cohere"} handleTabChange={handleTabChange} />
 
                 </div>
                 

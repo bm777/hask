@@ -6,8 +6,20 @@ const ParsedText = React.memo(({ children }) => {
     
     useEffect(() => {
         if (children) {
+            const parts = children.split("**");
 
+            const formattedText = parts.map((part, index) => {
+                if (index % 2 === 0) {
+                return (
+                    <span key={index}> { part }</span> // Normal text
+                )
+                } else {
+                return <span key={index} className="font-semibold">{part}</span>; // Bold text
+                }
+            });
+            setFormattedLines(formattedText);
         }
+        
     }, [children])
 
     if (children === "") {
@@ -16,10 +28,12 @@ const ParsedText = React.memo(({ children }) => {
     
     return (
         <>
-            <span className="border border-green-600">
+            <span className="">
                 {
                 <span key={"index"}>
-                    {children}
+                    {
+                        formattedLines
+                    }
                 </span>
                 }
             </span>

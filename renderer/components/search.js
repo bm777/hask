@@ -106,8 +106,8 @@ export default function Search() {
             
             {
                 (expanded && query !== "") ?
-                <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar"} >
-                    <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed"></div>
+                <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar "} >
+                    <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed z-10"></div>
                     <div className="w-full mt-5 flex items-center">
                         {
                             searching ?
@@ -137,7 +137,7 @@ export default function Search() {
             }
             {
                 (!expanded && query === "") &&
-                <main className={"w-full flex flex-col flex-1 -mt-3 ] overflow-auto no-scrollbar"} onClick={blur} >
+                <main className={"w-full flex flex-col flex-1 -mt-3 ] no-scrollbar"} onClick={blur} >
                     <div className="mt-3 w-0 mb-1 border-b border-b-bg-[#e0e5f6] bg-[#e0e5f600] border-gray-0 fixed"></div>
                 </main>
             }

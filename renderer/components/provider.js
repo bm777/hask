@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function Provider({ _provider, active, handleTabChange }) {
     const [hover, setHover] = useState(false);
-    const [localState, setLocalState] = useState(active);
+    // console.log("provider", _provider, active);
 
     const handleHover = () => {
         if (!active) { setHover(true); }
@@ -10,11 +10,11 @@ export default function Provider({ _provider, active, handleTabChange }) {
     const exit = () => { setHover(false); }
     const changeTab = () => { 
         handleTabChange(_provider.toLowerCase()); 
-        setLocalState(true);
+
     }
     
     if (active) { return (
-                <div className="px-2 flex flex-col justify-end">
+                <div className="px-2 flex flex-col justify-end relative">
                     <div className="text-gray-900 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded">
                         { _provider }
                     </div>

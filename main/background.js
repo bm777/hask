@@ -84,7 +84,7 @@ async function createMainWindow() {
     return bufferData;
 }
 
-  ipcMain.on("search", async (event, query, model, token) => {
+  ipcMain.on("search", async (event, query, model, token, systemPrompt, temperature, maxTokens) => {
     const auth = 'Bearer ' + token
     const options = {
       method: 'POST',
@@ -96,15 +96,18 @@ async function createMainWindow() {
       },
       responseType: 'stream',
       data: {
-        model: 'mistral-7b-instruct',
+        model: model,
         messages: [
-          {role: 'system', content: 'Be precise and concise.'},
+          {role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.'},
           {role: 'user', content: query}
           // {role: 'user', content: 'explain me how to use useeffect in nextjs'}
         ],
+        max_tokens: maxTokens ? maxTokens : 500,
+        temperature: temperature ? temperature : 0.75,
         stream: true
       }
     };
+    console.log(options);
     let bufferData = '';
     function get_content_block(block) {
       try {

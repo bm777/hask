@@ -20,6 +20,24 @@ const _options = (title, message) => {
     buttons: ['Ok']
   }
 }
+function get_blocks(data) {
+  let blocks = data.split('\r\n');
+  blocks = blocks.filter(block => {
+      if (    block.includes('"id"') && 
+              block.includes('"created"') &&
+              block.includes('"prompt_tokens"') &&
+              block.includes('"total_tokens"') &&
+              block.includes('"object"') &&
+              block.includes('"index"') &&
+              block.includes('"choices"') &&
+              block.includes('"message"') &&
+              block.includes('"content"') &&
+              block.includes('"delta"') &&
+              block.includes('"}}]}') // no need to control also the start of the block, because of the split.
+      ) return block;
+  });
+  return blocks;
+}
 
 async function showDialog(title, message) {
   dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
@@ -27,7 +45,7 @@ async function showDialog(title, message) {
     if (result.response === 0) {
       // open settings window
       if (!settingsWindow || settingsWindow.isDestroyed()) {
-        createSettingsWindow();
+        settingsWindow = createSettingsWindow();
       } else {
         settingsWindow.focus();
       }
@@ -54,6 +72,18 @@ async function createMainWindow() {
     mainWindow.hide();
   });
 
+  function get_content_block(block) {
+    try {
+        const jsonData = JSON.parse('{ "data"' + block.trim().slice(4, -1) + "}}");
+        bufferData = jsonData["data"]["choices"][0]["message"]["content"];
+        return bufferData;
+    } catch (error) {
+        console.log("Error happened: Skipped and will catch up with the next block.");
+    }
+    console.log("||||||||||||||||||||||||||||||||||||||||||||||", bufferData);
+    return bufferData;
+}
+
   ipcMain.on("search", async (event, query, model, token) => {
     const auth = 'Bearer ' + token
     const options = {
@@ -75,33 +105,64 @@ async function createMainWindow() {
         stream: true
       }
     };
-  
+    let bufferData = '';
+    function get_content_block(block) {
+      try {
+          const jsonData = JSON.parse('{ "data"' + block.trim().slice(4, -1) + "}}");
+          bufferData = jsonData["data"]["choices"][0]["message"]["content"];
+          return bufferData;
+      } catch (error) {
+          // console.log("Error happened: Skipped and will catch up with the next block.");
+      }
+      console.log("||||||||||||||||||||||||||||||||||||||||||||||", bufferData);
+      return bufferData;
+    }
+    
     try {
       const response = await axios.request(options)
       const stream = response.data;
-      let string = '';
+      let buffer = '';
   
       stream.on('data', (chunk) => {
-          let chunked = chunk.toString();
-        
-            if (chunked.slice(0, 5) === 'data:') {
-                string = '{ "data:"' + chunked.slice(4, -1) + "}";
-                try {
-                  const json = JSON.parse(string);
-                  event.sender.send('search-result', json['data:']["choices"][0]["message"]["content"]);
-                } catch (error) { console.error('Error:==============', error); }
-            }
+        // Convert the chunk to a string and remove leading/trailing/whitespace
+        let read_data = chunk.toString('utf-8'); 
+        let last_8_char = read_data.slice(-8).trim();
+        let top_12_char = read_data.slice(0, 12).trim();
+
+        // itt might contains more than 0 blocks
+        let blocks = get_blocks(read_data); 
+        let block_size = blocks.length;
+
+        if (last_8_char === "}}]}" && block_size === 1 && top_12_char === 'data: {"id":') {
+          const answer = get_content_block(blocks[0]);
+          event.sender.send('search-result', answer);
+          buffer = ""
+
+        } else { // this else stands for the case when the data is not complete
+
+          if (block_size >= 1) { 
+            const answer = get_content_block(blocks[blocks.length - 1]);
+            event.sender.send('search-result', answer);
+          }
+          buffer += read_data; // no need anymore
+        }
       });
+
       stream.on('end', () => {
           event.sender.send('search-end');
       });
+
+      stream.on('error', error => {
+        console.error('Error while reading the stream:', error);
+    });
   
     } catch( error ) {
-        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then((result) => {
+        console.log(error)
+        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
           
           if (result.response === 0) {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
-              createSettingsWindow();
+              settingsWindow = await createSettingsWindow();
             } else {
               settingsWindow.focus();
             }
@@ -125,7 +186,8 @@ async function createMainWindow() {
 
   ///////////////////////////////
 
-  // --------> mainWindow.toggleDevTools();
+  // --------> 
+  mainWindow.toggleDevTools();
   // 
 
   if (isProd) {
@@ -194,7 +256,8 @@ async function createSettingsWindow() {
           accelerator: 'CmdOrCtrl+,',
           click: async () => {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
-              await createSettingsWindow();
+              const settings = await createSettingsWindow();
+              settings.toggleDevTools();
             } else {
                 // If the settings window is already open, bring it to focus
                 settingsWindow.focus();

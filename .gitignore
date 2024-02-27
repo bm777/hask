@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# React
+build/
+dist/
+*.env
+
+# IDE/Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+
+# Dependency directories
+jspm_packages/
+bower_components/
+
+# Build system files
+Gruntfile.js
+gulpfile.js
+webpack.config.js
+
+# Miscellaneous
+*.bak
+*.swp
+*.tmp
+*.tmp.*
+*.~lock.*

@@ -1,20 +1,21 @@
+import { store, retrieve } from "./api/methods";
 import { useEffect, useState } from "react";
 import Provider from "../components/provider";
-import { store, retrieve } from "./api/methods";
 
 export default function Settings() {
-    const [log, setLog] = useState("")
+    const [log, setLog] = useState("");
     const [provider, setProvider] = useState("perplexity");
     const [token, setToken] = useState("");
-    const [models, setModels] = useState(["sonar-small-chat", "pplx-7b-online", "sonar-small-online", "sonar-medium-chat", "sonar-medium-online"]);
+    const [models, setModels] = useState(["pplx-7b-online", "pplx-70b-online", "pplx-8x7b-online", "sonar-small-online", "sonar-medium-online", "sonar-medium-chat", "sonar-small-chat"]);
     const [model, setModel] = useState("pplx-7b-online");
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
     const [maxTokens, setMaxTokens] = useState(500);
 
+    // Other state initializations remain unchanged
     const [pplxToken, setPplxToken] = useState("");
     const [pplxModel, setPplxModel] = useState("");
-    const [pplxModels, setPplxModels] = useState(["sonar-small-chat", "pplx-7b-online", "sonar-small-online", "sonar-medium-chat", "sonar-medium-online"]); // ["pplx-7b-online", "pplx-70b-online"]
+    const [pplxModels, setPplxModels] = useState(["pplx-7b-online", "pplx-70b-online", "pplx-8x7b-online", "sonar-small-online", "sonar-medium-online", "sonar-medium-chat", "sonar-small-chat"]);
     const [pplxStatus, setPplxStatus] = useState(true);
     const [pplxSystemPrompt, setPplxSystemPrompt] = useState("Be precise and concise.");
     const [pplxTemperature, setPplxTemperature] = useState(0.5);
@@ -38,80 +39,71 @@ export default function Settings() {
 
 
     useEffect(() => {
-        // try to load the token and model from local storage
-        const _provider = localStorage.getItem("provider");
-        setProvider( _provider ? _provider : "perplexity" )
-        // console.log(_provider, provider);
-
-        // check if provider is defined
-        if (provider === "perplexity") {
-            const _token = localStorage.getItem("pplx-token");
-            const _model = localStorage.getItem("pplx-model");
-            const _systemPrompt = localStorage.getItem("pplx-system-prompt");
-            const _temperature = localStorage.getItem("pplx-temperature");
-            // console.log("model", _model);
-            if (_token) { setToken(_token); setPplxToken(_token); }
-            if (_model) { setModel(_model); setPplxModel(_model); setModels(pplxModels);}
-            if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
-            if (_temperature) { setTemperature(_temperature); }
-        } 
-        // else if (provider === "groq") {
-        //     const _token = localStorage.getItem("groq-token");
-        //     const _model = localStorage.getItem("groq-model");
-        //     const _systemPrompt = localStorage.getItem("groq-system-prompt");
-        //     const _temperature = localStorage.getItem("groq-temperature");
-        //     if (_token) { setToken(_token); setGroqToken(_token); }
-        //     if (_model) { setModel(_model); setGroqModel(_model); setModels(groqModels);}
-        //     if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
-        //     if (_temperature) { setTemperature(_temperature); }
-        // } 
-        else {
-
+        // No need to setProvider here as it's already initialized above with useState
+        // If provider is "perplexity", no need for conditional check as it's the only option
+        // Load the model from local storage
+        const savedModel = localStorage.getItem("pplx-model");
+        if (savedModel) {
+            setModel(savedModel);
         }
+        // Load the system prompt from local storage
+        const savedSystemPrompt = localStorage.getItem("pplx-system-prompt");
+        if (savedSystemPrompt) {
+            setSystemPrompt(savedSystemPrompt);
+        }
+        // Load the temperature from local storage
+        const savedTemperature = localStorage.getItem("pplx-temperature");
+        if (savedTemperature) {
+            setTemperature(parseFloat(savedTemperature));
+        }
+        // Load the max tokens from local storage
+        const savedMaxTokens = localStorage.getItem("pplx-max-tokens");
+        if (savedMaxTokens) {
+            setMaxTokens(parseInt(savedMaxTokens, 10));
+        }
+        // Load the token from local storage
+        const savedToken = localStorage.getItem("pplx-token");
+        if (savedToken) {
+            setToken(savedToken);
+        }
+        
         console.log("provider", provider, "token", token, "model", model, "models", models, "systemPrompt", systemPrompt, "temperature", temperature, "maxTokens", maxTokens);
-    }
-    , [provider]);
-
-    const handleTokenChange = (e) => { 
+      }, []); // Removed provider from dependency array to avoid reloading on provider change
+      
+      const handleTokenChange = (e) => { 
         setToken(e.target.value);
-    }
-    const handleModelChange = (e) => {
+      }
+      
+      const handleModelChange = (e) => {
         setModel(e.target.value);
-    }
-    const handleSave = async () => {
-        if (provider === "perplexity") {
-            console.log(provider, token, model);
-            localStorage.setItem("provider", provider);
-            localStorage.setItem("pplx-token", token);
-            localStorage.setItem("pplx-model", model);
-            setLog("Configuration Saved!");
-            await new Promise(r => setTimeout(r, 3000));
-            setLog("");
-        }
-        if (provider === "groq") {
-            console.log(provider, token, model);
-            localStorage.setItem("provider", provider);
-            localStorage.setItem("groq-token", token);
-            localStorage.setItem("groq-model", model);
-            setLog("Configuration Saved!");
-            await new Promise(r => setTimeout(r, 3000));
-            setLog("");
-        }
-    }
-    const handleTabChange = (provider) => {
+      }
+      
+      const handleSave = async () => {
+        // Save the current state to local storage
+        localStorage.setItem("provider", provider);
+        localStorage.setItem("pplx-token", token);
+        localStorage.setItem("pplx-model", model);
+        localStorage.setItem("pplx-system-prompt", systemPrompt);
+        localStorage.setItem("pplx-temperature", temperature.toString()); // Ensure string is saved
+        localStorage.setItem("pplx-max-tokens", maxTokens.toString()); // Ensure string is saved
+        setLog("Configuration Saved!");
+        await new Promise(r => setTimeout(r, 3000));
+        setLog("");
+      }
+      
+      const handleTabChange = (newProvider) => {
         // temporary blockage of switching providers
-        if (provider !== "perplexity" && provider !== "-groq") {
+        if (newProvider !== "perplexity" && newProvider !== "-groq") {
             // console.log("clicking on other providers is disabled")
             return;
         }
-        setProvider(provider);
-        if (provider === "perplexity") {
+        setProvider(newProvider);
+        if (newProvider === "perplexity") {
             setPplxStatus(true);
-            setGroqStatus(false);
             setToken(pplxToken);
             setModel(pplxModel);
             setModels(pplxModels);
-        } 
+        }  
         // else if (provider === "groq") {
         //     // console.log("setting groq: token", groqToken, "model", groqModel, "models", groqModels, "provider", provider);
         //     setPplxStatus(false);
@@ -125,8 +117,8 @@ export default function Settings() {
         }
     }
     const handleSystemPrompt = (e) => { setSystemPrompt(e.target.value); }
-    const handleTemperature = (e) => { setTemperature(e.target.value);}
-    const handleMaxTokens = (e) => {setMaxTokens(e.target.value);}
+    const handleTemperature = (e) => { setTemperature(parseFloat(e.target.value)); }
+    const handleMaxTokens = (e) => { setMaxTokens(parseInt(e.target.value, 10)); }
 
     return (
         <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col">
@@ -199,11 +191,11 @@ export default function Settings() {
                                 onChange={handleTemperature}
                                 value={temperature}
                                 type="number"
-                                placeholder="Paste your API-Key here..."
+                                placeholder="Set the temperature..."
                                 className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
                             />  
                     </div>
-                </div>
+                    </div>
                 <div className="w-full mt-1 gap-1 flex justify-center border">
                     <div className="h-7 w-[20%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">Max token:</p>

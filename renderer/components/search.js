@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect  } from "react";
 // import { optionsConstructor, parseLink } from "../pages/api/methods";
+import { useState, useRef, useEffect } from "react";
 import Answer from "./answer";
 
 let ipcRenderer;
@@ -7,83 +7,96 @@ if (typeof window !== "undefined" && window.process && window.process.type === "
     ipcRenderer = window.require("electron").ipcRenderer;
 }
 
-
 export default function Search() {
+    // State and refs setup
     const [query, setQuery] = useState("");
     const [answer, setAnswer] = useState("");
     const [expanded, setExpanded] = useState(false);
     const [searching, setSearching] = useState(false);
     const [token, setToken] = useState("");
     const [model, setModel] = useState("pplx-7b-online");
-    const [imageUrl, setImageUrl] = useState('');
 
     let inputRef = useRef(null);
     const scrollerRef = useRef(null);
 
-    useEffect(() => {
+    // Event listener functions
+    const handleSearchResult = (event, result) => {
+        setAnswer(result);
+        if (scrollerRef.current) {
+            scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+        }
+    };
 
+    const handleSearchEnd = () => {
+        console.log("Search ended");
+        setSearching(false);
+    };
+
+    const handleSearchError = (event, error) => {
+        console.error(error);
+        setSearching(false);
+    };
+
+    // Effect for setting up listeners and retrieving token
+    useEffect(() => {
+        // Set focus on the input field
         if (inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
         }
-        if(window !== undefined) {
-            const _token = localStorage.getItem("pplx-token");
-            const _model = localStorage.getItem("pplx-model");
-            console.log(_token);
-            if (_token && _model) {
-                setToken(_token);
-                setModel(_model);
-            }
-        }
-        return () => { 
-            ipcRenderer.removeAllListeners('window-blur') 
-            ipcRenderer.removeAllListeners('warning')
-            ipcRenderer.removeAllListeners('search-result')
-            ipcRenderer.removeAllListeners('search-end')
-            ipcRenderer.removeAllListeners('search-error')
+        
+        // Retrieve the token from localStorage
+        const savedToken = localStorage.getItem("pplx-token");
+        if (savedToken) {
+            setToken(savedToken);
         }
 
-    }, []);
+        // Set up IPC event listeners
+        ipcRenderer.on("search-result", handleSearchResult);
+        ipcRenderer.on("search-end", handleSearchEnd);
+        ipcRenderer.on("search-error", handleSearchError);
+    
+        // Remove listeners for search-related events on cleanup
+        return () => {
+            ipcRenderer.removeListener("search-result", handleSearchResult);
+            ipcRenderer.removeListener("search-end", handleSearchEnd);
+            ipcRenderer.removeListener("search-error", handleSearchError);
+        };
+    }, []); // The useEffect dependency array is empty
 
     const handleQueryChange = (e) => {
         setQuery(e.target.value);
-        if (e.target.value.length !== 0) {
-            setExpanded(true);
-        } else {
-            setExpanded(false);
+        setExpanded(e.target.value.length !== 0);
+        if (e.target.value.length === 0) {
             setAnswer("");
         }
-    }
+    };
+
     const handleSearch = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         setSearching(true);
 
-        // const result = await searchPPLX(query, token, model);
+        // Retrieve the settings from localStorage
+        const _systemPrompt = localStorage.getItem("pplx-system-prompt") || "Be precise and concise.";
+        const _temperature = localStorage.getItem("pplx-temperature") || "0.75";
+        const _maxTokens = localStorage.getItem("pplx-max-tokens") || "500";
 
-        ipcRenderer.send("search", query, model, token);
-        ipcRenderer.on("search-result", (e, result) => {   
-            setAnswer(result);
-            if (scrollerRef.current) {
-                scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
-            }
-        });
-        ipcRenderer.on("search-end", (e) => {
-            console.log("Search ended");
-            setSearching(false);
-        });
-        ipcRenderer.on("search-error", (e, error) => {
+        // Send the search query and settings to the main process
+        ipcRenderer.send(
+            "search",
+            query,
+            model,
+            token, // Use the token state which was set from localStorage
+            _systemPrompt,
+            parseFloat(_temperature),
+            parseInt(_maxTokens, 10)
+        );
+    };
 
-            setSearching(false);
-        });
-
-
-    }
-
-
-    // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
+    // Function to handle when the user clicks outside the search bar
     const blur = () => {
         ipcRenderer.send('window-blur');
-    }
+    };
 
     return (
         <div className="bg-[#00000000] h-[100vh] w-full flex flex-col">

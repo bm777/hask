@@ -83,4 +83,6 @@ renderer/.next/static/webpack/webpack.b9934930797db445.hot-update.js
 renderer/.next/static/webpack/webpack.d288624f9aedfd5b.hot-update.js
 app/background.js
 renderer/.DS_Store
+renderer/.next/development-server/pages/_app.js
+
 renderer/.DS_Store

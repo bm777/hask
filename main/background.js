@@ -45,7 +45,6 @@ function get_blocks(data) {
 
 async function showDialog(title, message) {
   dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
-    console.log("============================", result);
     if (result.response === 0) {
       if (!settingsWindow || settingsWindow.isDestroyed()) {
         settingsWindow = createSettingsWindow();

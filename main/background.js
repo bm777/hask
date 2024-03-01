@@ -109,11 +109,11 @@ ipcMain.on("search", async (event, query, model, token, systemPrompt, temperatur
     });
 
     stream.on('error', (error) => {
-      console.error('Error while reading the stream:', error);
+      // console.error('Error while reading the stream:', error);
       event.sender.send('search-error', 'An error occurred while processing your request.');
     });
   } catch (error) {
-    console.error('Error in search API call:', error);
+    // console.error('Error in search API call:', error);
     event.sender.send('search-error', 'An error occurred while processing your request.');
     showDialog("The API is not valid", "Please check your API key and try again or ensure your internet connection is active.");
   }

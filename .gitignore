@@ -77,10 +77,7 @@ renderer/.next/static/chunks/pages/hask.js
 renderer/.next/static/chunks/pages/settings.js
 renderer/.next/static/development/_buildManifest.js
 renderer/.next/static/development/_ssgManifest.js
-renderer/.next/static/webpack/b9934930797db445.webpack.hot-update.json
-renderer/.next/static/webpack/d288624f9aedfd5b.webpack.hot-update.json
-renderer/.next/static/webpack/webpack.b9934930797db445.hot-update.js
-renderer/.next/static/webpack/webpack.d288624f9aedfd5b.hot-update.js
+renderer/.next/static/webpack/*
 app/background.js
 renderer/.DS_Store
 renderer/.next/development-server/pages/_app.js

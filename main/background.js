@@ -90,6 +90,8 @@ ipcMain.on("search", async (event, query, model, token, systemPrompt, temperatur
     }
   };
 
+  console.log("API Request Body:", options.data); // Log the request body
+
   try {
     const response = await axios.request(options);
     const stream = response.data;
@@ -136,7 +138,7 @@ async function createMainWindow() {
     width: 750,
     height: 480,
     alwaysOnTop: true,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: false,
     transparent: true,
@@ -185,6 +187,13 @@ async function createSettingsWindow() {
   await app.whenReady();
 
   mainWindow = await createMainWindow();
+
+  globalShortcut.register('CmdOrCtrl+Shift+I', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+      focusedWindow.webContents.toggleDevTools();
+    }
+  });
 
   const template = [
     {

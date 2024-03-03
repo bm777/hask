@@ -69,7 +69,6 @@ export default function Search() {
     const handleKeyboard = (e) => {
         if (e.key === "m" && e.metaKey) {
             setModelExpanded(!modelExpanded);
-            // setModelSelectionExpanded(!modelSelectionExpanded);
         }
     }
 
@@ -79,11 +78,7 @@ export default function Search() {
             setSettingsExpanded(false);
         }
     }
-    // const handleClickOutsideModel = (event) => {
-    //     if (modelRef.current && !modelRef.current.contains(event.target)) {
-    //         setModelExpanded(false);
-    //     }
-    // }
+
     const handleProvider = (provider) => {
         setProvider(provider);
         localStorage.setItem("provider", provider);
@@ -140,7 +135,6 @@ export default function Search() {
 
         document.addEventListener("mousedown", handleClickOutside);
         document.addEventListener("keydown", handleKeyboard);
-        // document.addEventListener("mousedown", handleClickOutsideModel);
 
         // set up IPC event listeners
         ipcRenderer.on('search-result', handleSearchResult);
@@ -155,7 +149,6 @@ export default function Search() {
             ipcRenderer.removeAllListeners('search-time')
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyboard);
-            // document.removeEventListener("mousedown", handleClickOutsideModel);
         }
     }, []);
 
@@ -164,7 +157,6 @@ export default function Search() {
         if (e.target.value.length !== 0) {
             setExpanded(true);
         } else {
-            // setExpanded(false);
             setAnswer("");
         }
     }
@@ -272,7 +264,7 @@ export default function Search() {
                                 ( searching && answer === "") ? 
                                 <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse"></div>
                                 :
-                                <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
+                                <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 px-4 pt-4 pb-6 mb-4" >
                                         <Answer key={"0"} answer={answer} />
                                 </div>
                             }
@@ -280,9 +272,6 @@ export default function Search() {
                         :
                         <>
                             <div className="w-full h-full mt-5 flex items-center justify-center relative">
-                                {/* <div className=" w-full h-[90%] fixed flex flex-col justify-center">
-                                    <div className=" h-[95%] from-[#d8dcea] via-[#d8dcea] to-[#d8dcea]"></div>
-                                </div> */}
                                 <div className="flex items-center mb-5 border border-gray-600/20 rounded px-3 py-2 shadow shadow-[#00000003] z-10">
                                     <div className="w-11 h-11 rounded-full flex items-center justify-center animate-wiggle">
                                         <div className="w-7 h-7 bg-[#ffb2be00] rounded flex items-center justify-center">

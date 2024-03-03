@@ -85,7 +85,7 @@ async function createMainWindow() {
   });
 
   mainWindow.on('blur', (e) => {
-    // mainWindow.hide();
+    mainWindow.hide();
   });
   ipcMain.on('window-blur', (e) => {
     mainWindow.hide();
@@ -284,7 +284,7 @@ async function createMainWindow() {
           click: async () => {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
               settingsWindow = await createSettingsWindow();
-              settingsWindow.toggleDevTools();
+              // settingsWindow.toggleDevTools();
             } else {
                 // If the settings window is already open, bring it to focus
                 settingsWindow.focus();

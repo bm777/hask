@@ -12,18 +12,12 @@ import ParsedText from "./parsedtext";
 const Answer = React.memo(({ answer }) => {
     const [formattedLines, setFormattedLines] = useState([]);
     const [status, setStatus] = useState("copy");
-    let flag = false;
 
     useEffect(() => {
         Prism.highlightAll();
         if (answer) {
-            const codeBlockRegex = /```([\s\S]+?)```/g
-
             const lines = answer.split('\n');
-            // const lines = codeBlocks.split('\n');
             const linesWithLinksParsed = lines.map(line => parseLink(line));
-
-            // const linesWithBoldFormatted = linesWithLinksParsed.map(line => line.replace(/\*\*(.*?)\*\*/g, '**$1**'));
             const linesWithCodeBlocks = get_code_blocks(linesWithLinksParsed);
             
             setFormattedLines(linesWithCodeBlocks);
@@ -62,7 +56,7 @@ const Answer = React.memo(({ answer }) => {
             ))
         }
 
-        <div className={" absolute w-full -bottom-3 ml-3 bg-transparent flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
+        <div className={" absolute w-full -bottom-5 ml-3 bg-transparent flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
             <div onClick={copied} className="flex py-[1px] px-2 bg-[#2f2f2f3a] rounded"> 
                 <div className="flex items-center justify-center  mr-2 gap-1 hover:cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#00000090" className="w-[14px] h-[14px]">

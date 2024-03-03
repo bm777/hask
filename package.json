@@ -23,7 +23,7 @@
       "icon": "resources/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": ["dmg", "pkg"],
       "icon": "resources/icon.icns"
     },
     "win": {

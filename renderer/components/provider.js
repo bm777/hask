@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 export default function Provider({ _provider, active, handleTabChange }) {
     const [hover, setHover] = useState(false);
-    // console.log("provider", _provider, active);
 
     const handleHover = () => {
         if (!active) { setHover(true); }

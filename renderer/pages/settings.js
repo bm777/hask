@@ -128,7 +128,7 @@ export default function Settings() {
         else {
 
         }
-        console.log("provider", provider, "prov", prov);
+        // console.log("provider", provider, "prov", prov);
     }
     const handleSystemPrompt = (e) => { setSystemPrompt(e.target.value); }
     const handleTemperature = (e) => { setTemperature(parseFloat(e.target.value));}

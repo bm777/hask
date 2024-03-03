@@ -13,7 +13,6 @@ export default function Pvd({ text, action, defaultModel, selected }) {
                         <div className="text-sm text-[#2f2f2fb9] truncate">{defaultModel}</div>
                     </>
                 }
-                
             </div>
             <div className=" flex items-center justify-center gap-1 ">
                 <div className="bg-[#2f2f2f1d] h-[20px] w-[20px] flex items-center justify-center rounded">

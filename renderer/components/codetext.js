@@ -11,7 +11,6 @@ const CodeText = React.memo(({ children, className }) => {
         Prism.highlightAll();
         
         if (children) {
-            // console.log(children)
             setLang(children.split("\n")[0])
             setCode(children.split("\n").slice(1, -1).join("\n"))
         }
@@ -45,7 +44,6 @@ const CodeText = React.memo(({ children, className }) => {
                 
             </div>
             <pre className={"language-"+lang}>
-            {/* <pre className={"overflow-auto px-3 py-3 language-"}> */}
                 <code className={" token language-"+ lang} >
                     {code}
                 </code>

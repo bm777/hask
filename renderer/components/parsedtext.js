@@ -28,7 +28,7 @@ const ParsedText = React.memo(({ children }) => {
     
     return (
         <>
-            <span className="">
+            <span className="text-base">
                 {
                 <span key={"index"}>
                     {

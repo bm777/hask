@@ -21,7 +21,6 @@ module.exports = {
         '1000': '1s',
         '1500': '1.5s',
         '2000': '2s',
-        // Add more delays as needed
       },
       'keyframes': {
         'gradient-y': {

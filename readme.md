@@ -4,6 +4,7 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 ![Hask AI](assets/record.gif)
 
+
 ## Features
 
 - **Instant Search**: Quickly search the internet and receive instant results.
@@ -13,13 +14,20 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 - **Dark Mode**: Switch between light and dark mode for a comfortable viewing experience. (WIP)
 - **Open Source**: Free and open-source software, allowing for community contribution and customization.
 
-## Release
-It is available for Windows, Mac, and Linux.
-[Download page](https://github.com/bm777/hask/releases)
+## Executable
+It is available
+
+[Mac Silicon (M1, M2, M3) ](https://github.com/bm777/hask/releases)
+
+[Mac Intel ](https://github.com/bm777/hask/releases)
+
+[Windows](https://github.com/bm777/hask/releases)
+
+[Linux](https://github.com/bm777/hask/releases)
 
 
-## Installation and Usage
-1. Clone the repository:
+## 1. Development
+Clone the repository:
 
 ```bash
 git clone https://github.com/bm777/hask.git
@@ -30,17 +38,14 @@ npm run dev
 # or build for your platform
 npm run build
 ```
-2. Usage: 
-It is the same scenario in dev or build mode.
-- Open the app and use the keyboard shortcut (default: Option+X) to open the application.
-![Hask AI](assets/empty.png)
 
-- Configure the pplx api token.
-![Hask AI](assets/token.png)
+## 2. Usage
+It is the same scenario in dev or build mode.
+- Open the app via Option+X
+![Hask AI](assets/empty.png)
 
 - Perform a search by typing in your query and pressing Enter.
 - Enjoy instant results from the internet!
-![Hask AI](assets/hey.png)
 
 ## Contributing
 Contributions are welcome! If you have any ideas for new features or improvements, feel free to open an issue or submit a pull request.

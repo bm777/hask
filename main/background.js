@@ -75,7 +75,7 @@ async function createMainWindow() {
   const mainWindow = createWindow('main-window', {
     width: 750,
     height: 480,
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
     resizable: false,
     maximizable: false,
     minimizable: false,
@@ -235,7 +235,7 @@ async function createMainWindow() {
   ///////////////////////////////
 
   // --------> 
-  mainWindow.toggleDevTools();
+  // mainWindow.toggleDevTools();
   // 
 
   if (isProd) {
@@ -244,6 +244,10 @@ async function createMainWindow() {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/hask`);
   }
+
+  mainWindow.setAlwaysOnTop(true, "normal");
+  mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
+  // mainWindow.setFullScreenable(false);
   return mainWindow;
 }
 
@@ -311,9 +315,9 @@ async function createMainWindow() {
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
 
-  // mainWindow.setAlwaysOnTop(true, "floating", 1);
+  // mainWindow.setAlwaysOnTop(true, "floating");
   // mainWindow.setVisibleOnAllWorkspaces(true);
-  // mainWindow.setFullScreenable(true);
+  // mainWindow.setFullScreenable(false);
   app.dock.hide();
 
 

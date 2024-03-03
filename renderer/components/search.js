@@ -66,6 +66,12 @@ export default function Search() {
         setTime(_time);
         setTps(_tps);
     }
+    const handleKeyboard = (e) => {
+        if (e.key === "m" && e.metaKey) {
+            setModelExpanded(!modelExpanded);
+            // setModelSelectionExpanded(!modelSelectionExpanded);
+        }
+    }
 
     // handle click outside of settings
     const handleClickOutside = (event) => {
@@ -133,6 +139,7 @@ export default function Search() {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyboard);
         // document.addEventListener("mousedown", handleClickOutsideModel);
 
         // set up IPC event listeners
@@ -147,6 +154,7 @@ export default function Search() {
             ipcRenderer.removeAllListeners('search-error')
             ipcRenderer.removeAllListeners('search-time')
             document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyboard);
             // document.removeEventListener("mousedown", handleClickOutsideModel);
         }
     }, []);
@@ -244,29 +252,52 @@ export default function Search() {
                 (expanded && query !== "") ?
                 <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar relative"} >
                     <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed "></div>
-                    <div className="w-full mt-5 flex items-center">
-                        {
-                            searching ?
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-5 h-5 ml-3 animate-spin">
-                                    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,16.37a86.4,86.4,0,0,1,16,3V212.67a86.4,86.4,0,0,1-16,3Zm32,9.26a87.81,87.81,0,0,1,16,10.54V195.83a87.81,87.81,0,0,1-16,10.54ZM40,128a88.11,88.11,0,0,1,80-87.63V215.63A88.11,88.11,0,0,1,40,128Zm160,50.54V77.46a87.82,87.82,0,0,1,0,101.08Z">
-                                    </path>
-                                </svg>
+                    { answer !== "" ?
+                        <>
+                            <div className="w-full mt-5 flex items-center">
+                                {
+                                    searching ?
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-5 h-5 ml-3 animate-spin">
+                                            <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,16.37a86.4,86.4,0,0,1,16,3V212.67a86.4,86.4,0,0,1-16,3Zm32,9.26a87.81,87.81,0,0,1,16,10.54V195.83a87.81,87.81,0,0,1-16,10.54ZM40,128a88.11,88.11,0,0,1,80-87.63V215.63A88.11,88.11,0,0,1,40,128Zm160,50.54V77.46a87.82,87.82,0,0,1,0,101.08Z">
+                                            </path>
+                                        </svg>
+                                        :
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-3 ">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                                        </svg>
+                                }
+                                <p className="ml-2 font-medium text-md text-gray-600">Answer</p>
+                            </div>
+                            {
+                                ( searching && answer === "") ? 
+                                <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse"></div>
                                 :
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-3 ">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-                                </svg>
-                        }
-                        <p className="ml-2 font-medium text-md text-gray-600">Answer</p>
-                    </div>
-                    {
-                       ( searching && answer === "") ? 
-                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse"></div>
-                       :
-                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
-                            <Answer key={"0"} answer={answer} />
-                       </div>
+                                <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
+                                        <Answer key={"0"} answer={answer} />
+                                </div>
+                            }
+                        </>
+                        :
+                        <>
+                            <div className="w-full h-full mt-5 flex items-center justify-center relative">
+                                {/* <div className=" w-full h-[90%] fixed flex flex-col justify-center">
+                                    <div className=" h-[95%] from-[#d8dcea] via-[#d8dcea] to-[#d8dcea]"></div>
+                                </div> */}
+                                <div className="flex items-center mb-5 border border-gray-600/20 rounded px-3 py-2 shadow shadow-[#00000003] z-10">
+                                    <div className="w-11 h-11 rounded-full flex items-center justify-center animate-wiggle">
+                                        <div className="w-7 h-7 bg-[#ffb2be00] rounded flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#561D2A" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <span className="text-md text-gray-600/60 mr-[13px]">The knowledge at your hands</span>
+                                </div>
+                            </div>
+                            
+                        </>
                     }
-                    <div className=" bg-blue-500 mb-9"></div>
+                    <div className=" mb-9"></div>
                     <div className="bg-[#d8dcea] z-10 border-t-[1px] border-gray-500/25 h-10 w-full fixed bottom-0">
                         <div className="w-full h-full flex items-center justify-between px-1">
                             <div onClick={handleSettings} className=" h-8 w-8 rounded flex items-center justify-center hover:bg-[#c5ccdb9a]">
@@ -279,7 +310,7 @@ export default function Search() {
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#2f2f2fb9" className="w-4 h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
                                 </svg>
-                                <span className="text-sm text-[#2f2f2fb9] italic">Tokens/s: {tps}</span>
+                                <span className="text-sm text-[#2f2f2fb9] italic">Tokens/s: {provider === "perplexity" ? "--" : tps}</span>
                             </div>
                             <div onClick={handleModelSelection} className="hover:bg-[#c5ccdb9a] rounded-md flex items-center justify-center h-[80%] gap-1 pl-2 pr-1 mr-1 hover:cursor-default">
                                 <div className=" text-[#2f2f2fb9] text-sm font-normal">{model}</div>
@@ -322,7 +353,7 @@ export default function Search() {
                 </div>
             }
             {
-                modelExpanded &&
+                modelExpanded && query!=="" &&
                 <div ref={modelRef} className="px-2 border border-gray-600/30 rounded-md fixed bottom-12 right-3 z-10 w-[350px] min-h-[250px] max-h-[300px] overflow-auto shadow-xl bg-[#d8dcea] shadow-[#0000002e]">
                     <div className="text-xs text-[#4d4e509a] font-bold mt-3">Models</div>
                     <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
@@ -331,7 +362,7 @@ export default function Search() {
                 </div>
             }
             {
-                modelSelectionExpanded &&
+                modelSelectionExpanded && query!=="" &&
                 <div ref={modelListRef} className="px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-16 right-4 z-10 w-[300px] h-[300px] max-h-[400px] shadow-xl bg-[#d8dcea] shadow-[#0000002e] flex flex-col">
                     <div className="text-xs text-[#4d4e509a] font-bold mt-3 flex items-center gap-2 hover:cursor-default">
                         <div onClick={() => setModelSelectionExpanded(false)} className=" bg-[#4d4e5016] hover:bg-[#4d4e503f] transition duration-100 rounded p-1">

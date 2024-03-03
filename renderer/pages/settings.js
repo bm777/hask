@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Provider from "../components/provider";
-import { store, retrieve } from "./api/methods";
-import { pplxModelList } from "./api/constant";
+import { pplxModelList, groqModelList } from "./api/constant";
 
 export default function Settings() {
     const [log, setLog] = useState("")
@@ -13,35 +12,15 @@ export default function Settings() {
     const [temperature, setTemperature] = useState(0.7);
     const [maxTokens, setMaxTokens] = useState(500);
 
-    const [pplxToken, setPplxToken] = useState("");
-    const [pplxModel, setPplxModel] = useState("");
-    const [pplxModels, setPplxModels] = useState(pplxModelList);
     const [pplxStatus, setPplxStatus] = useState(false);
-    const [pplxSystemPrompt, setPplxSystemPrompt] = useState("Be precise and concise.");
-    const [pplxTemperature, setPplxTemperature] = useState(0.5);
-    const [pplxMaxTokens, setPplxMaxTokens] = useState(500);
-
-    const [groqToken, setGroqToken] = useState("");
-    const [groqModel, setGroqModel] = useState("");
-    const [groqModels, setGroqModels] = useState(["mixtral-8x7b-32768", "llama2-70b-4096"]);
     const [groqStatus, setGroqStatus] = useState(false);
-    const [groqSystemPrompt, setGroqSystemPrompt] = useState("Be precise and concise.");
-    const [groqTemperature, setGroqTemperature] = useState(0.5);
-    const [groqMaxTokens, setGroqMaxTokens] = useState(900);
-
-    // const [openaiToken, setOpenaiToken] = useState("");
-    // const [openaiModel, setOpenaiModel] = useState("");
-    // const [openaiModels, setOpenaiModels] = useState(["gpt-3.5-turbo", "gpt-4"]);
-
-    // const [cohereToken, setCohereToken] = useState("");
-    // const [cohereModel, setCohereModel] = useState("");
-    // const [cohereModels, setCohereModels] = useState(["Turing-I", "Turing-I"]);
 
 
     useEffect(() => {
         // try to load the token and model from local storage
         const _provider = localStorage.getItem("provider");
         setProvider( _provider || "perplexity" )
+        console.log("provider", _provider);
 
         // check if provider is defined
         if (_provider === "perplexity") {
@@ -49,26 +28,26 @@ export default function Settings() {
             const _model = localStorage.getItem("pplx-model");
             const _systemPrompt = localStorage.getItem("pplx-system-prompt");
             const _temperature = localStorage.getItem("pplx-temperature");
+            const _maxTokens = localStorage.getItem("pplx-max-tokens");
             changeStatus(_provider);
-            if (_token) { setToken(_token); setPplxToken(_token); }
-            if (_model) { setModel(_model); setPplxModel(_model); setModels(pplxModels);}
+            if (_token) { setToken(_token); }
+            if (_model) { setModel(_model); setModels(pplxModelList);}
             if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
             if (_temperature) { setTemperature(_temperature); }
+            if (_maxTokens) { setMaxTokens(_maxTokens); }
         } 
         else if (_provider === "groq") {
             const _token = localStorage.getItem("groq-token");
             const _model = localStorage.getItem("groq-model");
             const _systemPrompt = localStorage.getItem("groq-system-prompt");
             const _temperature = localStorage.getItem("groq-temperature");
-            console.log("token:", _token, "model:", _model, "systemPrompt:", _systemPrompt, "temperature:", _temperature)
+            const _maxTokens = localStorage.getItem("groq-max-tokens");
             changeStatus(_provider);
-            if (_token) { setToken(_token); setGroqToken(_token); }
-            if (_model) { setModel(_model); setGroqModel(_model); setModels(groqModels);}
+            if (_token) { setToken(_token); }
+            if (_model) { setModel(_model); setModels(groqModelList);}
             if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
             if (_temperature) { setTemperature(_temperature); }
-        } 
-        else {
-
+            if (_maxTokens) { setMaxTokens(_maxTokens); }
         }
     }
     , [provider]);
@@ -81,23 +60,24 @@ export default function Settings() {
     }
     const handleSave = async () => {
         if (provider === "perplexity") {
-            console.log(provider, token, model);
             localStorage.setItem("provider", provider);
             localStorage.setItem("pplx-token", token);
             localStorage.setItem("pplx-model", model);
-            setLog("Configuration Saved!");
-            await new Promise(r => setTimeout(r, 3000));
-            setLog("");
+            localStorage.setItem("pplx-system-prompt", systemPrompt);
+            localStorage.setItem("pplx-temperature", temperature);
+            localStorage.setItem("pplx-max-tokens", maxTokens);
         }
         if (provider === "groq") {
-            console.log(provider, token, model);
             localStorage.setItem("provider", provider);
             localStorage.setItem("groq-token", token);
             localStorage.setItem("groq-model", model);
-            setLog("Configuration Saved!");
-            await new Promise(r => setTimeout(r, 3000));
-            setLog("");
+            localStorage.setItem("groq-system-prompt", systemPrompt);
+            localStorage.setItem("groq-temperature", temperature);
+            localStorage.setItem("groq-max-tokens", maxTokens);
         }
+        setLog("Configuration Saved!");
+        await new Promise(r => setTimeout(r, 3000));
+        setLog("");
     }
     const changeStatus = (prov) => {
         if (prov === "perplexity") {
@@ -114,23 +94,33 @@ export default function Settings() {
         // if (provider !== "perplexity" ) {
         //     return;
         // }
-        console.log("provider", prov);
         setProvider(prov);
         localStorage.setItem("provider", prov);
         if (prov === "perplexity") {
-            changeStatus(provider);
+            const pplxToken = localStorage.getItem("pplx-token");
+            const pplxModel = localStorage.getItem("pplx-model");
+            const pplxSystemPrompt = localStorage.getItem("pplx-system-prompt");
+            const pplxTemperature = localStorage.getItem("pplx-temperature");
+            const pplxMaxTokens = localStorage.getItem("pplx-max-tokens");
+            console.log("pplxToken", pplxToken, "pplxModel", pplxModel, "pplxSystemPrompt", pplxSystemPrompt, "pplxTemperature", pplxTemperature, "pplxMaxTokens", pplxMaxTokens);
+            changeStatus(prov);
             setToken(pplxToken);
             setModel(pplxModel);
-            setModels(pplxModels);
+            setModels(pplxModelList);
             setSystemPrompt(pplxSystemPrompt);
             setTemperature(pplxTemperature);
             setMaxTokens(pplxMaxTokens);
         } 
         else if (prov === "groq") {
-            changeStatus(provider);
+            const groqToken = localStorage.getItem("groq-token");
+            const groqModel = localStorage.getItem("groq-model");
+            const groqSystemPrompt = localStorage.getItem("groq-system-prompt");
+            const groqTemperature = localStorage.getItem("groq-temperature");
+            const groqMaxTokens = localStorage.getItem("groq-max-tokens");
+            changeStatus(prov);
             setToken(groqToken);
             setModel(groqModel);
-            setModels(groqModels);
+            setModels(groqModelList);
             setSystemPrompt(groqSystemPrompt);
             setTemperature(groqTemperature);
             setMaxTokens(groqMaxTokens);

@@ -93,13 +93,15 @@ async function createMainWindow() {
 
   function get_content_block(block) {
     let bufferData = '';
+    let token
     try {
         const jsonData = JSON.parse('{ "data"' + block.trim().slice(4, -1) + "}}");
         bufferData = jsonData["data"]["choices"][0]["message"]["content"];
+        token = jsonData["data"]["usage"]["completion_tokens"];
     } catch (error) {
         bufferData = "Error parsing response";
     }
-    return bufferData;
+    return [bufferData, token];
 }
   ipcMain.on("open-url", async (event, url) => {
     shell.openExternal(url);
@@ -140,20 +142,27 @@ async function createMainWindow() {
     
     try {
       const response = await axios.request(options)
+      const start = Date.now();
       const stream = response.data;
       let buffer = '';
+      let tokens
 
       stream.on('data', (chunk) => {
         buffer += chunk.toString('utf-8');
         let blocks = get_blocks(buffer);
         if (blocks.length > 0) {
-          const answer = get_content_block(blocks[blocks.length - 1]);
-          event.sender.send('search-result', answer);
+          const result = get_content_block(blocks[blocks.length - 1])
+          tokens = result[1]
+          event.sender.send('search-result', result[0]);
           buffer = ""; // Clear the buffer after handling the message
         }
       });
 
       stream.on('end', () => {
+          const end = Date.now();
+          const time = end - start;
+          console.log('search time', tokens, time, (tokens/time))
+          event.sender.send('search-time', (tokens/time).toFixed(0), time);
           event.sender.send('search-end');
       });
 

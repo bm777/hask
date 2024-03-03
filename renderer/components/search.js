@@ -1,48 +1,154 @@
 import { useState, useRef, useEffect  } from "react";
-// import { optionsConstructor, parseLink } from "../pages/api/methods";
 import Answer from "./answer";
+import Btn from "./buttons/btn";
+import Model from "./buttons/model";
+import { discordUrl, pplxModelList, groqModelList } from "../pages/api/constant";
+import Pvd from "./buttons/pvd";
 
 let ipcRenderer;
 if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
     ipcRenderer = window.require("electron").ipcRenderer;
 }
 
-
 export default function Search() {
     const [query, setQuery] = useState("");
     const [answer, setAnswer] = useState("");
     const [expanded, setExpanded] = useState(false);
     const [searching, setSearching] = useState(false);
+    const [tps, setTps] = useState(0);
+    const [time, setTime] = useState(0);
+
     const [token, setToken] = useState("");
     const [model, setModel] = useState("pplx-7b-online");
-    const [imageUrl, setImageUrl] = useState('');
+    const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
+    const [temperature, setTemperature] = useState("0.75");
+    const [maxTokens, setMaxTokens] = useState("500");
+
+    const [settingsExpanded, setSettingsExpanded] = useState(false);
+    const [modelExpanded, setModelExpanded] = useState(false);
+    const [modelSelectionExpanded, setModelSelectionExpanded] = useState(false);
+    const [provider, setProvider] = useState("perplexity");
+    const [modelList, setModelList] = useState(pplxModelList);
+    const [pplxId, setPplxId] = useState(0);
+    const [groqId, setGroqId] = useState(0);
+
 
     let inputRef = useRef(null);
     const scrollerRef = useRef(null);
+    const settingsRef = useRef(null);
+    const modelListRef = useRef(null);
+    const modelRef = useRef(null);
+
+    // Event listener functions
+    const handleSearchResult = (event, result) => {
+        setAnswer(result);
+        if (scrollerRef.current) {
+            scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+        }
+    };
+    const handleSearchEnd = () => {
+        setSearching(false);
+    };
+    const handleSearchError = (event, error) => {
+        console.error(error);
+        setSearching(false);
+    };
+    const openUrl = async () => { 
+        ipcRenderer.send("open-url", discordUrl.toString()); 
+        setSettingsExpanded(false);
+    }
+    const quitApp = () => { ipcRenderer.send("quit-app") }
+    const openSettings = () => { 
+        ipcRenderer.send("open-settings");
+        setSettingsExpanded(false);
+    }
+    const handleSearchTime = (event, _tps, _time) => {
+        setTime(_time);
+        setTps(_tps);
+    }
+
+    // handle click outside of settings
+    const handleClickOutside = (event) => {
+        if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+            setSettingsExpanded(false);
+        }
+    }
+    // const handleClickOutsideModel = (event) => {
+    //     if (modelRef.current && !modelRef.current.contains(event.target)) {
+    //         setModelExpanded(false);
+    //     }
+    // }
+    const handleProvider = (provider) => {
+        setProvider(provider);
+        localStorage.setItem("provider", provider);
+        setModelSelectionExpanded(true);
+        if (provider === "perplexity") {
+            setModelList(pplxModelList);
+        } else {
+            setModelList(groqModelList);
+        }
+    }
 
     useEffect(() => {
-
         if (inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
         }
         if(window !== undefined) {
-            const _token = localStorage.getItem("pplx-token");
-            const _model = localStorage.getItem("pplx-model");
-            console.log(_token);
-            if (_token && _model) {
-                setToken(_token);
-                setModel(_model);
+            const _provider = localStorage.getItem("provider");
+            if (_provider && _provider !== "") {
+                setProvider(_provider);
+                if (_provider === "perplexity") {
+                    setModelList(pplxModelList);
+                    setModel(pplxModelList[pplxId]);
+                    const _token = localStorage.getItem("pplx-token");
+                    const _model = localStorage.getItem("pplx-model");
+                    const _systemPrompt = localStorage.getItem("pplx-system-prompt") || "Be precise and concise.";
+                    const _temperature = localStorage.getItem("pplx-temperature") || "0.75";
+                    const _maxTokens = localStorage.getItem("pplx-max-tokens") || "500";
+                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
+                        setToken(_token);
+                        setModel(_model);
+                        setSystemPrompt(_systemPrompt);
+                        setTemperature(_temperature);
+                        setMaxTokens(_maxTokens);
+                    }
+                } else if (_provider === "groq") {
+                    setModelList(groqModelList);
+                    setModel(groqModelList[groqId]);
+                    const _token = localStorage.getItem("groq-token");
+                    const _model = localStorage.getItem("groq-model");
+                    const _systemPrompt = localStorage.getItem("groq-system-prompt") || "Be precise and concise.";
+                    const _temperature = localStorage.getItem("groq-temperature") || "0.75";
+                    const _maxTokens = localStorage.getItem("groq-max-tokens") || "500";
+                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
+                        setToken(_token);
+                        setModel(_model);
+                        setSystemPrompt(_systemPrompt);
+                        setTemperature(_temperature);
+                        setMaxTokens(_maxTokens);
+                    }
+                }
             }
         }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        // document.addEventListener("mousedown", handleClickOutsideModel);
+
+        // set up IPC event listeners
+        ipcRenderer.on('search-result', handleSearchResult);
+        ipcRenderer.on('search-end', handleSearchEnd);
+        ipcRenderer.on('search-error', handleSearchError);
+        ipcRenderer.on('search-time', handleSearchTime)
+
         return () => { 
-            ipcRenderer.removeAllListeners('window-blur') 
-            ipcRenderer.removeAllListeners('warning')
             ipcRenderer.removeAllListeners('search-result')
             ipcRenderer.removeAllListeners('search-end')
             ipcRenderer.removeAllListeners('search-error')
+            ipcRenderer.removeAllListeners('search-time')
+            document.removeEventListener("mousedown", handleClickOutside);
+            // document.removeEventListener("mousedown", handleClickOutsideModel);
         }
-
     }, []);
 
     const handleQueryChange = (e) => {
@@ -50,35 +156,66 @@ export default function Search() {
         if (e.target.value.length !== 0) {
             setExpanded(true);
         } else {
-            setExpanded(false);
+            // setExpanded(false);
             setAnswer("");
         }
     }
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
-
-        // const result = await searchPPLX(query, token, model);
-
-        ipcRenderer.send("search", query, model, token);
-        ipcRenderer.on("search-result", (e, result) => {   
-            setAnswer(result);
-            if (scrollerRef.current) {
-                scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
-            }
-        });
-        ipcRenderer.on("search-end", (e) => {
-            console.log("Search ended");
-            setSearching(false);
-        });
-        ipcRenderer.on("search-error", (e, error) => {
-
-            setSearching(false);
-        });
-
-
+        if (provider === "perplexity") {
+        ipcRenderer.send(
+            "search-pplx", 
+            query, 
+            model, 
+            token, 
+            systemPrompt,
+            parseFloat(temperature),
+            parseInt(maxTokens)
+            );
+        } else if (provider === "groq") {
+            ipcRenderer.send(
+                "search-groq", 
+                query, 
+                model, 
+                token, 
+                systemPrompt,
+                parseFloat(temperature),
+                parseInt(maxTokens)
+                );
+        }
     }
-
+    const handleSettings = () => {
+        setSettingsExpanded(true);
+    }
+    const handleModelSelection = () => {
+        setModelExpanded(!modelExpanded);
+        if (modelExpanded) {
+            setModelSelectionExpanded(false);
+        }
+    }
+    const handleModel = (_model) => {
+        setModel(_model);
+        setModelExpanded(false);
+        setModelSelectionExpanded(false);
+        setModel(_model);
+        console.log(model);
+        if (provider === "perplexity") {
+            setPplxId(pplxModelList.indexOf(_model));
+            localStorage.setItem("pplx-model", _model);
+            setToken(localStorage.getItem("pplx-token"));
+            setSystemPrompt(localStorage.getItem("pplx-system-prompt"));
+            setTemperature(localStorage.getItem("pplx-temperature"));
+            setMaxTokens(localStorage.getItem("pplx-max-tokens"));
+        } else if (provider === "groq") {
+            setGroqId(groqModelList.indexOf(_model));
+            localStorage.setItem("groq-model", _model);
+            setToken(localStorage.getItem("groq-token"));
+            setSystemPrompt(localStorage.getItem("groq-system-prompt"));
+            setTemperature(localStorage.getItem("groq-temperature"));
+            setMaxTokens(localStorage.getItem("groq-max-tokens"));
+        }
+    }
 
     // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
     const blur = () => {
@@ -86,8 +223,8 @@ export default function Search() {
     }
 
     return (
-        <div className="bg-[#00000000] h-[100vh] w-full flex flex-col">
-            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative draggable">
+        <div className="bg-[#00000000] h-[100vh] w-full flex flex-col relative">
+            <div className="w-full h-[60px] flex items-center bg-[#e0e5f6] rounded-lg relative draggable z-10">
                 <div className="w-11 h-11 mx-[5px] rounded-full flex items-center justify-center">
                     <div className="w-7 h-7 bg-[#FFB2BE] rounded flex items-center justify-center">
                         <div className="h-[60%] w-[3px] bg-[#561D2A]"></div>
@@ -99,50 +236,123 @@ export default function Search() {
                             onChange={handleQueryChange}
                             value={query}
                             placeholder="Hask AI anything..."
-                            className="w-full h-full text-[#561D2A] outline-none text-3xl font-medium bg-transparent border-r-1 custom-input"
+                            className="w-full h-full text-[#561D2A] outline-none text-xl font-medium bg-transparent border-r-1 custom-input"
                         />
                 </form>
             </div>
-            
             {
                 (expanded && query !== "") ?
-                <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar "} >
-                    <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed z-10"></div>
+                <main ref={scrollerRef} className={"w-full flex flex-col flex-1 -mt-3 transition-all duration-700 bg-[#e0e5f6] overflow-y-auto no-scrollbar relative"} >
+                    <div className="mt-3 w-full mb-1 border-b border-b-1 bg-[#e0e5f6] border-gray-400 fixed "></div>
                     <div className="w-full mt-5 flex items-center">
                         {
                             searching ?
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-6 h-6 ml-3 animate-spin">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-5 h-5 ml-3 animate-spin">
                                     <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm8,16.37a86.4,86.4,0,0,1,16,3V212.67a86.4,86.4,0,0,1-16,3Zm32,9.26a87.81,87.81,0,0,1,16,10.54V195.83a87.81,87.81,0,0,1-16,10.54ZM40,128a88.11,88.11,0,0,1,80-87.63V215.63A88.11,88.11,0,0,1,40,128Zm160,50.54V77.46a87.82,87.82,0,0,1,0,101.08Z">
                                     </path>
                                 </svg>
                                 :
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7 ml-3 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 ml-3 ">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
                                 </svg>
                         }
-                        <p className="ml-2 font-medium text-xl text-gray-600">Answer</p>
+                        <p className="ml-2 font-medium text-md text-gray-600">Answer</p>
                     </div>
                     {
                        ( searching && answer === "") ? 
-                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-4 animate-pulse"> </div>
+                       <div className="mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse"></div>
                        :
                        <div className="mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 p-4 mb-4" >
                             <Answer key={"0"} answer={answer} />
                        </div>
                     }
+                    <div className=" bg-blue-500 mb-9"></div>
+                    <div className="bg-[#d8dcea] z-10 border-t-[1px] border-gray-500/25 h-10 w-full fixed bottom-0">
+                        <div className="w-full h-full flex items-center justify-between px-1">
+                            <div onClick={handleSettings} className=" h-8 w-8 rounded flex items-center justify-center hover:bg-[#c5ccdb9a]">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#2f2f2fa3" className="w-[24px] h-[24px]">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h5.25m5.25-.75L17.25 9m0 0L21 12.75M17.25 9v12" />
+                                </svg>
+                            </div>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-sm text-[#2f2f2fb9] italic">Inference: {time}ms</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#2f2f2fb9" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                                </svg>
+                                <span className="text-sm text-[#2f2f2fb9] italic">Tokens/s: {tps}</span>
+                            </div>
+                            <div onClick={handleModelSelection} className="hover:bg-[#c5ccdb9a] rounded-md flex items-center justify-center h-[80%] gap-1 pl-2 pr-1 mr-1 hover:cursor-default">
+                                <div className=" text-[#2f2f2fb9] text-sm font-normal">{model}</div>
+                                <div className="h-[40%] w-[2px] rounded-full bg-[#2f2f2f47]"></div>
+                                <div className=" flex items-center justify-center gap-1 ">
+                                    <div className="bg-[#2f2f2f1d] h-[20px] w-[20px] flex items-center justify-center rounded">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#2f2f2fb9" viewBox="0 0 256 256" className="w-4 h-4">
+                                            <path d="M180,144H160V112h20a36,36,0,1,0-36-36V96H112V76a36,36,0,1,0-36,36H96v32H76a36,36,0,1,0,36,36V160h32v20a36,36,0,1,0,36-36ZM160,76a20,20,0,1,1,20,20H160ZM56,76a20,20,0,0,1,40,0V96H76A20,20,0,0,1,56,76ZM96,180a20,20,0,1,1-20-20H96Zm16-68h32v32H112Zm68,88a20,20,0,0,1-20-20V160h20a20,20,0,0,1,0,40Z"></path>
+                                        </svg>
+                                    </div>
+                                    <div className="bg-[#2f2f2f1d] flex items-center justify-center rounded h-[20px] w-[20px]">
+                                        <span className="text-[#2f2f2fb9] text-sm ">M</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                 </main>
                 :
                 null
             }
             {
-                (!expanded && query === "") &&
-                <main className={"w-full flex flex-col flex-1 -mt-3 ] no-scrollbar"} onClick={blur} >
+                ( query === "") &&
+                <main className={"w-full flex flex-col flex-1 -mt-3 no-scrollbar"} onClick={blur} >
                     <div className="mt-3 w-0 mb-1 border-b border-b-bg-[#e0e5f6] bg-[#e0e5f600] border-gray-0 fixed"></div>
                 </main>
             }
-
-            
+            {
+                settingsExpanded &&
+                <div ref={settingsRef} className="px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-12 z-10 w-[350px] max-h-[300px] overflow-auto shadow-xl bg-[#d8dcea] shadow-[#0000002e]">
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3">Hask v0.1.5</div>
+                    <Btn text="Settings" type={"settings"} action={openSettings} />
+                    <div className="w-full h-1 border-b border-gray-600/20 my-[6px]"></div>
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3">Community</div>
+                    <Btn text="Join our community" type={"discord"} action={openUrl}/>
+                    <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
+                    <Btn text="Quit Hask" type={"exit"} action={quitApp}/>
+                    <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
+                </div>
+            }
+            {
+                modelExpanded &&
+                <div ref={modelRef} className="px-2 border border-gray-600/30 rounded-md fixed bottom-12 right-3 z-10 w-[350px] min-h-[250px] max-h-[300px] overflow-auto shadow-xl bg-[#d8dcea] shadow-[#0000002e]">
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3">Models</div>
+                    <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
+                    <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
+                    <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
+                </div>
+            }
+            {
+                modelSelectionExpanded &&
+                <div ref={modelListRef} className="px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-16 right-4 z-10 w-[300px] h-[300px] max-h-[400px] shadow-xl bg-[#d8dcea] shadow-[#0000002e] flex flex-col">
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3 flex items-center gap-2 hover:cursor-default">
+                        <div onClick={() => setModelSelectionExpanded(false)} className=" bg-[#4d4e5016] hover:bg-[#4d4e503f] transition duration-100 rounded p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <span className="">Back</span>
+                    </div>
+                    <div className="w-full h-1 border-b border-gray-600/20 my-[6px]"></div>
+                    <div className="flex-1 overflow-auto ">
+                        <div className="text-xs text-[#4d4e509a] font-bold mt-3">Perplexity models</div>
+                        {
+                            modelList.map((mod, index) => (
+                                <Model key={index} text={mod} selected={mod === model} action={handleModel}/>
+                            ))
+                        }
+                        <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
+                    </div>
+                </div>
+            }
         </div>
     );
 }

@@ -9,8 +9,8 @@ export default function Provider({ _provider, active, handleTabChange }) {
     }
     const exit = () => { setHover(false); }
     const changeTab = () => { 
+        console.log("changeTab", _provider.toLowerCase());
         handleTabChange(_provider.toLowerCase()); 
-
     }
     
     if (active) { return (
@@ -22,18 +22,18 @@ export default function Provider({ _provider, active, handleTabChange }) {
                 </div>
     )} else {
         return (
-                <div onClick={changeTab} className="px-2 flex flex-col justify-end relative ">
+                <div onClick={changeTab} className="px-2 flex flex-col justify-end relative  ">
                     {
-                        _provider !== "Perplexity" &&
+                        _provider !== "Perplexity" && _provider !== "Groq" &&
                         <div id='soon' className={" flex justify-end absolute top-0 duration-300 transform transition-all " + ( hover ? "scale-100" : "scale-0")}>
                             <span className="border border-[#f68193] bg-[#f6819331] rounded-full px-2 text-xs ml-5 -mb-2">soon</span>
                         </div>
                     }
 
-                    <div className="text-gray-600 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded duration-300 transform" onMouseEnter={handleHover} onMouseOut={exit}>
+                    <div className="text-gray-600 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded " onMouseEnter={handleHover} onMouseOut={exit}>
                         { _provider }
                     </div>
-                    <div className="border-b-[3px] border-[#0000] -mb-[2px]"></div>
+                    <div className="border-b-[3px] border-[#00000000] -mb-[2px]"></div>
                 </div>
         )
     }

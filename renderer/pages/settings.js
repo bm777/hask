@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import Provider from "../components/provider";
 import { store, retrieve } from "./api/methods";
+import { pplxModelList } from "./api/constant";
 
 export default function Settings() {
     const [log, setLog] = useState("")
     const [provider, setProvider] = useState("perplexity");
     const [token, setToken] = useState("");
-    const [models, setModels] = useState(["sonar-small-chat", "pplx-7b-online", "sonar-small-online", "sonar-medium-chat", "sonar-medium-online"]);
+    const [models, setModels] = useState(pplxModelList);
     const [model, setModel] = useState("pplx-7b-online");
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
@@ -14,19 +15,19 @@ export default function Settings() {
 
     const [pplxToken, setPplxToken] = useState("");
     const [pplxModel, setPplxModel] = useState("");
-    const [pplxModels, setPplxModels] = useState(["sonar-small-chat", "pplx-7b-online", "sonar-small-online", "sonar-medium-chat", "sonar-medium-online"]); // ["pplx-7b-online", "pplx-70b-online"]
-    const [pplxStatus, setPplxStatus] = useState(true);
+    const [pplxModels, setPplxModels] = useState(pplxModelList);
+    const [pplxStatus, setPplxStatus] = useState(false);
     const [pplxSystemPrompt, setPplxSystemPrompt] = useState("Be precise and concise.");
     const [pplxTemperature, setPplxTemperature] = useState(0.5);
-    const [pplxMaxTokens, setPplxMaxTokens] = useState(900);
+    const [pplxMaxTokens, setPplxMaxTokens] = useState(500);
 
-    // const [groqToken, setGroqToken] = useState("");
-    // const [groqModel, setGroqModel] = useState("");
-    // const [groqModels, setGroqModels] = useState(["mixtral-8x7b-32768", "llama2-70b-4096"]);
-    // const [groqStatus, setGroqStatus] = useState(false);
-    // const [groqSystemPrompt, setGroqSystemPrompt] = useState("Be precise and concise.");
-    // const [groqTemperature, setGroqTemperature] = useState(0.5);
-    // const [groqMaxTokens, setGroqMaxTokens] = useState(900);
+    const [groqToken, setGroqToken] = useState("");
+    const [groqModel, setGroqModel] = useState("");
+    const [groqModels, setGroqModels] = useState(["mixtral-8x7b-32768", "llama2-70b-4096"]);
+    const [groqStatus, setGroqStatus] = useState(false);
+    const [groqSystemPrompt, setGroqSystemPrompt] = useState("Be precise and concise.");
+    const [groqTemperature, setGroqTemperature] = useState(0.5);
+    const [groqMaxTokens, setGroqMaxTokens] = useState(900);
 
     // const [openaiToken, setOpenaiToken] = useState("");
     // const [openaiModel, setOpenaiModel] = useState("");
@@ -40,35 +41,35 @@ export default function Settings() {
     useEffect(() => {
         // try to load the token and model from local storage
         const _provider = localStorage.getItem("provider");
-        setProvider( _provider ? _provider : "perplexity" )
-        // console.log(_provider, provider);
+        setProvider( _provider || "perplexity" )
 
         // check if provider is defined
-        if (provider === "perplexity") {
+        if (_provider === "perplexity") {
             const _token = localStorage.getItem("pplx-token");
             const _model = localStorage.getItem("pplx-model");
             const _systemPrompt = localStorage.getItem("pplx-system-prompt");
             const _temperature = localStorage.getItem("pplx-temperature");
-            // console.log("model", _model);
+            changeStatus(_provider);
             if (_token) { setToken(_token); setPplxToken(_token); }
             if (_model) { setModel(_model); setPplxModel(_model); setModels(pplxModels);}
             if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
             if (_temperature) { setTemperature(_temperature); }
         } 
-        // else if (provider === "groq") {
-        //     const _token = localStorage.getItem("groq-token");
-        //     const _model = localStorage.getItem("groq-model");
-        //     const _systemPrompt = localStorage.getItem("groq-system-prompt");
-        //     const _temperature = localStorage.getItem("groq-temperature");
-        //     if (_token) { setToken(_token); setGroqToken(_token); }
-        //     if (_model) { setModel(_model); setGroqModel(_model); setModels(groqModels);}
-        //     if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
-        //     if (_temperature) { setTemperature(_temperature); }
-        // } 
+        else if (_provider === "groq") {
+            const _token = localStorage.getItem("groq-token");
+            const _model = localStorage.getItem("groq-model");
+            const _systemPrompt = localStorage.getItem("groq-system-prompt");
+            const _temperature = localStorage.getItem("groq-temperature");
+            console.log("token:", _token, "model:", _model, "systemPrompt:", _systemPrompt, "temperature:", _temperature)
+            changeStatus(_provider);
+            if (_token) { setToken(_token); setGroqToken(_token); }
+            if (_model) { setModel(_model); setGroqModel(_model); setModels(groqModels);}
+            if (_systemPrompt) { setSystemPrompt(_systemPrompt); }
+            if (_temperature) { setTemperature(_temperature); }
+        } 
         else {
 
         }
-        console.log("provider", provider, "token", token, "model", model, "models", models, "systemPrompt", systemPrompt, "temperature", temperature, "maxTokens", maxTokens);
     }
     , [provider]);
 
@@ -98,35 +99,50 @@ export default function Settings() {
             setLog("");
         }
     }
-    const handleTabChange = (provider) => {
-        // temporary blockage of switching providers
-        if (provider !== "perplexity" && provider !== "-groq") {
-            // console.log("clicking on other providers is disabled")
-            return;
-        }
-        setProvider(provider);
-        if (provider === "perplexity") {
+    const changeStatus = (prov) => {
+        if (prov === "perplexity") {
             setPplxStatus(true);
             setGroqStatus(false);
+        }
+        else if (prov === "groq") {
+            setPplxStatus(false);
+            setGroqStatus(true);
+        }
+    }
+    const handleTabChange = (prov) => {
+        // temporary blockage of switching providers
+        // if (provider !== "perplexity" ) {
+        //     return;
+        // }
+        console.log("provider", prov);
+        setProvider(prov);
+        localStorage.setItem("provider", prov);
+        if (prov === "perplexity") {
+            changeStatus(provider);
             setToken(pplxToken);
             setModel(pplxModel);
             setModels(pplxModels);
+            setSystemPrompt(pplxSystemPrompt);
+            setTemperature(pplxTemperature);
+            setMaxTokens(pplxMaxTokens);
         } 
-        // else if (provider === "groq") {
-        //     // console.log("setting groq: token", groqToken, "model", groqModel, "models", groqModels, "provider", provider);
-        //     setPplxStatus(false);
-        //     setGroqStatus(true);
-        //     setToken(groqToken);
-        //     setModel(groqModel);
-        //     setModels(groqModels);
-        // } 
+        else if (prov === "groq") {
+            changeStatus(provider);
+            setToken(groqToken);
+            setModel(groqModel);
+            setModels(groqModels);
+            setSystemPrompt(groqSystemPrompt);
+            setTemperature(groqTemperature);
+            setMaxTokens(groqMaxTokens);
+        } 
         else {
 
         }
+        console.log("provider", provider, "prov", prov);
     }
     const handleSystemPrompt = (e) => { setSystemPrompt(e.target.value); }
-    const handleTemperature = (e) => { setTemperature(e.target.value);}
-    const handleMaxTokens = (e) => {setMaxTokens(e.target.value);}
+    const handleTemperature = (e) => { setTemperature(parseFloat(e.target.value));}
+    const handleMaxTokens = (e) => {setMaxTokens(parseInt(e.target.value));}
 
     return (
         <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col">
@@ -144,7 +160,7 @@ export default function Settings() {
                 <div className="w-full mt-1 gap-1 h-[50px] flex justify-center border-b border-gray-400 ">
 
                     <Provider active={pplxStatus} _provider={"Perplexity"} handleTabChange={handleTabChange} />
-                    <Provider active={false} _provider={"Groq"} handleTabChange={handleTabChange} />
+                    <Provider active={groqStatus} _provider={"Groq"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"OpenAI"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"Cohere"} handleTabChange={handleTabChange} />
 
@@ -185,7 +201,7 @@ export default function Settings() {
                         <input
                                 onChange={handleSystemPrompt}
                                 value={systemPrompt}
-                                placeholder="Be precise and concise."
+                                placeholder="Set the temperature..."
                                 className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
                             />  
                     </div>
@@ -232,7 +248,7 @@ export default function Settings() {
 
                 <div className="w-full mt-5 gap-1 flex justify-center fixed bottom-5">
                     <div className="h-7 flex flex-col justify-center">
-                        <p className="w-full text-gray-500 text-sm font-medium ">More models are coming.</p>
+                        {/* <p className="w-full text-gray-500 text-sm font-medium ">More models are coming.</p> */}
                         {/* <p className="w-full text-gray-500 text-center text-sm ">Waiting for the access to integrate it!</p> */}
                     </div>
                 </div>

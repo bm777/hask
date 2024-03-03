@@ -5,7 +5,7 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 <figure class="video_container">
   <video controls="true" allowfullscreen="true">
-    <source src="./assets/demo.mov" type="video/mp4">
+    <source src="./assets/demo.mov" type="video/mov">
   </video>
 </figure>
 
@@ -23,9 +23,12 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 It is available
 
 [Mac Silicon (M1, M2, M3) ](https://github.com/bm777/hask/releases)
+
 [Mac Intel ](https://github.com/bm777/hask/releases)
+
 [Windows](https://github.com/bm777/hask/releases)
-[Linux]()
+
+[Linux](https://github.com/bm777/hask/releases)
 
 
 ## 1. Development

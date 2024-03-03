@@ -2,12 +2,7 @@
 
 Hask AI is a customizable, open-source application that allows users to quickly search the internet and receive instant results. It offers a seamless experience, accessible through a keyboard shortcut, and empowers users to leverage the power of PPLX API.
 
-
-<figure class="video_container">
-  <video controls="true" allowfullscreen="true">
-    <source src="./assets/demo.mov" type="video/mp4">
-  </video>
-</figure>
+![Hask AI](assets/record.gif)
 
 
 ## Features
@@ -23,9 +18,12 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 It is available
 
 [Mac Silicon (M1, M2, M3) ](https://github.com/bm777/hask/releases)
+
 [Mac Intel ](https://github.com/bm777/hask/releases)
+
 [Windows](https://github.com/bm777/hask/releases)
-[Linux]()
+
+[Linux](https://github.com/bm777/hask/releases)
 
 
 ## 1. Development

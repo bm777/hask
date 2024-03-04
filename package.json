@@ -23,7 +23,7 @@
       "icon": "resources/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": ["dmg", "pkg"],
       "icon": "resources/icon.icns"
     },
     "win": {
@@ -34,6 +34,7 @@
     "axios": "^1.6.7",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
+    "groq-sdk": "^0.3.0",
     "prismjs": "^1.29.0",
     "react-markdown": "^9.0.1",
     "react-redux": "^9.1.0",

@@ -3,6 +3,13 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+# Next.js build output
+.next/
+
+# Webpack hot-update files
+*.hot-update.json
+*.hot-update.js
+
 # React
 build/
 dist/

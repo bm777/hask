@@ -191,7 +191,7 @@ export default function Settings() {
                         <input
                                 onChange={handleSystemPrompt}
                                 value={systemPrompt}
-                                placeholder="Set the temperature..."
+                                placeholder="System prompt..."
                                 className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
                             />  
                     </div>

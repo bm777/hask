@@ -119,7 +119,7 @@ export default function Search() {
                     setModel(groqModelList[groqId]);
                     const _token = localStorage.getItem("groq-token");
                     const _model = localStorage.getItem("groq-model");
-                    const _systemPrompt = localStorage.getItem("groq-system-prompt") || "Be precise and concise.";
+                    const _systemPrompt = localStorage.getItem("groq-system-prompt") || "you are a helpful assistant";
                     const _temperature = localStorage.getItem("groq-temperature") || "0.75";
                     const _maxTokens = localStorage.getItem("groq-max-tokens") || "500";
                     if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {

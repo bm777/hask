@@ -213,6 +213,7 @@ async function createMainWindow() {
         console.log("search time", tokens, time, (tokens/time).toFixed(0))
         event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
         event.sender.send('search-end');
+        break
       }
       event.sender.send('search-result', bufferData);
     }

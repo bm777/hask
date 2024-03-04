@@ -17,21 +17,21 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 ## Executable
 It is available
 
-[Mac Silicon (M1, M2, M3) ](https://github.com/bm777/hask/releases)
+Mac Silicon (M1, M2, M3): [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-1.0.0-arm64.pkg) | [DMG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-1.0.0-arm64.dmg)
 
-[Mac Intel ](https://github.com/bm777/hask/releases)
+Mac Intel: [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-1.0.0-intel.pkg) [DMG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-1.0.0-intel.dmg)
 
-[Windows](https://github.com/bm777/hask/releases)
+[Windows soon](https://github.com/bm777/hask/releases)
 
-[Linux](https://github.com/bm777/hask/releases)
+[Linux soon](https://github.com/bm777/hask/releases)
 
 
 ## 1. Development
 Clone the repository:
 
-```bash
 git clone https://github.com/bm777/hask.git
 cd hask
+```bash
 npm i
 npm run dev
 

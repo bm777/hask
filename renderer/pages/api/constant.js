@@ -6,3 +6,21 @@ export const groqModelList = [
     "llama2-70b-4096", "mixtral-8x7b-32768"
 ];
 export const discordUrl = "https://discord.gg/3tH8UKx5mY"
+
+export const colors = {
+    light: {
+        background: "#e0e5f6",
+        primary: "#e0e5f6",
+        secondary: "#c5ccdb",
+        secondaryTransparent: "#c5ccdb9a",
+        accent: "#FFB2BE",
+        red: "#561D2A",
+        text: "#2f2f2fb9",
+        textRoot: "#2f2f2f",
+        textgray: "#4d4e50",
+        footer: "#d8dcea",
+        black: "#000000",
+        stroke: "#561D2A"
+    },
+
+} 

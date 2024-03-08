@@ -6,6 +6,7 @@ export const groqModelList = [
     "llama2-70b-4096", "mixtral-8x7b-32768"
 ];
 export const discordUrl = "https://discord.gg/3tH8UKx5mY"
+export const githubUrl = "https://github.com/bm777/hask"
 
 export const colors = {
     light: {
@@ -20,7 +21,19 @@ export const colors = {
         textgray: "#4d4e50",
         footer: "#d8dcea",
         black: "#000000",
-        stroke: "#561D2A"
+        stroke: "#561D2A",
+        textCode: "#B4B4B4",
+        bgCode: "#1F1F1D",
+        textBtn: "#00000090",
+        black: "#000000",
     },
 
 } 
+export const get_lang = (lang) => {
+    switch (lang) {
+        case "javascript":
+            return "js";
+        default:
+            return "js";
+    }
+}

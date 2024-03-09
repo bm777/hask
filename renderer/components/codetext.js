@@ -3,20 +3,18 @@ import React from "react";
 import Prism from 'prismjs';
 
 
-// const CodeText = React.memo(({ children, clr }) => {
 const CodeText = ({ children }) => {
     const [status, setStatus] = useState("copy");
     const [lang, setLang] = useState("");
     const [code, setCode] = useState("");
     useEffect(() => {
-        
+        Prism.highlightAll(); 
         if (children) {
-            Prism.highlightAll();
             setLang(children.split("\n")[0])
             setCode(children.split("\n").slice(1, -1).join("\n"))
             // console.log("children", children.split("\n").slice(1, -1).join("\n"));
-            // Prism.highlightAll();
         }
+        Prism.highlightAll();
     }
     , [children]);
     
@@ -55,6 +53,5 @@ const CodeText = ({ children }) => {
         </div>
     );
 }
-// });
-// Prism.highlightAll();
+
 export default CodeText;

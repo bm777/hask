@@ -5,6 +5,7 @@ import Model from "./buttons/model";
 import { discordUrl, pplxModelList, groqModelList, githubUrl } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
+import { capitalize } from "../pages/api/methods";
 
 let ipcRenderer;
 if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
@@ -371,10 +372,10 @@ export default function Search() {
             }
             {
                 modelSelectionExpanded && query!=="" &&
-                <div ref={modelListRef} className={`px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-16 right-4 z-10 w-[300px] h-[300px] max-h-[400px] shadow-xl bg-[#d8dcea] shadow-[#0000002e] flex flex-col `}>
+                <div ref={modelListRef} className={`px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-16 right-4 z-10 w-[300px] h-[300px] max-h-[400px] shadow-xl bg-[#d8dcea] shadow-[#0000002e] flex flex-col dark:bg-[#19171C] `}>
                     <div className={`text-xs text-[#4d4e509a] font-bold mt-3 flex items-center gap-2 hover:cursor-default`}>
-                        <div onClick={() => setModelSelectionExpanded(false)} className={`bg-[#4d4e5016] hover:bg-[#4d4e503f] transition duration-100 rounded p-1`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <div onClick={() => setModelSelectionExpanded(false)} className={`bg-[#4d4e5016] hover:bg-[#4d4e503f] transition duration-100 rounded p-1 border border-[#8181814b] dark:hover:bg-[#2C2B2F]`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={theme==="light" ?"#2f2f2fb9":"#8181814b"} className="w-4 h-4">
                                 <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
                             </svg>
                         </div>
@@ -382,7 +383,7 @@ export default function Search() {
                     </div>
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px]"></div>
                     <div className="flex-1 overflow-auto ">
-                        <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-[#93929497]`}>Perplexity models</div>
+                        <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-[#93929497]`}>{capitalize(provider)} models</div>
                         {
                             modelList.map((mod, index) => (
                                 <Model key={index} text={mod} selected={mod === model} action={handleModel}/>

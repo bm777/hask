@@ -5,7 +5,6 @@ import axios from 'axios';
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
-
 let settingsWindow;
 
 if (isProd) {
@@ -85,10 +84,10 @@ async function createMainWindow() {
   });
 
   mainWindow.on('blur', (e) => {
-    mainWindow.hide();
+    // mainWindow.hide();
   });
   ipcMain.on('window-blur', (e) => {
-    mainWindow.hide();
+    // mainWindow.hide();
   });
 
   function get_content_block(block) {
@@ -247,7 +246,7 @@ async function createMainWindow() {
   }
 
   mainWindow.setAlwaysOnTop(true, "normal");
-  mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
+  // mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
   // mainWindow.setFullScreenable(false);
   return mainWindow;
 }
@@ -316,11 +315,7 @@ async function createMainWindow() {
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
 
-  // mainWindow.setAlwaysOnTop(true, "floating");
-  // mainWindow.setVisibleOnAllWorkspaces(true);
-  // mainWindow.setFullScreenable(false);
   app.dock.hide();
-
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

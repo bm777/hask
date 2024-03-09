@@ -14,7 +14,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
     
     if (active) { return (
                 <div className="px-2 flex flex-col justify-end relative">
-                    <div className="text-gray-900 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded">
+                    <div className="text-gray-900 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-[#2C2B2F] dark:bg-[#2C2B2F] dark:text-[#A7A6A8]">
                         { _provider }
                     </div>
                     <div className="border-b-[3px] border-gray-600 -mb-[2px]"></div>
@@ -29,7 +29,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
                         </div>
                     }
 
-                    <div className="text-gray-600 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded " onMouseEnter={handleHover} onMouseOut={exit}>
+                    <div className="text-gray-600 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-[#2C2B2F] " onMouseEnter={handleHover} onMouseOut={exit}>
                         { _provider }
                     </div>
                     <div className="border-b-[3px] border-[#00000000] -mb-[2px]"></div>

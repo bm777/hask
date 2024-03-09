@@ -6,7 +6,7 @@ export default function Model({ selected, text , action}) {
         action(text)
     }
     return (
-        <div onClick={handleClick} className={"hover:bg-[#c5ccdb9a] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default "  + (selected ? "bg-[#c5ccdb9a] dark:bg-[#2c2b2fb7]" : "")}>
+        <div onClick={handleClick} className={" flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default hover:bg-[#c5ccdb9a] dark:hover:bg-[#2c2b2f82] "  + (selected ? "bg-[#c5ccdb9a] dark:bg-[#2c2b2fb7]" : "")}>
             <div className=" flex items-center justify-center gap-1">
                 <div className="">
                     {

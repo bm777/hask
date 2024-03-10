@@ -57,7 +57,7 @@ async function createSettingsWindow() {
   settingsWindow = createWindow('settings-window', {
     width: 750,
     height: 480,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: false,
     frame: true
@@ -76,7 +76,7 @@ async function createMainWindow() {
     width: 750,
     height: 480,
     // alwaysOnTop: true,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: false,
     transparent: true,
@@ -258,13 +258,6 @@ async function createMainWindow() {
   await app.whenReady();
 
   const mainWindow = await createMainWindow();
-
-  globalShortcut.register('CmdOrCtrl+Shift+I', () => {
-    const focusedWindow = BrowserWindow.getFocusedWindow();
-    if (focusedWindow) {
-      focusedWindow.webContents.toggleDevTools();
-    }
-  });
 
   
   const template = [

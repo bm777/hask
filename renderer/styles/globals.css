@@ -4,17 +4,17 @@
 
 @layer base {
     .no-scrollbar::-webkit-scrollbar {
-        display: none;
+        display: none; 
     }
     .draggable {
         -webkit-app-region: drag;
     }
     ::-webkit-scrollbar {
-        width: 8px;
+        /* width: 8px; */
     }
     ::-webkit-scrollbar-thumb {
         background: #2d2d2da9;
-        border-radius: 4px;
+        /* border-radius: 4px; */
     }
     ::-webkit-scrollbar-thumb:increment {
         background: #2d2d2da9;
@@ -23,7 +23,7 @@
     pre[class*="language-"],
     code[class*="language-"] {
         color: #d4d4d4;
-        font-size: 15px;
+        font-size: 14px;
         text-shadow: none;
         font-family: Menlo, Monaco, Consolas, "Andale Mono", "Ubuntu Mono", "Courier New", monospace;
         direction: ltr;

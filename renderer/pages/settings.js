@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Provider from "../components/provider";
 import { pplxModelList, groqModelList } from "./api/constant";
+import { useTheme } from "next-themes";
 
 export default function Settings() {
     const [log, setLog] = useState("")
@@ -11,6 +12,7 @@ export default function Settings() {
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
     const [maxTokens, setMaxTokens] = useState(500);
+    const { theme } = useTheme();
 
     const [pplxStatus, setPplxStatus] = useState(false);
     const [groqStatus, setGroqStatus] = useState(false);
@@ -135,28 +137,26 @@ export default function Settings() {
     const handleMaxTokens = (e) => {setMaxTokens(parseInt(e.target.value));}
 
     return (
-        <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col">
+        <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col dark:bg-[#19171B]">
             <div className=" h-20 flex items-center justify-center gap-3">
-                <div className="bg-[#c5ccdb9a] rounded-md px-6 py-2 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#000000af" className="w-7 h-7">
+                <div className="bg-[#c5ccdb9a] rounded-md px-6 py-2 flex flex-col items-center justify-center dark:bg-[#2C2B2F]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"#2f2f2fb9":"#8181814b"} className="w-7 h-7">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m0 17.726-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205 12 12m6.894 5.785-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />
                     </svg>
 
-                    <span className="text-gray-600">Settings</span>
+                    <span className="text-gray-600 dark:text-[#93929497]">Settings</span>
                 </div>
             </div>
 
-            <div className="border-t mt-1 border-gray-400 flex-1 flex flex-col items-center">
-                <div className="w-full mt-1 gap-1 h-[50px] flex justify-center border-b border-gray-400 ">
-
+            <div className="border-t mt-1 border-gray-400 flex-1 flex flex-col items-center dark:border-t-[#2E2E2E]">
+                <div className="w-full mt-1 gap-1 h-[50px] flex justify-center border-b border-gray-400 dark:border-b-[#2E2E2E]">
                     <Provider active={pplxStatus} _provider={"Perplexity"} handleTabChange={handleTabChange} />
                     <Provider active={groqStatus} _provider={"Groq"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"OpenAI"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"Cohere"} handleTabChange={handleTabChange} />
-
                 </div>
                 
-                <div className="w-full mt-8 gap-1 flex justify-center border">
+                <div className="w-full mt-8 gap-1 flex justify-center ">
                     <div className="h-7 w-[20%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">API-Key:</p>
                     </div>
@@ -165,16 +165,16 @@ export default function Settings() {
                                 onChange={handleTokenChange}
                                 value={token}
                                 placeholder="Paste your API-Key here..."
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
+                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                             />  
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center border ">
+                <div className="w-full mt-1 gap-1 flex justify-center  ">
                     <div className="h-7 w-[20%] flex items-center ">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">model:</p>
                     </div>
                     <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
-                        <select onChange={handleModelChange} value={model} className="w-full h-full bg-transparent rounded-md text-black placeholder:text-gray-500/80 focus:outline-none">
+                        <select onChange={handleModelChange} value={model} className="w-full h-full bg-transparent rounded-md text-black placeholder:text-gray-500/80 focus:outline-none dark:text-[#A7A6A8]">
                             {
                                 models.map((model, index) => {
                                     return <option key={index} className=" ">{model}</option>
@@ -183,7 +183,7 @@ export default function Settings() {
                         </select>
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center border">
+                <div className="w-full mt-1 gap-1 flex justify-center ">
                     <div className="h-7 w-[20%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">System prompt:</p>
                     </div>
@@ -191,12 +191,12 @@ export default function Settings() {
                         <input
                                 onChange={handleSystemPrompt}
                                 value={systemPrompt}
-                                placeholder="Set the temperature..."
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
-                            />  
+                                placeholder="System prompt..."
+                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
+                        />  
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center border">
+                <div className="w-full mt-1 gap-1 flex justify-center">
                     <div className="h-7 w-[20%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">Temperature:</p>
                     </div>
@@ -206,11 +206,11 @@ export default function Settings() {
                                 value={temperature}
                                 type="number"
                                 placeholder="Paste your API-Key here..."
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
+                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                             />  
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center border">
+                <div className="w-full mt-1 gap-1 flex justify-center">
                     <div className="h-7 w-[20%] flex items-center">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">Max token:</p>
                     </div>
@@ -220,11 +220,11 @@ export default function Settings() {
                                 value={maxTokens}
                                 type="number"
                                 placeholder="900"
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px]"
+                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                             />  
                     </div>
                 </div>
-                <div className="w-full mt-5 gap-1 flex justify-center border ">
+                <div className="w-full mt-5 gap-1 flex justify-center  ">
                     <div onClick={handleSave} className=" border border-[#561d2a65] bg-[#FFB2BE] hover:bg-[#f68193] px-10 h-7 hover:cursor-pointer text-[#561D2A] rounded text-sm flex items-center justify-center duration-200 transform">save</div>
                 </div>
                 

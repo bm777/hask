@@ -5,10 +5,12 @@ import axios from 'axios';
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
+
 let settingsWindow;
+let mainWindow; // Declare mainWindow as a global variable
 
 if (isProd) {
-  serve({ directory: 'app' }); // important for the build
+  serve({ directory: 'app' });
 } else {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
@@ -19,8 +21,9 @@ const _options = (title, message) => {
     title,
     message,
     buttons: ['Ok']
-  }
-}
+  };
+};
+
 function get_blocks(data) {
   let blocks = data.split('\r\n');
   blocks = blocks.filter(block => {
@@ -71,17 +74,18 @@ async function createSettingsWindow() {
   return settingsWindow;
 }
 async function createMainWindow() {
-  const mainWindow = createWindow('main-window', {
-    width: 750,
-    height: 480,
-    // alwaysOnTop: true,
-    resizable: true,
-    maximizable: false,
-    minimizable: false,
-    transparent: true,
-    backgroundColor: "#00ffffff", //'#fa2E292F',
-    frame: false
-  });
+  if (!mainWindow) { // Check if mainWindow is already created
+    mainWindow = createWindow('main-window', {
+      width: 750,
+      height: 480,
+      // alwaysOnTop: true,
+      resizable: true,
+      maximizable: false,
+      minimizable: false,
+      transparent: true,
+      backgroundColor: "#00ffffff", //'#fa2E292F',
+      frame: false
+    });
 
   mainWindow.on('blur', (e) => {
     // mainWindow.hide();
@@ -231,8 +235,13 @@ async function createMainWindow() {
       mainWindow.hide();
     } else {
       mainWindow.show();
+      mainWindow.focus(); // Ensure focus when showing the window
     }
-  })
+  });
+} else {
+  mainWindow.show(); // If mainWindow exists, just show it
+}
+
 
   ///////////////////////////////
 

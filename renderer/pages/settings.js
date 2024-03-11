@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import Provider from "../components/provider";
-import { pplxModelList, groqModelList } from "./api/constant";
+import { pplxModelList, groqModelList, ollamaModelList } from "./api/constant";
 import { useTheme } from "next-themes";
+import OllamaModel from "../components/buttons/ollamaModel";
+import { joinValue } from "./api/methods";
+import Preview from "../components/cards/modelPreview";
 
 export default function Settings() {
     const [log, setLog] = useState("")
@@ -12,6 +15,9 @@ export default function Settings() {
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
     const [maxTokens, setMaxTokens] = useState(500);
+    const [ollamaDownload, setOllamaDownload] = useState(false);
+    const [ollamaSearch, setOllamaSearch] = useState("");
+    const [cursorModel, setCursorModel] = useState("");
     const { theme } = useTheme();
 
     const [pplxStatus, setPplxStatus] = useState(false);
@@ -135,9 +141,11 @@ export default function Settings() {
     const handleSystemPrompt = (e) => { setSystemPrompt(e.target.value); }
     const handleTemperature = (e) => { setTemperature(parseFloat(e.target.value));}
     const handleMaxTokens = (e) => {setMaxTokens(parseInt(e.target.value));}
+    const handleOllamaSearch = (e) => {setOllamaSearch(e.target.value);}
+    const handleCursor = (new_cursor) => {setCursorModel(new_cursor);}
 
     return (
-        <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col dark:bg-[#19171B]">
+        <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col dark:bg-[#19171B] relative">
             <div className=" h-20 flex items-center justify-center gap-3">
                 <div className="bg-[#c5ccdb9a] rounded-md px-6 py-2 flex flex-col items-center justify-center dark:bg-[#2C2B2F]">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"#2f2f2fb9":"#8181814b"} className="w-7 h-7">
@@ -243,6 +251,51 @@ export default function Settings() {
                     </div>
                 </div>
             </div>
+
+            {
+                !ollamaDownload &&
+                <div className="w-full h-full absolute flex items-center justify-center">
+                    <div className="border border-gray-400 w-[740px] h-[400px] bg-[#e0e5f6] shadow-2xl shadow-black rounded flex flex-col dark:bg-[#19171b] dark:border-[#2E2E2E]">
+                        <div className="h-6 draggable flex items-center rounded-t bg-gradient-to-r from-[#e0e5f6] to-[#9498a2] dark:from-[#1c1820] dark:to-[#19171b]">
+                            <div className={`hover:bg-[#FF5F573f] h-4 w-4 ml-[4px] transition duration-100 rounded-full flex items-center bg-[#FF5F57] justify-center border border-[#8181814b] dark:hover:bg-[#FF5F573f]`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={theme==="light" ?"black":"black"} className="w-4 h-4">
+                                    <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div className="bg-gray-400 h-[1px] dark:bg-[#2e2e2e8c]"></div>
+                        <div className=" h-12 flex items-center">
+                            <div className="h-full w-12 flex items-center justify-center ">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"#2f2f2fb9":"#919192"} className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                            </div>
+                            <div className="h-full w-full flex items-center ">
+                                <input
+                                        onChange={handleOllamaSearch}
+                                        value={ollamaSearch}
+                                        placeholder="Enter a model name"
+                                        className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent py-[2px] dark:placeholder:text-[#919192] dark:text-[#bfbfbf]"
+                                    />
+                            </div>
+                        </div>
+                        <div className="bg-gray-400 h-[1px] dark:bg-[#2E2E2E]"></div>
+                        <div className="  h-[375px] flex ">
+                            <div className="w-[259px] h-[330px] ">
+                                <div className="w-full h-full overflow-auto py-1 scroll-smooth">
+                                    {
+                                        // list model and filter it
+                                        ollamaModelList.filter((model) => joinValue(model).toLowerCase().includes(ollamaSearch.toLowerCase())).map((model, index) => {
+                                            return <OllamaModel key={index} name={model.name} description={model.description} active={model.name === cursorModel} action={handleCursor}/>
+                                        })
+                                    }
+                                </div>
+                            </div>
+                            <Preview cursorModel={cursorModel} />
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     )
 }

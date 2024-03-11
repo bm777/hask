@@ -7,10 +7,10 @@ import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
 import { capitalize } from "../pages/api/methods";
 
-let ipcRenderer;
-if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
-    ipcRenderer = window.require("electron").ipcRenderer;
-}
+// let ipcRenderer;
+// if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+//     ipcRenderer = window.require("electron").ipcRenderer;
+// }
 
 export default function Search() {
     const [query, setQuery] = useState("");
@@ -43,7 +43,7 @@ export default function Search() {
     const modelRef = useRef(null);
 
     // Event listener functions
-    const handleSearchResult = (event, result) => {
+    const handleSearchResult = (result) => {
         setAnswer(result);
         if (scrollerRef.current) {
             scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
@@ -52,20 +52,20 @@ export default function Search() {
     const handleSearchEnd = () => {
         setSearching(false);
     };
-    const handleSearchError = (event, error) => {
+    const handleSearchError = (error) => {
         console.error(error);
         setSearching(false);
     };
     const openUrl = async (socialType) => { 
-        ipcRenderer.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
+        window.ipc.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
         setSettingsExpanded(false);
     }
-    const quitApp = () => { ipcRenderer.send("quit-app") }
+    const quitApp = () => { window.ipc.send("quit-app") }
     const openSettings = () => { 
-        ipcRenderer.send("open-settings");
+        window.ipc.send("open-settings");
         setSettingsExpanded(false);
     }
-    const handleSearchTime = (event, _tps, _time) => {
+    const handleSearchTime = (_tps, _time) => {
         setTime(_time);
         setTps(_tps);
     }
@@ -140,16 +140,16 @@ export default function Search() {
         document.addEventListener("keydown", handleKeyboard);
 
         // set up IPC event listeners
-        ipcRenderer.on('search-result', handleSearchResult);
-        ipcRenderer.on('search-end', handleSearchEnd);
-        ipcRenderer.on('search-error', handleSearchError);
-        ipcRenderer.on('search-time', handleSearchTime)
+        window.ipc.on('search-result', handleSearchResult);
+        window.ipc.on('search-end', handleSearchEnd);
+        window.ipc.on('search-error', handleSearchError);
+        window.ipc.on('search-time', handleSearchTime)
 
         return () => { 
-            ipcRenderer.removeAllListeners('search-result')
-            ipcRenderer.removeAllListeners('search-end')
-            ipcRenderer.removeAllListeners('search-error')
-            ipcRenderer.removeAllListeners('search-time')
+        //     window.ipc.removeAllListeners('search-result')
+        //     window.ipc.removeAllListeners('search-end')
+        //     window.ipc.removeAllListeners('search-error')
+        //     window.ipc.removeAllListeners('search-time')
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyboard);
         }
@@ -167,25 +167,27 @@ export default function Search() {
         e.preventDefault()
         setSearching(true);
         if (provider === "perplexity") {
-        ipcRenderer.send(
+        window.ipc.send(
             "search-pplx", 
-            query, 
-            model, 
-            token, 
-            systemPrompt,
-            parseFloat(temperature),
-            parseInt(maxTokens)
-            );
-        } else if (provider === "groq") {
-            ipcRenderer.send(
-                "search-groq", 
+            {
                 query, 
                 model, 
                 token, 
                 systemPrompt,
-                parseFloat(temperature),
-                parseInt(maxTokens)
-                );
+                temperature: parseFloat(temperature),
+                maxTokens: parseInt(maxTokens)
+            });
+        } else if (provider === "groq") {
+            window.ipc.send(
+                "search-groq", 
+                { 
+                    query, 
+                    model, 
+                    token, 
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
         }
     }
     const handleSettings = () => {
@@ -222,7 +224,7 @@ export default function Search() {
 
     // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
     const blur = () => {
-        ipcRenderer.send('window-blur');
+        window.ipc.send('window-blur');
     }
 
     return (
@@ -283,7 +285,7 @@ export default function Search() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <span className="text-md text-gray-600/60 mr-[13px]">The knowledge at your hands</span>
+                                    <span className="text-md text-gray-600/60 mr-[13px]">Knowledge at your fingertips</span>
                                 </div>
                             </div>
                             

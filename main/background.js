@@ -2,6 +2,7 @@ import { app, globalShortcut, Menu, ipcMain, dialog, shell } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import axios from 'axios';
+import path from 'path';
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -59,7 +60,10 @@ async function createSettingsWindow() {
     resizable: false,
     maximizable: false,
     minimizable: false,
-    frame: true
+    frame: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
 
   if (isProd) {
@@ -68,6 +72,7 @@ async function createSettingsWindow() {
     const port = process.argv[2];
     await settingsWindow.loadURL(`http://localhost:${port}/settings`);
   }
+  // settingsWindow.toggleDevTools();
   return settingsWindow;
 }
 async function createMainWindow() {
@@ -80,7 +85,10 @@ async function createMainWindow() {
     minimizable: false,
     transparent: true,
     backgroundColor: "#00ffffff", //'#fa2E292F',
-    frame: false
+    frame: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
 
   mainWindow.on('blur', (e) => {
@@ -115,7 +123,11 @@ async function createMainWindow() {
       settingsWindow.focus();
     }
   })
-  ipcMain.on("search-pplx", async (event, query, model, token, systemPrompt, temperature, maxTokens) => {
+  ipcMain.on("logger", (event, object) => {
+    console.log('logger ->', object)
+  })
+  ipcMain.on("search-pplx", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
       method: 'POST',
       url: 'https://api.perplexity.ai/chat/completions',
@@ -183,7 +195,9 @@ async function createMainWindow() {
         });
       }
   })
-  ipcMain.on("search-groq", async (event, query, model, token, systemPrompt, temperature, maxTokens) => {
+  ipcMain.on("search-groq", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
+    console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
     const groq = new Groq({apiKey: token});
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
     const chatCompletion = await groq.chat.completions.create({

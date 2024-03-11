@@ -71,8 +71,8 @@ export default function createWindow(windowName, options) {
     ...state,
     webPreferences: {
       webSecurity: false,
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
       ...options.webPreferences,
     },
   });

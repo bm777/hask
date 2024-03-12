@@ -1,13 +1,17 @@
-import { app, globalShortcut, Menu, ipcMain, dialog, shell } from 'electron';
+import { app, globalShortcut, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import axios from 'axios';
 import path from 'path';
+const fs = require('fs');
+const os = require('os');
 const { exec } = require('child_process');
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
+const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
 let settingsWindow;
+let mainWindow;
 
 if (isProd) {
   serve({ directory: 'app' }); // important for the build
@@ -17,6 +21,9 @@ if (isProd) {
 function getParentDir(_file) {
   if (isProd) return path.dirname(path.dirname(path.dirname(__dirname)))
   else return path.dirname(__dirname)
+}
+function resolveHome(filepath) {
+  return filepath.startsWith('~') ? path.join(os.homedir(), filepath.slice(1)) : filepath;
 }
 const _options = (title, message) => {
   return {
@@ -45,6 +52,12 @@ function get_blocks(data) {
       }
   });
   return blocks;
+}
+async function isUrlRunning(url) {
+  try {
+    const response = await axios.get(url);
+    return response.status === 200;
+  } catch (error) { return false }
 }
 async function showDialog(title, message) {
   dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
@@ -80,7 +93,7 @@ async function createSettingsWindow() {
   return settingsWindow;
 }
 async function createMainWindow() {
-  const mainWindow = createWindow('main-window', {
+  mainWindow = createWindow('main-window', {
     width: 750,
     height: 480,
     // alwaysOnTop: true,
@@ -113,7 +126,7 @@ async function createMainWindow() {
         bufferData = "Error parsing response";
     }
     return [bufferData, token];
-}
+  }
   ipcMain.on("open-url", async (event, url) => {
     shell.openExternal(url);
   })
@@ -129,16 +142,6 @@ async function createMainWindow() {
   })
   ipcMain.on("logger", (event, object) => {
     console.log('logger ->', object)
-  })
-  ipcMain.on("start-ollama", (event) => {
-    console.log('starting ollama')
-    // const parentDir = getParentDir()
-    const scriptPath = path.join(getParentDir(), 'scripts/ollama.sh');
-
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
-      if (error) { console.log(error); return; }
-    }
-    )
   })
   ipcMain.on("search-pplx", async (event, args) => {
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
@@ -283,8 +286,37 @@ async function createMainWindow() {
 (async () => {
   await app.whenReady();
 
-  const mainWindow = await createMainWindow();
+  console.log("postInstallFlagPath", fs.existsSync(postInstallFlagPath), postInstallFlagPath, isProd)
+  if(!fs.existsSync(postInstallFlagPath)) {
 
+    settingsWindow = await createSettingsWindow();
+
+    const scriptPath = path.join(getParentDir(), 'scripts/init.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
+      if (error) { console.log(error); return; }
+    });
+
+    ipcMain.on('ollama-ready', async () => {
+      fs.writeFileSync(postInstallFlagPath, 'done');
+      settingsWindow.close();
+      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+      app.exit(0)
+    })
+    ipcMain.on('ping-ollama', async (event) => {
+      console.log('[settings]-logger -> None')
+      setInterval(async () => {
+        const isOllamaRunning = await isUrlRunning('http://localhost:11434');
+        if (isOllamaRunning) event.sender.send("ollama-reply", "ollama-ready")
+      }, 500);
+    })
+   
+  } else {
+    mainWindow = await createMainWindow();
+    const scriptPath = resolveHome('~/.hask/ollama.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
+      if (error) { console.log(error); return; }
+    });
+  }
   
   const template = [
     {
@@ -356,6 +388,21 @@ async function createMainWindow() {
       mainWindow = await createMainWindow();
     }
 
+  });
+  app.on('before-quit', () => {
+    exec('sh ~/.hask/close_process.sh > /dev/null 2>&1', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`ERROR: Error closing processes: ${error}`);
+        return;
+      }
+    });
+    // close every window
+    const windows = BrowserWindow.getAllWindows();
+    windows.forEach((window) => {
+      window.removeAllListeners('close');
+      window.close();
+    });
+  
   });
 
 })();

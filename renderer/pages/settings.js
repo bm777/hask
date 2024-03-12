@@ -21,12 +21,13 @@ export default function Settings() {
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
     const [maxTokens, setMaxTokens] = useState(500);
+    const [showMore, setShowMore] = useState(false);
 
     // ollama setting
     const [ollamaSearch, setOllamaSearch] = useState("");
     const [cursorModel, setCursorModel] = useState("");
     const [OllamaPreview, setOllamaPreview] = useState(false);
-    const [ollamaInstallView, setOllamaInstallView] = useState(false);
+    const [notifView, setNotifView] = useState(false);
 
     const [pplxStatus, setPplxStatus] = useState(false);
     const [groqStatus, setGroqStatus] = useState(false);
@@ -51,8 +52,10 @@ export default function Settings() {
         // ping 
         window.ipc.send("ping-ollama");
         window.ipc.on("ollama-reply", (arg) => {
-            if (arg === "installing-ollama") { setOllamaInstallView(true); }
-            if (arg === "ollama-ready") { setOllamaInstallView(false); }
+            if (arg === "ollama-ready") { 
+                setNotifView(false);
+                window.ipc.send("ollama-ready");
+            }
         })
 
 
@@ -164,11 +167,10 @@ export default function Settings() {
         <div className="w-screen h-screen bg-[#e0e5f6] flex flex-col dark:bg-[#19171B] relative">
             <div className=" h-20 flex items-center justify-center gap-3">
                 <div className="bg-[#c5ccdb9a] rounded-md px-6 py-2 flex flex-col items-center justify-center dark:bg-[#2C2B2F]">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"#2f2f2fb9":"#8181814b"} className="w-7 h-7">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"#2f2f2fb9":"#A7A6A8"} className="w-7 h-7">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m0 17.726-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205 12 12m6.894 5.785-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />
                     </svg>
-
-                    <span className="text-gray-600 dark:text-[#93929497]">Settings</span>
+                    <span className="text-gray-600 dark:text-[#A7A6A8]">Settings</span>
                 </div>
             </div>
 
@@ -196,7 +198,6 @@ export default function Settings() {
                         </div>
                     </div>
                 }
-                
                 <div className={"w-full mt-1 gap-1 flex justify-center " + (ollamaStatus && "mt-8")}>
                     <div className="h-7 w-[20%] flex items-center ">
                         <p className="w-full text-right text-gray-500 text-sm font-medium ">model:</p>
@@ -217,55 +218,69 @@ export default function Settings() {
                         }
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center ">
-                    <div className="h-7 w-[20%] flex items-center">
-                        <p className="w-full text-right text-gray-500 text-sm font-medium ">System prompt:</p>
+                <div onClick={() => setShowMore(!showMore)} className=" mt-1 gap-1 w-[100%] flex justify-center items-center hover:cursor-pointer ">
+                    <div className="h-7 w-[20%] rounded-md text-sm flex items-center justify-end ">
+                        <span className="text-gray-500 text-sm font-medium">Advanced</span>
                     </div>
-                    <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
-                        <input
-                                onChange={handleSystemPrompt}
-                                value={systemPrompt}
-                                placeholder="System prompt..."
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
-                        />  
+                    <div className="w-[50%] flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#6b7280" className={"w-5 h-5 duration-200 transform " + (showMore ? 'rotate-90' : '')}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                        </svg>
                     </div>
                 </div>
-                <div className="w-full mt-1 gap-1 flex justify-center">
-                    <div className="h-7 w-[20%] flex items-center">
-                        <p className="w-full text-right text-gray-500 text-sm font-medium ">Temperature:</p>
-                    </div>
-                    <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
-                        <input
-                                onChange={handleTemperature}
-                                value={temperature}
-                                type="number"
-                                placeholder="Paste your API-Key here..."
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
-                            />  
-                    </div>
-                </div>
-                <div className="w-full mt-1 gap-1 flex justify-center">
-                    <div className="h-7 w-[20%] flex items-center">
-                        <p className="w-full text-right text-gray-500 text-sm font-medium ">Max token:</p>
-                    </div>
-                    <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
-                        <input
-                                onChange={handleMaxTokens}
-                                value={maxTokens}
-                                type="number"
-                                placeholder="900"
-                                className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
-                            />  
-                    </div>
-                </div>
+                {
+                showMore &&
+                    <>
+                        <div className="w-full mt-1 gap-1 flex justify-center ">
+                            <div className="h-7 w-[20%] flex items-center">
+                                <p className="w-full text-right text-gray-500 text-sm font-medium ">System prompt:</p>
+                            </div>
+                            <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
+                                <input
+                                        onChange={handleSystemPrompt}
+                                        value={systemPrompt}
+                                        placeholder="System prompt..."
+                                        className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
+                                />  
+                            </div>
+                        </div>
+                        <div className="w-full mt-1 gap-1 flex justify-center">
+                            <div className="h-7 w-[20%] flex items-center">
+                                <p className="w-full text-right text-gray-500 text-sm font-medium ">Temperature:</p>
+                            </div>
+                            <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
+                                <input
+                                        onChange={handleTemperature}
+                                        value={temperature}
+                                        type="number"
+                                        placeholder="Choose a temperature..."
+                                        className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
+                                    />  
+                            </div>
+                        </div>
+                        <div className="w-full mt-1 gap-1 flex justify-center">
+                            <div className="h-7 w-[20%] flex items-center">
+                                <p className="w-full text-right text-gray-500 text-sm font-medium ">Max token:</p>
+                            </div>
+                            <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded">
+                                <input
+                                        onChange={handleMaxTokens}
+                                        value={maxTokens}
+                                        type="number"
+                                        placeholder="900"
+                                        className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
+                                    />  
+                            </div>
+                        </div>
+                    </>
+                }
                 <div className="w-full mt-5 gap-1 flex justify-center  ">
                     <div onClick={handleSave} className=" border border-[#561d2a65] bg-[#FFB2BE] hover:bg-[#f68193] px-10 h-7 hover:cursor-pointer text-[#561D2A] rounded text-sm flex items-center justify-center duration-200 transform">save</div>
                 </div>
-                
                 {
                     log !== "" &&
-                    <div className="w-full mt-5 gap-1 flex justify-center border ">
-                        <div className=" hover:underline text-[#561D2A] rounded text-sm flex items-center justify-center duration-200 transform">{log}</div>
+                    <div className="w-full mt-5 gap-1 flex justify-center ">
+                        <div className=" hover:underline text-[#561D2A] rounded text-sm flex items-center justify-center dark:text-[#A7A6A8]">{log}</div>
                     </div>
                 }
                 
@@ -323,17 +338,39 @@ export default function Settings() {
                 </div>
             }
             {
-                ollamaInstallView &&
+                notifView &&
                     <div className="w-full h-full absolute flex items-center justify-center">
-                        <div className="border border-gray-400 w-[740px] h-[400px] bg-[#e0e5f6] shadow-2xl shadow-black rounded flex flex-col dark:bg-[#19171b] dark:border-[#2E2E2E]">
+                        <div className="border border-gray-400 w-[500px] h-[175px] bg-[#e0e5f6] shadow-2xl shadow-black rounded flex flex-col dark:bg-[#19171b] dark:border-[#2E2E2E]">
                             <div className="h-6 draggable flex items-center rounded-t bg-gradient-to-r from-[#e0e5f6] to-[#9498a2] dark:from-[#1c1820] dark:to-[#19171b]">
-                                <div onClick={() => setOllamaInstallView(false)} className={`hover:bg-[#FF5F573f] h-4 w-4 ml-[4px] transition duration-100 rounded-full flex items-center bg-[#FF5F57] justify-center border border-[#8181814b] dark:hover:bg-[#FF5F573f]`}>
+                                <div onClick={() => setNotifView(false)} className={`hover:bg-[#FF5F573f] h-4 w-4 ml-[4px] transition duration-100 rounded-full flex items-center bg-[#FF5F57] justify-center border border-[#8181814b] dark:hover:bg-[#FF5F573f]`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={theme==="light" ?"black":"black"} className="w-4 h-4">
                                         <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
                                     </svg>
                                 </div>
                             </div>
-                            bounce
+                            <div className=" h-full w-full flex items-center justify-center">
+                                <div className=" h-[120px] w-[465px] border flex items-center rounded-xl border-gray-400 relative dark:border-[#2e2e2eac]">
+                                    <div className="h-[100px] w-[100px] flex items-center justify-center">
+                                        <div className="border rounded-full h-[70%] w-[70%] flex items-center justify-center border-gray-400 dark:border-[#3c3c3c]">
+                                            <div className=" rounded-full h-[90%] w-[90%] bg-gray-400 flex items-center justify-center dark:bg-[#2e2e2eac]">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#949497" className="w-6 h-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="h-[100px] w-[365px] flex items-center ">
+                                        <div className=" h-[70px] w-full">
+                                            <div className=" h-[100%]">
+                                                <div className=" h-full">
+                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] text-3xl truncate">One step</div>
+                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] flex-wrap">Installing dependencies</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
             }

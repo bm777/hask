@@ -3,6 +3,7 @@ import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import axios from 'axios';
 import path from 'path';
+const { exec } = require('child_process');
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -13,7 +14,10 @@ if (isProd) {
 } else {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
-
+function getParentDir(_file) {
+  if (isProd) return path.dirname(path.dirname(path.dirname(__dirname)))
+  else return path.dirname(__dirname)
+}
 const _options = (title, message) => {
   return {
     type: 'info',
@@ -125,6 +129,16 @@ async function createMainWindow() {
   })
   ipcMain.on("logger", (event, object) => {
     console.log('logger ->', object)
+  })
+  ipcMain.on("start-ollama", (event) => {
+    console.log('starting ollama')
+    // const parentDir = getParentDir()
+    const scriptPath = path.join(getParentDir(), 'scripts/ollama.sh');
+
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
+      if (error) { console.log(error); return; }
+    }
+    )
   })
   ipcMain.on("search-pplx", async (event, args) => {
     const { query, model, token, systemPrompt, temperature, maxTokens } = args

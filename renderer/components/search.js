@@ -146,10 +146,6 @@ export default function Search() {
         window.ipc.on('search-time', handleSearchTime)
 
         return () => { 
-        //     window.ipc.removeAllListeners('search-result')
-        //     window.ipc.removeAllListeners('search-end')
-        //     window.ipc.removeAllListeners('search-error')
-        //     window.ipc.removeAllListeners('search-time')
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyboard);
         }

@@ -1,14 +1,9 @@
 # Node.js
 node_modules/
-npm-debug.log
-yarn-error.log
+*.log
 
 # Next.js build output
 .next/
-
-# Webpack hot-update files
-*.hot-update.json
-*.hot-update.js
 
 # React
 build/
@@ -18,15 +13,10 @@ dist/
 # IDE/Editor
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
+*.sublime-*
 
 # macOS
 .DS_Store
-
-# Logs
-logs/
-*.log
 
 # Testing
 coverage/
@@ -36,9 +26,7 @@ jspm_packages/
 bower_components/
 
 # Build system files
-Gruntfile.js
-gulpfile.js
-webpack.config.js
+*.js
 
 # Miscellaneous
 *.bak
@@ -46,47 +34,6 @@ webpack.config.js
 *.tmp
 *.tmp.*
 *.~lock.*
-renderer/.next/server/pages-manifest.json
-renderer/.next/server/webpack-runtime.js
-renderer/.next/server/middleware-react-loadable-manifest.js
-renderer/.next/server/middleware-manifest.json
-renderer/.next/server/middleware-build-manifest.js
-renderer/.next/server/pages/_app.js
-renderer/.next/server/pages/_document.js
-renderer/.next/server/pages/_error.js
-renderer/.next/server/pages/hask.js
-renderer/.next/server/pages/settings.js
-renderer/.next/cache/webpack/client-development/0.pack
-renderer/.next/cache/webpack/client-development/1.pack
-renderer/.next/cache/webpack/client-development/2.pack
-renderer/.next/cache/webpack/client-development/3.pack
-renderer/.next/cache/webpack/client-development/index.pack
-renderer/.next/cache/webpack/client-development/index.pack.old
-renderer/.next/cache/webpack/server-development/0.pack
-renderer/.next/cache/webpack/server-development/1.pack
-renderer/.next/cache/webpack/server-development/2.pack
-renderer/.next/cache/webpack/server-development/3.pack
-renderer/.next/cache/webpack/server-development/index.pack
-renderer/.next/cache/webpack/server-development/index.pack.old
-renderer/.DS_Store
-renderer/.next/build-manifest.json
-renderer/.next/package.json
-renderer/.next/react-loadable-manifest.json
-renderer/.next/trace
-renderer/.next/static/chunks/amp.js
-renderer/.next/static/chunks/main.js
-renderer/.next/static/chunks/polyfills.js
-renderer/.next/static/chunks/react-refresh.js
-renderer/.next/static/chunks/webpack.js
-renderer/.next/static/chunks/pages/_app.js
-renderer/.next/static/chunks/pages/_error.js
-renderer/.next/static/chunks/pages/hask.js
-renderer/.next/static/chunks/pages/settings.js
-renderer/.next/static/development/_buildManifest.js
-renderer/.next/static/development/_ssgManifest.js
-renderer/.next/static/webpack/*
-app/background.js
-renderer/.DS_Store
-renderer/.next/development-server/pages/_app.js
 
-renderer/.DS_Store
+# Specific files
+app/background.js

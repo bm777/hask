@@ -6,19 +6,33 @@ import { useTheme } from "next-themes";
 import React from "react";
 import { v4 as uid } from 'uuid';
 import ParsedText from "./parsedtext";
+import DOMPurify from 'dompurify';
+import showdown from 'showdown';
 
-const Answer = React.memo(({ answer }) => {
+const converter = new showdown.Converter();
+
+const Answer = React.memo(({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
 
     useEffect(() => {
         if (answer) {
-            const lines = answer.split('\n');
+            const lines = (answer).split('\n');
             const linesWithLinksParsed = lines.map(line => parseLink(line));
             const linesWithCodeBlocks = get_code_blocks(linesWithLinksParsed);
             
-            setFormattedLines(linesWithCodeBlocks);
+            // Convert markdown to HTML and sanitize
+            const htmlLines = linesWithCodeBlocks.map(line => {
+                if (line.includes("```")) {
+                return line; // Keep code blocks as-is
+                } else {
+                const html = converter.makeHtml(line);
+                const sanitizedHtml = DOMPurify.sanitize(html); // Sanitize HTML
+                return sanitizedHtml;
+                }
+            });
+            setFormattedLines(htmlLines);
         }
     }, [answer]);
 
@@ -43,9 +57,9 @@ const Answer = React.memo(({ answer }) => {
             <div key={uid()}>
             {
                 line.includes("```") ? // .slice(3, -3)
-                <CodeText key={uid()} >{line}</CodeText>
+                <CodeText key={uid()} searching={searching} >{line}</CodeText>
                 :
-                <ParsedText >
+                <ParsedText searching={searching} >
                     {line}   
                 </ParsedText>
             }

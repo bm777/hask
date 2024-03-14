@@ -28,6 +28,8 @@ export default function Settings() {
     const [cursorModel, setCursorModel] = useState("");
     const [OllamaPreview, setOllamaPreview] = useState(false);
     const [notifView, setNotifView] = useState(false);
+    const [notifTitle, setNotifTitle] = useState("One step");
+    const [notifSubtitle, setNotifSubtitle] = useState("Configuration is being done. Please wait...");
 
     const [pplxStatus, setPplxStatus] = useState(false);
     const [groqStatus, setGroqStatus] = useState(false);
@@ -37,9 +39,9 @@ export default function Settings() {
     useEffect(() => {
         // try to load the token and model from local storage
         const _provider = localStorage.getItem("provider");
-        setProvider( _provider || "perplexity" )
-        console.log("provider", _provider);
-
+        setProvider(  _provider === null ?  "perplexity" : _provider )
+        if (_provider === null) { localStorage.setItem("provider", "perplexity"); }
+        
         if (_provider === "perplexity") {
             configurePerplexity();
         } 
@@ -49,12 +51,20 @@ export default function Settings() {
         else if (_provider === "ollama") {
             configureOllama();
         }
-        // ping 
-        window.ipc.send("ping-ollama");
-        window.ipc.on("ollama-reply", (arg) => {
+
+        window.ipc.send("ping-ollama"); // ping ollama to check if it's ready
+        window.ipc.on("ollama-reply", async (arg) => {
             if (arg === "ollama-ready") { 
-                setNotifView(false);
                 window.ipc.send("ollama-ready");
+                
+                setNotifTitle("Configure your keys")
+                setNotifSubtitle("Collect the api-key from your provider!")
+
+                // await new Promise(r => setTimeout(r, 3000)); // 3 seconds sleep
+                // setNotifView(false);
+            }
+            if (arg === "installing-ollama") { 
+                setNotifView(true);
             }
         })
 
@@ -95,6 +105,7 @@ export default function Settings() {
         setLog("Configuration Saved!");
         await new Promise(r => setTimeout(r, 2000));
         setLog("");
+        window.ipc.send("relaunch-hask");
     }
     const changeStatus = (prov) => {
         if (prov === "perplexity") {
@@ -113,30 +124,29 @@ export default function Settings() {
     }
     const configurePerplexity = () => {
         changeStatus("perplexity");
-        setToken(localStorage.getItem("pplx-token"));
-        setModel(localStorage.getItem("pplx-model"));
+        setToken(localStorage.getItem("pplx-token") || "");
+        setModel(localStorage.getItem("pplx-model") || pplxModelList[0]); // default model for the first time configuration
         setModels(pplxModelList);
-        setSystemPrompt(localStorage.getItem("pplx-system-prompt"));
-        setTemperature(localStorage.getItem("pplx-temperature"));
-        setMaxTokens(localStorage.getItem("pplx-max-tokens"));
+        setSystemPrompt(localStorage.getItem("pplx-system-prompt") || "Answer the query after carefully parsing the search results to identify relevant information. Only make definitive statements if concretely supported by the information at hand. Be comprehensive while avoiding overly descriptive language. Employ bullet points and other **formatting stylisations** for clarity. Use British English spelling and the metric system. Ensure responses are aligned with the Current date.");
+        setTemperature(localStorage.getItem("pplx-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("pplx-max-tokens") || maxTokens);
     }
     const configureGroq = () => {
         changeStatus("groq");
-        setToken(localStorage.getItem("groq-token"));
+        setToken(localStorage.getItem("groq-token") || "");
         setModel(localStorage.getItem("groq-model"));
         setModels(groqModelList);
-        setSystemPrompt(localStorage.getItem("groq-system-prompt"));
-        setTemperature(localStorage.getItem("groq-temperature"));
-        setMaxTokens(localStorage.getItem("groq-max-tokens"));
+        setSystemPrompt(localStorage.getItem("groq-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("groq-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("groq-max-tokens") || maxTokens);
     }
     const configureOllama = async () => {
-        window.ipc.send("start-ollama");
         changeStatus("ollama");
         setModel(localStorage.getItem("ollama-model"));
         setModels(await getOllamaTags());
-        setSystemPrompt(localStorage.getItem("ollama-system-prompt"));
-        setTemperature(localStorage.getItem("ollama-temperature"));
-        setMaxTokens(localStorage.getItem("ollama-max-tokens"));
+        setSystemPrompt(localStorage.getItem("ollama-system-prompt" || "Be precise and concise."));
+        setTemperature(localStorage.getItem("ollama-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("ollama-max-tokens") || maxTokens);
     }
     const handleTabChange = async (prov) => {
         // temporary blockage of switching providers
@@ -192,6 +202,7 @@ export default function Settings() {
                             <input
                                     onChange={handleTokenChange}
                                     value={token}
+                                    // defaultValue={""}
                                     placeholder="Paste your API-Key here..."
                                     className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                                 />  
@@ -239,6 +250,7 @@ export default function Settings() {
                                 <input
                                         onChange={handleSystemPrompt}
                                         value={systemPrompt}
+                                        defaultValue={"Be precise and concise."}
                                         placeholder="System prompt..."
                                         className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                                 />  
@@ -252,7 +264,11 @@ export default function Settings() {
                                 <input
                                         onChange={handleTemperature}
                                         value={temperature}
+                                        defaultValue={0.7}
                                         type="number"
+                                        min={0}
+                                        max={2}
+                                        step={0.1}
                                         placeholder="Choose a temperature..."
                                         className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
                                     />  
@@ -266,6 +282,9 @@ export default function Settings() {
                                 <input
                                         onChange={handleMaxTokens}
                                         value={maxTokens}
+                                        defaultValue={900}
+                                        min={16}
+                                        step={10}
                                         type="number"
                                         placeholder="900"
                                         className="outline-none text-sm w-full placeholder:text-gray-500/80 font-medium bg-transparent border-r-1 mx-2 py-[2px] dark:text-[#A7A6A8]"
@@ -343,8 +362,8 @@ export default function Settings() {
                         <div className="border border-gray-400 w-[500px] h-[175px] bg-[#e0e5f6] shadow-2xl shadow-black rounded flex flex-col dark:bg-[#19171b] dark:border-[#2E2E2E]">
                             <div className="h-6 draggable flex items-center rounded-t bg-gradient-to-r from-[#e0e5f6] to-[#9498a2] dark:from-[#1c1820] dark:to-[#19171b]">
                                 <div onClick={() => setNotifView(false)} className={`hover:bg-[#FF5F573f] h-4 w-4 ml-[4px] transition duration-100 rounded-full flex items-center bg-[#FF5F57] justify-center border border-[#8181814b] dark:hover:bg-[#FF5F573f]`}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill={theme==="light" ?"black":"black"} className="w-4 h-4">
-                                        <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ?"black":"black"} className="w-4 h-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                                     </svg>
                                 </div>
                             </div>
@@ -353,7 +372,7 @@ export default function Settings() {
                                     <div className="h-[100px] w-[100px] flex items-center justify-center">
                                         <div className="border rounded-full h-[70%] w-[70%] flex items-center justify-center border-gray-400 dark:border-[#3c3c3c]">
                                             <div className=" rounded-full h-[90%] w-[90%] bg-gray-400 flex items-center justify-center dark:bg-[#2e2e2eac]">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#949497" className="w-6 h-6">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#949497" className={"w-6 h-6 " + (notifTitle === "One step" ? "animate-bounce":"")}>
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12H12m-8.25 5.25h16.5" />
                                                 </svg>
                                             </div>
@@ -363,8 +382,8 @@ export default function Settings() {
                                         <div className=" h-[70px] w-full">
                                             <div className=" h-[100%]">
                                                 <div className=" h-full">
-                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] text-3xl truncate">One step</div>
-                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] flex-wrap">Installing dependencies</div>
+                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] text-3xl truncate">{notifTitle}</div>
+                                                    <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8] flex-wrap">{notifSubtitle}</div>
                                                 </div>
                                             </div>
                                         </div>

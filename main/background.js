@@ -144,6 +144,7 @@ async function createMainWindow() {
     console.log('logger ->', object)
   })
   ipcMain.on("search-pplx", async (event, args) => {
+    console.log('search-pplx', args)
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
       method: 'POST',
@@ -166,7 +167,7 @@ async function createMainWindow() {
         stream: true
       }
     };
-    let bufferData = '';
+    let bufferData = ''; //
     
     try {
       const response = await axios.request(options)
@@ -199,8 +200,8 @@ async function createMainWindow() {
     });
   
     } catch( error ) {
-        console.log(error)
-        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
+        console.log("------", error)
+        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
           
           if (result.response === 0) {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
@@ -216,40 +217,53 @@ async function createMainWindow() {
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
     const groq = new Groq({apiKey: token});
-    console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
-    const chatCompletion = await groq.chat.completions.create({
-      "messages": [
-        {
-          "role": "user",
-          "content": query
+
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        "messages": [
+          {
+            "role": "user",
+            "content": query
+          }
+        ],
+        "model": model,
+        "temperature": temperature ? parseFloat(temperature) : 0.5,
+        "max_tokens": maxTokens ? parseInt(maxTokens, 10) : 1024,
+        "top_p": 1,
+        "stream": true,
+        "stop": null
+      });
+      let bufferData = '';
+      let tps = 0;
+      let tokens
+      let time
+      for await (const chunk of chatCompletion) {
+        bufferData += chunk.choices[0]?.delta?.content || '';
+        if (chunk.x_groq?.usage?.total_tokens && chunk.x_groq?.usage?.total_time) {
+          tokens = chunk.x_groq?.usage?.total_tokens
+          time = chunk.x_groq?.usage?.total_time
+          console.log("search time", tokens, time, (tokens/time).toFixed(0))
+          event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
+          event.sender.send('search-end');
+          break
         }
-      ],
-      "model": model,
-      "temperature": temperature ? parseFloat(temperature) : 0.5,
-      "max_tokens": maxTokens ? parseInt(maxTokens, 10) : 1024,
-      "top_p": 1,
-      "stream": true,
-      "stop": null
-    });
-    let bufferData = '';
-    let tps = 0;
-    let tokens
-    let time
-    for await (const chunk of chatCompletion) {
-      bufferData += chunk.choices[0]?.delta?.content || '';
-      if (chunk.x_groq?.usage?.total_tokens && chunk.x_groq?.usage?.total_time) {
-        tokens = chunk.x_groq?.usage?.total_tokens
-        time = chunk.x_groq?.usage?.total_time
-        console.log("search time", tokens, time, (tokens/time).toFixed(0))
-        event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
-        event.sender.send('search-end');
-        break
+        event.sender.send('search-result', bufferData);
       }
-      event.sender.send('search-result', bufferData);
+    } catch (error) {
+        console.log("------", error)
+        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
+          
+          if (result.response === 0) {
+            if (!settingsWindow || settingsWindow.isDestroyed()) {
+              settingsWindow = await createSettingsWindow();
+            } else {
+              settingsWindow.focus();
+            }
+          }
+        });
     }
     
   })
-
 
   ipcMain.on('warning', async (e, title, message) => {
     await showDialog(title, message);
@@ -285,35 +299,43 @@ async function createMainWindow() {
 
 (async () => {
   await app.whenReady();
-
-  console.log("postInstallFlagPath", fs.existsSync(postInstallFlagPath), postInstallFlagPath, isProd)
+  console.log("---------------------->", fs.existsSync(postInstallFlagPath))
   if(!fs.existsSync(postInstallFlagPath)) {
 
     settingsWindow = await createSettingsWindow();
 
     const scriptPath = path.join(getParentDir(), 'scripts/init.sh');
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
       if (error) { console.log(error); return; }
     });
 
-    ipcMain.on('ollama-ready', async () => {
+    ipcMain.on('ollama-ready', () => {
       fs.writeFileSync(postInstallFlagPath, 'done');
-      settingsWindow.close();
-      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-      app.exit(0)
+      // settingsWindow.close();
+      // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+      // app.exit(0)
     })
     ipcMain.on('ping-ollama', async (event) => {
       console.log('[settings]-logger -> None')
       setInterval(async () => {
         const isOllamaRunning = await isUrlRunning('http://localhost:11434');
         if (isOllamaRunning) event.sender.send("ollama-reply", "ollama-ready")
+        else event.sender.send("ollama-reply", "installing-ollama")
       }, 500);
+    })
+    ipcMain.on("logger", (event, object) => {
+      console.log("[settings]-logger ->", object)
+    })
+    ipcMain.on('relaunch-hask',  async (event) => {
+      // relaunch main window or create new one
+      if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.close(); }
+      mainWindow = await createMainWindow();
     })
    
   } else {
     mainWindow = await createMainWindow();
     const scriptPath = resolveHome('~/.hask/ollama.sh');
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, async (error, stdout, stderr) => {
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
       if (error) { console.log(error); return; }
     });
   }
@@ -390,7 +412,8 @@ async function createMainWindow() {
 
   });
   app.on('before-quit', () => {
-    exec('sh ~/.hask/close_process.sh > /dev/null 2>&1', (error, stdout, stderr) => {
+    const scriptPath = resolveHome('~/.hask/close_process.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
       if (error) {
         console.error(`ERROR: Error closing processes: ${error}`);
         return;
@@ -402,6 +425,7 @@ async function createMainWindow() {
       window.removeAllListeners('close');
       window.close();
     });
+    app.quit()
   
   });
 

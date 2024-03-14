@@ -2,10 +2,10 @@ import { useState, useRef, useEffect  } from "react";
 import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
-import { discordUrl, pplxModelList, groqModelList, githubUrl } from "../pages/api/constant";
+import { discordUrl, githubUrl, pplxModelList, groqModelList } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
-import { capitalize } from "../pages/api/methods";
+import { capitalize,  generateOllama,  getOllamaTags} from "../pages/api/methods";
 
 // let ipcRenderer;
 // if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
@@ -34,7 +34,9 @@ export default function Search() {
     const [modelList, setModelList] = useState(pplxModelList);
     const [pplxId, setPplxId] = useState(0);
     const [groqId, setGroqId] = useState(0);
+    const [ollamaId, setOllamaId] = useState(0);
 
+    const [ollamaModelList, setOllamaModelList] = useState([]);
 
     let inputRef = useRef(null);
     const scrollerRef = useRef(null);
@@ -49,13 +51,8 @@ export default function Search() {
             scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
         }
     };
-    const handleSearchEnd = () => {
-        setSearching(false);
-    };
-    const handleSearchError = (error) => {
-        console.error(error);
-        setSearching(false);
-    };
+    const handleSearchEnd = () => { setSearching(false); };
+    const handleSearchError = (error) => { console.error(error); setSearching(false); };
     const openUrl = async (socialType) => { 
         window.ipc.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
         setSettingsExpanded(false);
@@ -82,17 +79,22 @@ export default function Search() {
         }
     }
 
-    const handleProvider = (provider) => {
+    const handleProvider = async (provider) => {
         setProvider(provider);
         localStorage.setItem("provider", provider);
         setModelSelectionExpanded(true);
         if (provider === "perplexity") {
             setModelList(pplxModelList);
-        } else {
+        } else if (provider === "groq") {
             setModelList(groqModelList);
+        } else if (provider === "ollama") {
+            setModelList(await getOllamaTags());
         }
     }
-
+    // const loadOllamaModels = async () => { 
+    //     const _ollamaModelList = await getOllamaTags();
+    //     setOllamaModelList(_ollamaModelList.length > 0 ? _ollamaModelList : ["loading..."]);
+    // }
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
@@ -103,35 +105,11 @@ export default function Search() {
             if (_provider && _provider !== "") {
                 setProvider(_provider);
                 if (_provider === "perplexity") {
-                    setModelList(pplxModelList);
-                    setModel(pplxModelList[pplxId]);
-                    const _token = localStorage.getItem("pplx-token");
-                    const _model = localStorage.getItem("pplx-model");
-                    const _systemPrompt = localStorage.getItem("pplx-system-prompt") || "Be precise and concise.";
-                    const _temperature = localStorage.getItem("pplx-temperature") || "0.75";
-                    const _maxTokens = localStorage.getItem("pplx-max-tokens") || "500";
-                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
-                        setToken(_token);
-                        setModel(_model);
-                        setSystemPrompt(_systemPrompt);
-                        setTemperature(_temperature);
-                        setMaxTokens(_maxTokens);
-                    }
+                    configurePerplexity();
                 } else if (_provider === "groq") {
-                    setModelList(groqModelList);
-                    setModel(groqModelList[groqId]);
-                    const _token = localStorage.getItem("groq-token");
-                    const _model = localStorage.getItem("groq-model");
-                    const _systemPrompt = localStorage.getItem("groq-system-prompt") || "you are a helpful assistant";
-                    const _temperature = localStorage.getItem("groq-temperature") || "0.75";
-                    const _maxTokens = localStorage.getItem("groq-max-tokens") || "500";
-                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
-                        setToken(_token);
-                        setModel(_model);
-                        setSystemPrompt(_systemPrompt);
-                        setTemperature(_temperature);
-                        setMaxTokens(_maxTokens);
-                    }
+                    configureGroq();
+                } else if (_provider === "ollama") {
+                    configureOllama();
                 }
             }
         }
@@ -150,6 +128,37 @@ export default function Search() {
             document.removeEventListener("keydown", handleKeyboard);
         }
     }, []);
+
+    const configurePerplexity = (skip_model=false) => {
+        setModelList(pplxModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("pplx-model") || pplxModelList[pplxId]);
+        }
+        setToken(localStorage.getItem("pplx-token"));
+        setSystemPrompt(localStorage.getItem("pplx-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("pplx-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("pplx-max-tokens") || "512");
+    }
+    const configureGroq = (skip_model=false) => {
+        setModelList(groqModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("groq-model") || groqModelList[groqId]);
+        }
+        setToken(localStorage.getItem("groq-token"));
+        setSystemPrompt(localStorage.getItem("groq-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("groq-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("groq-max-tokens") || "500");
+    }
+    const configureOllama = async (skip_model=false) => {
+        if (!skip_model) {
+            // setModelList(await getOllamaTags());
+            if (ollamaModelList?.length > 0) setModel(localStorage.getItem("ollama-model") || ollamaModelList[ollamaId] );
+        }
+        // setToken(localStorage.getItem("ollama-token"));
+        setSystemPrompt(localStorage.getItem("ollama-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("ollama-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("ollama-max-tokens") || "500");
+    }
 
     const handleQueryChange = (e) => {
         setQuery(e.target.value);
@@ -184,6 +193,40 @@ export default function Search() {
                     temperature: parseFloat(temperature),
                     maxTokens: parseInt(maxTokens)
                 });
+        } else if (provider === "ollama") {
+            window.ipc.send("logger", "generating-token...");
+            try {
+                setSearching(true);
+                setAnswer("");
+                // let temp = ""
+                const stream = await generateOllama({
+                    model: model,
+                    prompt: query,
+                    stream: true,
+                    options: {
+                        num_predict: parseInt(maxTokens),
+                        temperature: parseFloat(temperature),
+                        // penalize_newline: true,
+                        top_p: 0.9,
+                        // presence_penalty: 0.6,
+                        stop: [ "User:", "Assistant:", "User:"] //["\n"]
+                    }
+                }) 
+
+                for await (const out of stream) {
+                    if(!out.done) {
+                        window.ipc.send("logger", ["---->", out.response]);
+                        // append to the previous answer
+                        setAnswer(prevAnswer => prevAnswer + out.response);
+                        // temp += out.response;
+                        // setAnswer(temp);
+                    }
+                }
+                setSearching(false)
+            } catch (error) {
+                window.ipc.send("logger", ["search-ollama-error", error]);
+                setSearching(false);
+            }
         }
     }
     const handleSettings = () => {
@@ -195,26 +238,25 @@ export default function Search() {
             setModelSelectionExpanded(false);
         }
     }
-    const handleModel = (_model) => {
+    const handleModel = async (_model) => {
         setModel(_model);
         setModelExpanded(false);
         setModelSelectionExpanded(false);
-        setModel(_model);
-        console.log(model);
         if (provider === "perplexity") {
-            setPplxId(pplxModelList.indexOf(_model));
+            configurePerplexity(false);
             localStorage.setItem("pplx-model", _model);
-            setToken(localStorage.getItem("pplx-token"));
-            setSystemPrompt(localStorage.getItem("pplx-system-prompt"));
-            setTemperature(localStorage.getItem("pplx-temperature"));
-            setMaxTokens(localStorage.getItem("pplx-max-tokens"));
+            setPplxId(pplxModelList.indexOf(_model) || 0);
+
         } else if (provider === "groq") {
-            setGroqId(groqModelList.indexOf(_model));
+            configureGroq(false);
             localStorage.setItem("groq-model", _model);
-            setToken(localStorage.getItem("groq-token"));
-            setSystemPrompt(localStorage.getItem("groq-system-prompt"));
-            setTemperature(localStorage.getItem("groq-temperature"));
-            setMaxTokens(localStorage.getItem("groq-max-tokens"));
+            setGroqId(groqModelList.indexOf(_model) || 0);
+
+        } else if (provider === "ollama") {
+            configureOllama(false);
+            localStorage.setItem("ollama-model", _model);
+            setOllamaId(ollamaModelList.indexOf(_model) || 0);
+
         }
     }
 
@@ -266,7 +308,7 @@ export default function Search() {
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse`}></div>
                                 :
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-6 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
-                                        <Answer key={"0"} answer={answer} />
+                                        <Answer key={"0"} answer={answer} searching={searching} />
                                 </div>
                             }
                         </>
@@ -365,6 +407,7 @@ export default function Search() {
                     <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-[#93929497]`}>Models</div>
                     <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
                     <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
+                    <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

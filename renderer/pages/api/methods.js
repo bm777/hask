@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { processStreamableRequest } from "./ollamaPuller";
 
 export async function searchPPLXlegacy(query, token, model) {
@@ -148,19 +149,35 @@ export function joinValue(obj) {
     return result.trim();
 }
 
+async function isUrlRunning(url) {
+    try {
+      const response = await axios.get(url);
+      return response.status === 200;
+    } catch (error) { return false }
+}
+
 export async function getOllamaTags(withTag = false) {
-    const response = await fetch('http://localhost:11434/api/tags');
-    const data = await response.json();
-    const models = data.models;
-    let modelNames = [];
-    for (let i = 0; i < models.length; i++) {
-        if (withTag) {
-            modelNames.push({model: models[i].name, digest: models[i].digest});
-        } else {
-            modelNames.push(models[i].name.split(':')[0]);
-        }
+
+    const isOllamaRunning = await isUrlRunning('http://localhost:11434');
+    if (!isOllamaRunning) {
+        window.ipc.send("logger", `ollama is not running${isOllamaRunning}`)
+        return [];
     }
-    return modelNames;
+    else {
+        window.ipc.send("logger", "ollama is running, fetching tags")
+        const response = await fetch('http://localhost:11434/api/tags');
+        const data = await response.json();
+        const models = data.models;
+        let modelNames = [];
+        for (let i = 0; i < models.length; i++) {
+            if (withTag) {
+                modelNames.push({model: models[i].name, digest: models[i].digest});
+            } else {
+                modelNames.push(models[i].name.split(':')[0]);
+            }
+        }
+        return modelNames;
+    }
 }
 
 async function jsonhash(json) {
@@ -195,3 +212,6 @@ export async function pullOllamaModel(request) {
         password: request.password,
     });
 }
+export async function generateOllama(request) {
+    return processStreamableRequest('generate', request);
+  }

@@ -47,7 +47,10 @@ const CodeText = ({ children }) => {
             </div>
             <pre>
                 <code className="language-js" >
-                    {code}
+                    {
+                        code.length > 4 && code.endsWith("|<|>|") ? code.slice(0, -5) : code
+                    }
+                    <span className=""></span>
                 </code>
             </pre>
         </div>

@@ -292,5 +292,49 @@
         box-shadow: inset 5px 0 0 #f7d87c;
         z-index: 0;
     }
+
+    /* Markdown styles */
+  .markdown-body {
+    /* Base styles for markdown content */
+    font-family: sans-serif;
+    line-height: 1.6;
+  }
+
+  .markdown-body table {
+    /* Table styles */
+    border-collapse: collapse;
+    margin: 1em 0;
+  }
+
+  .markdown-body > table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    border: 1px solid #ddd;
+  }
+  
+  .markdown-body > table > th,
+  .markdown-body > table > td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+    text-align: left;
+  }
+
+  .markdown-body th,
+  .markdown-body td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+  }
+
+  .markdown-body ul,
+  .markdown-body ol {
+    /* List styles */
+    padding-left: 2em;
+    margin: 1em 0;
+  }
+
+  .markdown-body strong {
+    /* Bold text styles */
+    font-weight: bold;
+  }
 }
 

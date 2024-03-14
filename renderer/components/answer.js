@@ -5,7 +5,7 @@ import { get_code_blocks } from "../pages/api/methods";
 import { useTheme } from "next-themes";
 import React from "react";
 import { v4 as uid } from 'uuid';
-import ParsedText from "./parsedtext";
+// import ParsedText from "./parsedtext";
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
 
@@ -59,9 +59,12 @@ const Answer = React.memo(({ answer, searching }) => {
                 line.includes("```") ? // .slice(3, -3)
                 <CodeText key={uid()} searching={searching} >{line}</CodeText>
                 :
-                <ParsedText searching={searching} >
-                    {line}   
-                </ParsedText>
+                <div 
+                    key={uid()}
+                    className="markdown-body"
+                    dangerouslySetInnerHTML={{ __html: line }}
+                    
+                />
             }
             </div>
             ))

@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const { exec } = require('child_process');
 const Groq = require('groq-sdk');
+const OpenAI = require('openai').OpenAI
 
 const isProd = process.env.NODE_ENV === 'production';
 const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
@@ -327,11 +328,13 @@ async function createMainWindow() {
     ipcMain.on("logger", (event, object) => {
       console.log("[settings]-logger ->", object)
     })
-    ipcMain.on('relaunch-hask',  async (event) => {
-      // relaunch main window or create new one
-      if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.close(); }
-      mainWindow = await createMainWindow();
-    })
+    // ipcMain.on('relaunch-hask',  async (event) => {
+    //   // relaunch main window or create new one
+    //   if (mainWindow) {
+    //     mainWindow.close();
+    //   }
+    //   mainWindow = await createMainWindow();
+    // })
    
   } else {
     mainWindow = await createMainWindow();
@@ -340,6 +343,13 @@ async function createMainWindow() {
       if (error) { console.log(error); return; }
     });
   }
+  ipcMain.on('relaunch-hask',  async (event) => {
+    // relaunch main window or create new one
+    if (mainWindow) {
+      mainWindow.close();
+    }
+    mainWindow = await createMainWindow();
+  })
   
   const template = [
     {

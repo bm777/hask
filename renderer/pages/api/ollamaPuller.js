@@ -89,7 +89,7 @@ const utils_parseJSON = async function* (itr) {
 export async function processStreamableRequest(endpoint, request) {
     request.stream = true; // request.stream ?? true
     // _fetch = null;
-    const host = 'http://127.0.0.1:11434'
+    const host = 'http://localhost:11434';
     const response = await utils_post(null, `${host}/api/${endpoint}`, { ...request }); // endpoint hadnle only generate method
 
     if (!response.body) { throw new Error('Missing body');}

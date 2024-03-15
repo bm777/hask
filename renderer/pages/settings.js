@@ -4,7 +4,8 @@ import {
     pplxModelList, 
     groqModelList, 
     ollamaModelList as defaultOllamaModelList, 
-    openaiModelList
+    openaiModelList, 
+    anthropicModelList
 } from "./api/constant";
 import { useTheme } from "next-themes";
 import OllamaModel from "../components/buttons/ollamaModel";
@@ -36,6 +37,7 @@ export default function Settings() {
     const [groqStatus, setGroqStatus] = useState(false);
     const [ollamaStatus, setOllamaStatus] = useState(false);
     const [openaiStatus, setOpenaiStatus] = useState(false);
+    const [anthropicStatus, setAnthropicStatus] = useState(false);
 
 
     useEffect(() => {
@@ -54,6 +56,8 @@ export default function Settings() {
             configureOllama();
         } else if (_provider === "openai") {
             configureOpenai();
+        } else if (_provider === "anthropic") {
+            configureAnthropic();
         }
 
         window.ipc.send("ping-ollama"); // ping ollama to check if it's ready
@@ -103,6 +107,12 @@ export default function Settings() {
                 [`openai-system-prompt`, systemPrompt],["openai-temperature", temperature],
                 ["openai-max-tokens", maxTokens]
             ];
+        } else if (provider === "anthropic") {
+            list_key_value = [
+                ["provider", provider], ["anthropic-token", token], ["anthropic-model", model], 
+                [`anthropic-system-prompt`, systemPrompt],["anthropic-temperature", temperature],
+                ["anthropic-max-tokens", maxTokens]
+            ];
         }
         list_key_value.forEach((item) => {
             localStorage.setItem(item[0], item[1]);
@@ -121,21 +131,31 @@ export default function Settings() {
             setGroqStatus(false);
             setOllamaStatus(false);
             setOpenaiStatus(false);
+            setAnthropicStatus(false);
         } else if (prov === "groq") {
             setPplxStatus(false);
             setGroqStatus(true);
             setOllamaStatus(false);
             setOpenaiStatus(false);
+            setAnthropicStatus(false);
         } else if (prov === "ollama") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(true);
             setOpenaiStatus(false);
+            setAnthropicStatus(false);
         } else if (prov === "openai") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(false);
             setOpenaiStatus(true);
+            setAnthropicStatus(false);
+        } else if (prov === "anthropic") {
+            setPplxStatus(false);
+            setGroqStatus(false);
+            setOllamaStatus(false);
+            setOpenaiStatus(false);
+            setAnthropicStatus(true);
         }
     }
     const configurePerplexity = () => {
@@ -188,6 +208,15 @@ export default function Settings() {
         setTemperature(localStorage.getItem("openai-temperature") || temperature);
         setMaxTokens(localStorage.getItem("openai-max-tokens") || maxTokens);
     }
+    const configureAnthropic = () => {
+        changeStatus("anthropic");
+        setToken(localStorage.getItem("anthropic-token") || "");
+        setModel(localStorage.getItem("anthropic-model") || "claude-2.1");
+        setModels(anthropicModelList)
+        setSystemPrompt(localStorage.getItem("anthropic-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("anthropic-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("anthropic-max-tokens") || maxTokens);
+    }
     const handleTabChange = async (prov) => {
         setProvider(prov);
         localStorage.setItem("provider", prov);
@@ -202,6 +231,8 @@ export default function Settings() {
         }
         else if (prov === "openai"){
             configureOpenai();
+        } else if (prov === "anthropic") {
+            configureAnthropic();
         }
         // console.log("provider", provider, "prov", prov);
     }
@@ -226,6 +257,7 @@ export default function Settings() {
                     <Provider active={groqStatus} _provider={"Groq"} handleTabChange={handleTabChange} />
                     <Provider active={ollamaStatus} _provider={"Ollama"} handleTabChange={handleTabChange} />
                     <Provider active={openaiStatus} _provider={"OpenAI"} handleTabChange={handleTabChange} />
+                    <Provider active={anthropicStatus} _provider={"Anthropic"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"Cohere"} handleTabChange={handleTabChange} />
                 </div>
                 {

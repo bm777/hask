@@ -2,7 +2,7 @@ import { useState, useRef, useEffect  } from "react";
 import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
-import { discordUrl, githubUrl, pplxModelList, groqModelList, openaiModelList } from "../pages/api/constant";
+import { discordUrl, githubUrl, pplxModelList, groqModelList, openaiModelList, anthropicModelList  } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
 import { capitalize,  generateOllama,  getOllamaTags} from "../pages/api/methods";
@@ -32,6 +32,7 @@ export default function Search() {
     const [groqId, setGroqId] = useState(0);
     const [ollamaId, setOllamaId] = useState(0);
     const [openaiId, setOpenaiId] = useState(0);
+    const [anthropicId, setAnthropicId] = useState(0);
 
     const [ollamaModelList, setOllamaModelList] = useState([]);
 
@@ -86,6 +87,8 @@ export default function Search() {
             setModelList(await getOllamaTags());
         } else if (provider === "openai") {
             setModelList(openaiModelList);
+        } else if (provider === "anthropic") {
+            setModelList(anthropicModelList);
         }
     }
 
@@ -105,6 +108,8 @@ export default function Search() {
                 configureOllama();
             } else if (_provider === "openai") {
                 configureOpenai();
+            } else if (_provider === "anthropic") {
+                configureAnthropic();
             }
         }
 
@@ -177,6 +182,16 @@ export default function Search() {
         setSystemPrompt(localStorage.getItem("openai-system-prompt") || "You are a helpful assistant");
         setTemperature(localStorage.getItem("openai-temperature") || "0.7");
         setMaxTokens(localStorage.getItem("openai-max-tokens") || "500");
+    }
+    const configureAnthropic = (skip_model=false) => {
+        setModelList(anthropicModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("anthropic-model") || anthropicModelList[anthropicId]);
+        }
+        setToken(localStorage.getItem("anthropic-token"));
+        setSystemPrompt(localStorage.getItem("anthropic-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("anthropic-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("anthropic-max-tokens") || "500");
     }
 
     const handleQueryChange = (e) => {
@@ -256,6 +271,17 @@ export default function Search() {
                     temperature: parseFloat(temperature),
                     maxTokens: parseInt(maxTokens)
                 });
+        } else if (provider === "anthropic") {
+            window.ipc.send(
+                "search-anthropic", 
+                { 
+                    query, 
+                    model, 
+                    token, 
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
         }
     }
     const handleSettings = () => {
@@ -289,6 +315,10 @@ export default function Search() {
             configureOpenai(true);
             localStorage.setItem("openai-model", _model);
             setOpenaiId(openaiModelList.indexOf(_model) || 0);
+        } else if (provider === "anthropic") {
+            configureAnthropic(true);
+            localStorage.setItem("anthropic-model", _model);
+            setAnthropicId(anthropicModelList.indexOf(_model) || 0);
         }
     }
 
@@ -441,6 +471,7 @@ export default function Search() {
                     <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
                     <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
                     <Pvd text="OpenAI" defaultModel={openaiModelList[openaiId]} selected={provider === "openai"} action={handleProvider} />
+                    <Pvd text="Anthropic" defaultModel={anthropicModelList[anthropicId]} selected={provider === "anthropic"} action={handleProvider} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

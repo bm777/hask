@@ -205,7 +205,7 @@ export default function Search() {
             window.ipc.send("logger", "generating-token...");
             try {
                 setSearching(true);
-                setAnswer("|");
+                setAnswer(" ");
                 const stream = await generateOllama({
                     model: model,
                     prompt: query,

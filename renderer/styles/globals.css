@@ -14,9 +14,6 @@
         width: 8px;
         background: #2d2d2d00;
     }
-    ::-webkit-scrollbar-thumb {
-        /* @apply bg-[#2d2d2d] w-1; */
-    }
 
     pre[class*="language-"],
     code[class*="language-"] {
@@ -346,6 +343,14 @@
         margin: 5px 0;
         border-color: #49484C
         /* for light TBD */ 
+    }
+    .markdown-body :not(pre) > code {
+        /* Inline code styles */
+        padding: 2px 4px;
+        font-size: 90%;
+        color: #d4d4d4;
+        background-color: #1e1e1e;
+        border-radius: 4px;
     }
 
     .markdown-body strong {

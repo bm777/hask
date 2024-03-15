@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+
     .no-scrollbar::-webkit-scrollbar {
         display: none; 
     }
@@ -10,20 +11,17 @@
         -webkit-app-region: drag;
     }
     ::-webkit-scrollbar {
-        /* width: 8px; */
+        width: 8px;
+        background: #2d2d2d00;
     }
     ::-webkit-scrollbar-thumb {
-        background: #2d2d2da9;
-        /* border-radius: 4px; */
-    }
-    ::-webkit-scrollbar-thumb:increment {
-        background: #2d2d2da9;
+        /* @apply bg-[#2d2d2d] w-1; */
     }
 
     pre[class*="language-"],
     code[class*="language-"] {
         color: #d4d4d4;
-        font-size: 14px;
+        font-size: 12px;
         text-shadow: none;
         font-family: Menlo, Monaco, Consolas, "Andale Mono", "Ubuntu Mono", "Courier New", monospace;
         direction: ltr;
@@ -295,5 +293,67 @@
         box-shadow: inset 5px 0 0 #f7d87c;
         z-index: 0;
     }
+
+    /**********************************************************
+    * Markdown styles 
+    */
+    .markdown-body {
+        /* Base styles for markdown content */
+        font-family: sans-serif;
+        line-height: 1.6;
+    }
+
+    .markdown-body table {
+        /* Table styles */
+        border-collapse: collapse;
+        margin: 1em 0;
+    }
+
+    .markdown-body > table {
+        border-collapse: collapse;
+        margin: 1em 0;
+        border: 1px solid #ddd;
+    }
+    
+    .markdown-body > table > th,
+    .markdown-body > table > td {
+        border: 1px solid #ddd;
+        padding: 0.5em;
+        text-align: left;
+    }
+
+    .markdown-body th,
+    .markdown-body td {
+        border: 1px solid #ddd;
+        padding: 0.5em;
+    }
+
+    .markdown-body ul {
+        /* List unordored */
+        padding-left: 32px;
+        margin: 10px 0;
+        list-style-type: disc;
+    }
+    .markdown-body ol {
+        /* List ordored styles */
+        padding-left: 32px;
+        list-style-type: decimal;
+        margin: 10px 0;
+    }
+    .markdown-body hr {
+        /* List ordored styles */
+        /* padding-left: 32px; */
+        margin: 5px 0;
+        border-color: #49484C
+        /* for light TBD */ 
+    }
+
+    .markdown-body strong {
+        /* Bold text styles */
+        font-weight: bold;
+    }
+
+
+
 }
 

@@ -15,26 +15,25 @@ const CodeText = ({ children }) => {
             // console.log("children", children.split("\n").slice(1, -1).join("\n"));
         }
         Prism.highlightAll();
-    }
-    , [children]);
+    }, [children]);
     
     const copied = () => {
         navigator.clipboard.writeText(code).then(function() {
             setStatus("copied");
             setTimeout(() => {
                 setStatus("copy");
-            }, 1000);
+            }, 1000); 
         }, function(err) {
             setStatus("error");
             setTimeout(() => {
                 setStatus("copy");
-            }, 1000);
+            }, 1000); 
         });
     }
     
     return (
-        <div className={`rounded-md bg-[#1e1e1e] text-sm overflow-auto border dark:border-[#49484C] duration-700`}>
-            <div className={`w-full bg-[#2F2F2F] flex items-center text-[#B4B4B4] justify-between py-[2px]`}>
+        <div className={`rounded-md bg-[#1e1e1e] text-sm overflow-auto border mx-auto my-1 w-[97%] dark:border-[#49484C] duration-700`}>
+            <div className={`w-full bg-[#2F2F2F] flex items-center pl-[16px] text-[#B4B4B4] justify-between py-[2px]`}>
                 <div className="ml-3 ">{lang.replace('`', '').replace('`', '').replace('`', '') }</div>
 
                 <div onClick={copied} className="flex items-center justify-center  mr-2 gap-1 hover:cursor-pointer">
@@ -46,8 +45,8 @@ const CodeText = ({ children }) => {
                 
             </div>
             <pre>
-                <code className="language-js" >
-                    {code}
+                <code className="language-js language-regex" >
+                    { code }
                 </code>
             </pre>
         </div>

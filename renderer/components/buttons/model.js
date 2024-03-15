@@ -22,7 +22,7 @@ export default function Model({ selected, text , action}) {
                 </div>
                 <div className={"text-sm text-[#2f2f2fa3] dark:text-[#A7A6A8] " + (selected ? "font-medium" : "")}>{text}</div>
             </div>
-            <div className=" "> </div>
+            <div className=""> </div>
         </div>
     )
 }

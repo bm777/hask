@@ -7,7 +7,17 @@ module.exports = {
     './renderer/components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      'animation': {
+        'gradient-x':'gradient-x 15s ease infinite',
+        'gradient-y':'gradient-y 15s ease infinite',
+        'gradient-xy':'gradient-xy 15s ease infinite',
+        'rot-slow': 'rot 45s linear infinite',
+        'rot-medium': 'rot 35s linear infinite',
+        'rot-fast': 'rot 5s linear infinite',
+      },
+
+    },
   },
   plugins: [],
 };

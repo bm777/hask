@@ -2,15 +2,15 @@ import { useState, useRef, useEffect  } from "react";
 import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
-import { discordUrl, pplxModelList, groqModelList, githubUrl } from "../pages/api/constant";
+import { discordUrl, githubUrl, pplxModelList, groqModelList } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
-import { capitalize } from "../pages/api/methods";
+import { capitalize,  generateOllama,  getOllamaTags} from "../pages/api/methods";
 
-let ipcRenderer;
-if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
-    ipcRenderer = window.require("electron").ipcRenderer;
-}
+// let ipcRenderer;
+// if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+//     ipcRenderer = window.require("electron").ipcRenderer;
+// }
 
 export default function Search() {
     const [query, setQuery] = useState("");
@@ -34,7 +34,9 @@ export default function Search() {
     const [modelList, setModelList] = useState(pplxModelList);
     const [pplxId, setPplxId] = useState(0);
     const [groqId, setGroqId] = useState(0);
+    const [ollamaId, setOllamaId] = useState(0);
 
+    const [ollamaModelList, setOllamaModelList] = useState([]);
 
     let inputRef = useRef(null);
     const scrollerRef = useRef(null);
@@ -43,29 +45,24 @@ export default function Search() {
     const modelRef = useRef(null);
 
     // Event listener functions
-    const handleSearchResult = (event, result) => {
+    const handleSearchResult = (result) => {
         setAnswer(result);
         if (scrollerRef.current) {
             scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
         }
     };
-    const handleSearchEnd = () => {
-        setSearching(false);
-    };
-    const handleSearchError = (event, error) => {
-        console.error(error);
-        setSearching(false);
-    };
+    const handleSearchEnd = () => { setSearching(false); };
+    const handleSearchError = (error) => { console.error(error); setSearching(false); };
     const openUrl = async (socialType) => { 
-        ipcRenderer.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
+        window.ipc.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
         setSettingsExpanded(false);
     }
-    const quitApp = () => { ipcRenderer.send("quit-app") }
+    const quitApp = () => { window.ipc.send("quit-app") }
     const openSettings = () => { 
-        ipcRenderer.send("open-settings");
+        window.ipc.send("open-settings");
         setSettingsExpanded(false);
     }
-    const handleSearchTime = (event, _tps, _time) => {
+    const handleSearchTime = (_tps, _time) => {
         setTime(_time);
         setTps(_tps);
     }
@@ -74,22 +71,22 @@ export default function Search() {
             setModelExpanded(!modelExpanded);
         }
     }
-
     // handle click outside of settings
     const handleClickOutside = (event) => {
         if (settingsRef.current && !settingsRef.current.contains(event.target)) {
             setSettingsExpanded(false);
         }
     }
-
-    const handleProvider = (provider) => {
+    const handleProvider = async (provider) => {
         setProvider(provider);
         localStorage.setItem("provider", provider);
         setModelSelectionExpanded(true);
         if (provider === "perplexity") {
             setModelList(pplxModelList);
-        } else {
+        } else if (provider === "groq") {
             setModelList(groqModelList);
+        } else if (provider === "ollama") {
+            setModelList(await getOllamaTags());
         }
     }
 
@@ -99,40 +96,14 @@ export default function Search() {
             inputRef.current.select();
         }
         if(window !== undefined) {
-            const _provider = localStorage.getItem("provider");
-            if (_provider && _provider !== "") {
-                setProvider(_provider);
-                if (_provider === "perplexity") {
-                    setModelList(pplxModelList);
-                    setModel(pplxModelList[pplxId]);
-                    const _token = localStorage.getItem("pplx-token");
-                    const _model = localStorage.getItem("pplx-model");
-                    const _systemPrompt = localStorage.getItem("pplx-system-prompt") || "Be precise and concise.";
-                    const _temperature = localStorage.getItem("pplx-temperature") || "0.75";
-                    const _maxTokens = localStorage.getItem("pplx-max-tokens") || "500";
-                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
-                        setToken(_token);
-                        setModel(_model);
-                        setSystemPrompt(_systemPrompt);
-                        setTemperature(_temperature);
-                        setMaxTokens(_maxTokens);
-                    }
-                } else if (_provider === "groq") {
-                    setModelList(groqModelList);
-                    setModel(groqModelList[groqId]);
-                    const _token = localStorage.getItem("groq-token");
-                    const _model = localStorage.getItem("groq-model");
-                    const _systemPrompt = localStorage.getItem("groq-system-prompt") || "you are a helpful assistant";
-                    const _temperature = localStorage.getItem("groq-temperature") || "0.75";
-                    const _maxTokens = localStorage.getItem("groq-max-tokens") || "500";
-                    if (_token && _model && _token && _model && _systemPrompt && _temperature && _maxTokens) {
-                        setToken(_token);
-                        setModel(_model);
-                        setSystemPrompt(_systemPrompt);
-                        setTemperature(_temperature);
-                        setMaxTokens(_maxTokens);
-                    }
-                }
+            const _provider = localStorage.getItem("provider") || "perplexity";
+            setProvider(_provider);
+            if (_provider === "perplexity") {
+                configurePerplexity();
+            } else if (_provider === "groq") {
+                configureGroq();
+            } else if (_provider === "ollama") {
+                configureOllama();
             }
         }
 
@@ -140,20 +111,62 @@ export default function Search() {
         document.addEventListener("keydown", handleKeyboard);
 
         // set up IPC event listeners
-        ipcRenderer.on('search-result', handleSearchResult);
-        ipcRenderer.on('search-end', handleSearchEnd);
-        ipcRenderer.on('search-error', handleSearchError);
-        ipcRenderer.on('search-time', handleSearchTime)
+        window.ipc.on('search-result', handleSearchResult);
+        window.ipc.on('search-end', handleSearchEnd);
+        window.ipc.on('search-error', handleSearchError);
+        window.ipc.on('search-time', handleSearchTime)
 
         return () => { 
-            ipcRenderer.removeAllListeners('search-result')
-            ipcRenderer.removeAllListeners('search-end')
-            ipcRenderer.removeAllListeners('search-error')
-            ipcRenderer.removeAllListeners('search-time')
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyboard);
         }
     }, []);
+
+    const configurePerplexity = (skip_model=false) => {
+        setModelList(pplxModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("pplx-model") || pplxModelList[pplxId]);
+        }
+        setToken(localStorage.getItem("pplx-token"));
+        setSystemPrompt(localStorage.getItem("pplx-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("pplx-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("pplx-max-tokens") || "512");
+    }
+    const configureGroq = (skip_model=false) => {
+        setModelList(groqModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("groq-model") || groqModelList[groqId]);
+        }
+        setToken(localStorage.getItem("groq-token"));
+        setSystemPrompt(localStorage.getItem("groq-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("groq-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("groq-max-tokens") || "500");
+    }
+    const configureOllama = async (skip_model=false) => {
+        if (!skip_model) {
+            const interval = setInterval(async () => {
+                const tags = await getOllamaTags();
+                if(tags.length === 0) {
+                    setModelList([]);
+                    setModel("");
+                } else {
+                    if (tags[0] !== "loading...") {
+                        setOllamaModelList(tags);
+                        setModelList(tags);
+                        setModel(localStorage.getItem("ollama-model") || tags[ollamaId || 0]);
+                        clearInterval(interval);
+                    } else {
+                        setOllamaModelList(["loading..."]);
+                        setModel("loading...");
+                    }
+                }
+            }, 1000);
+        }
+        // setToken(localStorage.getItem("ollama-token"));
+        setSystemPrompt(localStorage.getItem("ollama-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("ollama-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("ollama-max-tokens") || "500");
+    }
 
     const handleQueryChange = (e) => {
         setQuery(e.target.value);
@@ -167,25 +180,60 @@ export default function Search() {
         e.preventDefault()
         setSearching(true);
         if (provider === "perplexity") {
-        ipcRenderer.send(
+        window.ipc.send(
             "search-pplx", 
-            query, 
-            model, 
-            token, 
-            systemPrompt,
-            parseFloat(temperature),
-            parseInt(maxTokens)
-            );
-        } else if (provider === "groq") {
-            ipcRenderer.send(
-                "search-groq", 
+            {
                 query, 
                 model, 
                 token, 
                 systemPrompt,
-                parseFloat(temperature),
-                parseInt(maxTokens)
-                );
+                temperature: parseFloat(temperature),
+                maxTokens: parseInt(maxTokens)
+            });
+        } else if (provider === "groq") {
+            window.ipc.send(
+                "search-groq", 
+                { 
+                    query, 
+                    model, 
+                    token, 
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
+        } else if (provider === "ollama") {
+            window.ipc.send("logger", "generating-token...");
+            try {
+                setSearching(true);
+                setAnswer("|");
+                const stream = await generateOllama({
+                    model: model,
+                    prompt: query,
+                    stream: true,
+                    options: {
+                        num_predict: parseInt(maxTokens),
+                        temperature: parseFloat(temperature),
+                        // penalize_newline: true,
+                        top_p: 0.9,
+                        // presence_penalty: 0.6,
+                        stop: [ "User:", "Assistant:", "User:"] //["\n"]
+                    }
+                }) 
+                setAnswer("");
+                for await (const out of stream) {
+                    if(!out.done) {
+                        window.ipc.send("logger", ["---->", out.response]);
+                        // append to the previous answer
+                        setAnswer(prevAnswer => prevAnswer + out.response);
+                        // temp += out.response;
+                        // setAnswer(temp);
+                    }
+                }
+                setSearching(false)
+            } catch (error) {
+                window.ipc.send("logger", ["search-ollama-error", error]);
+                setSearching(false);
+            }
         }
     }
     const handleSettings = () => {
@@ -197,32 +245,31 @@ export default function Search() {
             setModelSelectionExpanded(false);
         }
     }
-    const handleModel = (_model) => {
+    const handleModel = async (_model) => {
         setModel(_model);
         setModelExpanded(false);
         setModelSelectionExpanded(false);
-        setModel(_model);
-        console.log(model);
         if (provider === "perplexity") {
-            setPplxId(pplxModelList.indexOf(_model));
+            configurePerplexity(true);
             localStorage.setItem("pplx-model", _model);
-            setToken(localStorage.getItem("pplx-token"));
-            setSystemPrompt(localStorage.getItem("pplx-system-prompt"));
-            setTemperature(localStorage.getItem("pplx-temperature"));
-            setMaxTokens(localStorage.getItem("pplx-max-tokens"));
+            setPplxId(pplxModelList.indexOf(_model) || 0);
+
         } else if (provider === "groq") {
-            setGroqId(groqModelList.indexOf(_model));
+            configureGroq(true);
             localStorage.setItem("groq-model", _model);
-            setToken(localStorage.getItem("groq-token"));
-            setSystemPrompt(localStorage.getItem("groq-system-prompt"));
-            setTemperature(localStorage.getItem("groq-temperature"));
-            setMaxTokens(localStorage.getItem("groq-max-tokens"));
+            setGroqId(groqModelList.indexOf(_model) || 0);
+
+        } else if (provider === "ollama") {
+            configureOllama(true);
+            localStorage.setItem("ollama-model", _model);
+            setOllamaId(ollamaModelList.indexOf(_model) || 0);
+
         }
     }
 
     // blur function, when the user clicks outside the search bar, hide the window by calling the .hide function in main/background.js
     const blur = () => {
-        ipcRenderer.send('window-blur');
+        window.ipc.send('window-blur');
     }
 
     return (
@@ -267,8 +314,8 @@ export default function Search() {
                                 ( searching && answer === "") ? 
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse`}></div>
                                 :
-                                <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-6 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
-                                        <Answer key={"0"} answer={answer} />
+                                <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-8 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
+                                        <Answer key={"0"} answer={answer} searching={searching} />
                                 </div>
                             }
                         </>
@@ -283,7 +330,7 @@ export default function Search() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <span className="text-md text-gray-600/60 mr-[13px]">The knowledge at your hands</span>
+                                    <span className="text-md text-gray-600/60 mr-[13px]">Knowledge at your fingertips</span>
                                 </div>
                             </div>
                             
@@ -367,6 +414,7 @@ export default function Search() {
                     <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-[#93929497]`}>Models</div>
                     <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
                     <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
+                    <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

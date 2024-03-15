@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { processStreamableRequest } from "./ollamaPuller";
+
 export async function searchPPLXlegacy(query, token, model) {
     const auth = 'Bearer ' +token
     const options = {
@@ -131,3 +134,84 @@ export const capitalize = (s) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+export function joinValue(obj) {
+
+    let result = '';
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            if (typeof value === 'string') {
+                result += value + ' ';
+            }
+        }
+    }
+    return result.trim();
+}
+
+async function isUrlRunning(url) {
+    try {
+      const response = await axios.get(url);
+      return response.status === 200;
+    } catch (error) { return false }
+}
+
+export async function getOllamaTags(withTag = false) {
+
+    const isOllamaRunning = await isUrlRunning('http://localhost:11434');
+    if (!isOllamaRunning) {
+        window.ipc.send("logger", `ollama is not running${isOllamaRunning}`)
+        return ["loading..."];
+    }
+    else {
+        window.ipc.send("logger", "ollama is running, fetching tags")
+        const response = await fetch('http://localhost:11434/api/tags');
+        const data = await response.json();
+        const models = data.models;
+        let modelNames = [];
+        for (let i = 0; i < models.length; i++) {
+            if (withTag) {
+                modelNames.push({model: models[i].name, digest: models[i].digest});
+            } else {
+                modelNames.push(models[i].name.split(':')[0]);
+            }
+        }
+        return modelNames;
+    }
+}
+
+async function jsonhash(json) {
+    const jsonstring = JSON.stringify(json).replace(/\s+/g, '')
+    const messageBuffer = new TextEncoder().encode(jsonstring);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", messageBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');  
+}
+
+export async function isLatest(model, localdisgest) {
+    let [repo, tag] = model.split(":")
+    if (!repo.includes("/")) { repo = `library/${repo}` }
+
+    const remoteModelInfo = await fetch(`https://ollama.ai/v2/${repo}/manifests/${tag}`, {
+        headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json" }
+    })
+    if(remoteModelInfo.status === 200) {
+        const _json = await remoteModelInfo.json()
+        const hash = await jsonhash(_json);
+        return hash === localdisgest
+    }
+    return false
+}
+
+export async function pullOllamaModel(request) {
+    return processStreamableRequest('pull', {
+        name: request.model,
+        stream: request.stream,
+        insecure: request.insecure,
+        username: request.username,
+        password: request.password,
+    });
+}
+export async function generateOllama(request) {
+    return processStreamableRequest('generate', request);
+  }

@@ -20,7 +20,7 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 | Groq               | llama2-8x7b-32768  |  ✅               |
 | OpenAI             | soon               |  ❌               |
 | Cohere             | soon               |  ❌               |
-| Claude             | soon               |  ❌               |
+| Anthropic          | soon               |  ❌               |
 | Mistral            | soon               |  ❌               |
 
 
@@ -38,9 +38,9 @@ Mac Silicon (M1, M2, M3): [PKG](https://github.com/bm777/hask/releases/download/
 
 Mac Intel: [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-intel.pkg) [DMG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-intel.dmg)
 
-[Windows soon](https://github.com/bm777/hask/releases)
+[Windows available in preview](https://github.com/bm777/hask/releases)
 
-[Linux soon](https://github.com/bm777/hask/releases)
+[Linux available in preview](https://github.com/bm777/hask/releases)
 
 
 ## 1. Development

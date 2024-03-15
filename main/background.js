@@ -1,18 +1,30 @@
-import { app, globalShortcut, Menu, ipcMain, dialog, shell } from 'electron';
+import { app, globalShortcut, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import axios from 'axios';
+import path from 'path';
+const fs = require('fs');
+const os = require('os');
+const { exec } = require('child_process');
 const Groq = require('groq-sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
+const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
 let settingsWindow;
+let mainWindow;
 
 if (isProd) {
   serve({ directory: 'app' }); // important for the build
 } else {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
-
+function getParentDir(_file) {
+  if (isProd) return path.dirname(path.dirname(path.dirname(__dirname)))
+  else return path.dirname(__dirname)
+}
+function resolveHome(filepath) {
+  return filepath.startsWith('~') ? path.join(os.homedir(), filepath.slice(1)) : filepath;
+}
 const _options = (title, message) => {
   return {
     type: 'info',
@@ -41,6 +53,12 @@ function get_blocks(data) {
   });
   return blocks;
 }
+async function isUrlRunning(url) {
+  try {
+    const response = await axios.get(url);
+    return response.status === 200;
+  } catch (error) { return false }
+}
 async function showDialog(title, message) {
   dialog.showMessageBox(mainWindow, _options(title, message)).then((result) => {
     if (result.response === 0) {
@@ -59,7 +77,11 @@ async function createSettingsWindow() {
     resizable: false,
     maximizable: false,
     minimizable: false,
-    frame: true
+    // backgroundColor: "#19171B", //"#fa2E292F",
+    frame: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
 
   if (isProd) {
@@ -68,10 +90,11 @@ async function createSettingsWindow() {
     const port = process.argv[2];
     await settingsWindow.loadURL(`http://localhost:${port}/settings`);
   }
+  // settingsWindow.toggleDevTools();
   return settingsWindow;
 }
 async function createMainWindow() {
-  const mainWindow = createWindow('main-window', {
+  mainWindow = createWindow('main-window', {
     width: 750,
     height: 480,
     // alwaysOnTop: true,
@@ -80,7 +103,10 @@ async function createMainWindow() {
     minimizable: false,
     transparent: true,
     backgroundColor: "#00ffffff", //'#fa2E292F',
-    frame: false
+    frame: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
 
   mainWindow.on('blur', (e) => {
@@ -101,7 +127,7 @@ async function createMainWindow() {
         bufferData = "Error parsing response";
     }
     return [bufferData, token];
-}
+  }
   ipcMain.on("open-url", async (event, url) => {
     shell.openExternal(url);
   })
@@ -115,7 +141,12 @@ async function createMainWindow() {
       settingsWindow.focus();
     }
   })
-  ipcMain.on("search-pplx", async (event, query, model, token, systemPrompt, temperature, maxTokens) => {
+  ipcMain.on("logger", (event, object) => {
+    console.log('logger ->', object)
+  })
+  ipcMain.on("search-pplx", async (event, args) => {
+    console.log('search-pplx', args)
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
       method: 'POST',
       url: 'https://api.perplexity.ai/chat/completions',
@@ -137,7 +168,7 @@ async function createMainWindow() {
         stream: true
       }
     };
-    let bufferData = '';
+    let bufferData = ''; //
     
     try {
       const response = await axios.request(options)
@@ -170,8 +201,8 @@ async function createMainWindow() {
     });
   
     } catch( error ) {
-        console.log(error)
-        dialog.showMessageBox(mainWindow, _options("The API is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
+        console.log("------", error)
+        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
           
           if (result.response === 0) {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
@@ -183,42 +214,57 @@ async function createMainWindow() {
         });
       }
   })
-  ipcMain.on("search-groq", async (event, query, model, token, systemPrompt, temperature, maxTokens) => {
-    const groq = new Groq({apiKey: token});
+  ipcMain.on("search-groq", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
-    const chatCompletion = await groq.chat.completions.create({
-      "messages": [
-        {
-          "role": "user",
-          "content": query
+    const groq = new Groq({apiKey: token});
+
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        "messages": [
+          {
+            "role": "user",
+            "content": query
+          }
+        ],
+        "model": model,
+        "temperature": temperature ? parseFloat(temperature) : 0.5,
+        "max_tokens": maxTokens ? parseInt(maxTokens, 10) : 1024,
+        "top_p": 1,
+        "stream": true,
+        "stop": null
+      });
+      let bufferData = '';
+      let tps = 0;
+      let tokens
+      let time
+      for await (const chunk of chatCompletion) {
+        bufferData += chunk.choices[0]?.delta?.content || '';
+        if (chunk.x_groq?.usage?.total_tokens && chunk.x_groq?.usage?.total_time) {
+          tokens = chunk.x_groq?.usage?.total_tokens
+          time = chunk.x_groq?.usage?.total_time
+          console.log("search time", tokens, time, (tokens/time).toFixed(0))
+          event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
+          event.sender.send('search-end');
+          break
         }
-      ],
-      "model": model,
-      "temperature": temperature ? parseFloat(temperature) : 0.5,
-      "max_tokens": maxTokens ? parseInt(maxTokens, 10) : 1024,
-      "top_p": 1,
-      "stream": true,
-      "stop": null
-    });
-    let bufferData = '';
-    let tps = 0;
-    let tokens
-    let time
-    for await (const chunk of chatCompletion) {
-      bufferData += chunk.choices[0]?.delta?.content || '';
-      if (chunk.x_groq?.usage?.total_tokens && chunk.x_groq?.usage?.total_time) {
-        tokens = chunk.x_groq?.usage?.total_tokens
-        time = chunk.x_groq?.usage?.total_time
-        console.log("search time", tokens, time, (tokens/time).toFixed(0))
-        event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
-        event.sender.send('search-end');
-        break
+        event.sender.send('search-result', bufferData);
       }
-      event.sender.send('search-result', bufferData);
+    } catch (error) {
+        console.log("------", error)
+        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
+          
+          if (result.response === 0) {
+            if (!settingsWindow || settingsWindow.isDestroyed()) {
+              settingsWindow = await createSettingsWindow();
+            } else {
+              settingsWindow.focus();
+            }
+          }
+        });
     }
     
   })
-
 
   ipcMain.on('warning', async (e, title, message) => {
     await showDialog(title, message);
@@ -254,9 +300,46 @@ async function createMainWindow() {
 
 (async () => {
   await app.whenReady();
+  console.log("---------------------->", fs.existsSync(postInstallFlagPath))
+  if(!fs.existsSync(postInstallFlagPath)) {
 
-  const mainWindow = await createMainWindow();
+    settingsWindow = await createSettingsWindow();
 
+    const scriptPath = path.join(getParentDir(), 'scripts/init.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+      if (error) { console.log(error); return; }
+    });
+
+    ipcMain.on('ollama-ready', () => {
+      fs.writeFileSync(postInstallFlagPath, 'done');
+      // settingsWindow.close();
+      // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+      // app.exit(0)
+    })
+    ipcMain.on('ping-ollama', async (event) => {
+      console.log('[settings]-logger -> None')
+      setInterval(async () => {
+        const isOllamaRunning = await isUrlRunning('http://localhost:11434');
+        if (isOllamaRunning) event.sender.send("ollama-reply", "ollama-ready")
+        else event.sender.send("ollama-reply", "installing-ollama")
+      }, 500);
+    })
+    ipcMain.on("logger", (event, object) => {
+      console.log("[settings]-logger ->", object)
+    })
+    ipcMain.on('relaunch-hask',  async (event) => {
+      // relaunch main window or create new one
+      if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.close(); }
+      mainWindow = await createMainWindow();
+    })
+   
+  } else {
+    mainWindow = await createMainWindow();
+    const scriptPath = resolveHome('~/.hask/ollama.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+      if (error) { console.log(error); return; }
+    });
+  }
   
   const template = [
     {
@@ -328,6 +411,23 @@ async function createMainWindow() {
       mainWindow = await createMainWindow();
     }
 
+  });
+  app.on('before-quit', () => {
+    const scriptPath = resolveHome('~/.hask/close_process.sh');
+    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`ERROR: Error closing processes: ${error}`);
+        return;
+      }
+    });
+    // close every window
+    const windows = BrowserWindow.getAllWindows();
+    windows.forEach((window) => {
+      window.removeAllListeners('close');
+      window.close();
+    });
+    app.quit()
+  
   });
 
 })();

@@ -71,14 +71,12 @@ export default function Search() {
             setModelExpanded(!modelExpanded);
         }
     }
-
     // handle click outside of settings
     const handleClickOutside = (event) => {
         if (settingsRef.current && !settingsRef.current.contains(event.target)) {
             setSettingsExpanded(false);
         }
     }
-
     const handleProvider = async (provider) => {
         setProvider(provider);
         localStorage.setItem("provider", provider);
@@ -91,26 +89,21 @@ export default function Search() {
             setModelList(await getOllamaTags());
         }
     }
-    // const loadOllamaModels = async () => { 
-    //     const _ollamaModelList = await getOllamaTags();
-    //     setOllamaModelList(_ollamaModelList.length > 0 ? _ollamaModelList : ["loading..."]);
-    // }
+
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
             inputRef.current.select();
         }
         if(window !== undefined) {
-            const _provider = localStorage.getItem("provider");
-            if (_provider && _provider !== "") {
-                setProvider(_provider);
-                if (_provider === "perplexity") {
-                    configurePerplexity();
-                } else if (_provider === "groq") {
-                    configureGroq();
-                } else if (_provider === "ollama") {
-                    configureOllama();
-                }
+            const _provider = localStorage.getItem("provider") || "perplexity";
+            setProvider(_provider);
+            if (_provider === "perplexity") {
+                configurePerplexity();
+            } else if (_provider === "groq") {
+                configureGroq();
+            } else if (_provider === "ollama") {
+                configureOllama();
             }
         }
 
@@ -151,8 +144,23 @@ export default function Search() {
     }
     const configureOllama = async (skip_model=false) => {
         if (!skip_model) {
-            // setModelList(await getOllamaTags());
-            if (ollamaModelList?.length > 0) setModel(localStorage.getItem("ollama-model") || ollamaModelList[ollamaId] );
+            const interval = setInterval(async () => {
+                const tags = await getOllamaTags();
+                if(tags.length === 0) {
+                    setModelList([]);
+                    setModel("");
+                } else {
+                    if (tags[0] !== "loading...") {
+                        setOllamaModelList(tags);
+                        setModelList(tags);
+                        setModel(localStorage.getItem("ollama-model") || tags[ollamaId || 0]);
+                        clearInterval(interval);
+                    } else {
+                        setOllamaModelList(["loading..."]);
+                        setModel("loading...");
+                    }
+                }
+            }, 1000);
         }
         // setToken(localStorage.getItem("ollama-token"));
         setSystemPrompt(localStorage.getItem("ollama-system-prompt") || "You are a helpful assistant");
@@ -197,8 +205,7 @@ export default function Search() {
             window.ipc.send("logger", "generating-token...");
             try {
                 setSearching(true);
-                setAnswer("");
-                // let temp = ""
+                setAnswer("|");
                 const stream = await generateOllama({
                     model: model,
                     prompt: query,
@@ -212,7 +219,7 @@ export default function Search() {
                         stop: [ "User:", "Assistant:", "User:"] //["\n"]
                     }
                 }) 
-
+                setAnswer("");
                 for await (const out of stream) {
                     if(!out.done) {
                         window.ipc.send("logger", ["---->", out.response]);
@@ -243,17 +250,17 @@ export default function Search() {
         setModelExpanded(false);
         setModelSelectionExpanded(false);
         if (provider === "perplexity") {
-            configurePerplexity(false);
+            configurePerplexity(true);
             localStorage.setItem("pplx-model", _model);
             setPplxId(pplxModelList.indexOf(_model) || 0);
 
         } else if (provider === "groq") {
-            configureGroq(false);
+            configureGroq(true);
             localStorage.setItem("groq-model", _model);
             setGroqId(groqModelList.indexOf(_model) || 0);
 
         } else if (provider === "ollama") {
-            configureOllama(false);
+            configureOllama(true);
             localStorage.setItem("ollama-model", _model);
             setOllamaId(ollamaModelList.indexOf(_model) || 0);
 
@@ -307,7 +314,7 @@ export default function Search() {
                                 ( searching && answer === "") ? 
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse`}></div>
                                 :
-                                <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-6 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
+                                <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-8 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
                                         <Answer key={"0"} answer={answer} searching={searching} />
                                 </div>
                             }

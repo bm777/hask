@@ -77,6 +77,7 @@ async function createSettingsWindow() {
     resizable: false,
     maximizable: false,
     minimizable: false,
+    // backgroundColor: "#19171B", //"#fa2E292F",
     frame: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')

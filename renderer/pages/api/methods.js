@@ -161,7 +161,7 @@ export async function getOllamaTags(withTag = false) {
     const isOllamaRunning = await isUrlRunning('http://localhost:11434');
     if (!isOllamaRunning) {
         window.ipc.send("logger", `ollama is not running${isOllamaRunning}`)
-        return [];
+        return ["loading..."];
     }
     else {
         window.ipc.send("logger", "ollama is running, fetching tags")

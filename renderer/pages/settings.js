@@ -142,17 +142,28 @@ export default function Settings() {
     }
     const configureOllama = async () => {
         changeStatus("ollama");
-        setModel(localStorage.getItem("ollama-model"));
-        setModels(await getOllamaTags());
+        setModels(["loading..."]);
+        const interval = setInterval(async () => {
+            const tags = await getOllamaTags();
+            if(tags.length === 0) {
+                setModels([]);
+                setModel("");
+            } else {
+                if (tags[0] !== "loading...") {
+                    setModels(tags);
+                    setModel(localStorage.getItem("ollama-model") || tags[0]);
+                    clearInterval(interval);
+                } else {
+                    setModels(["loading..."]);
+                    setModel("");
+                }
+            }
+        }, 1000);
         setSystemPrompt(localStorage.getItem("ollama-system-prompt" || "Be precise and concise."));
         setTemperature(localStorage.getItem("ollama-temperature") || temperature);
         setMaxTokens(localStorage.getItem("ollama-max-tokens") || maxTokens);
     }
     const handleTabChange = async (prov) => {
-        // temporary blockage of switching providers
-        // if (provider !== "perplexity" ) {
-        //     return;
-        // }
         setProvider(prov);
         localStorage.setItem("provider", prov);
         if (prov === "perplexity") {

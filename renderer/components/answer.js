@@ -5,7 +5,6 @@ import { get_code_blocks } from "../pages/api/methods";
 import { useTheme } from "next-themes";
 import React from "react";
 import { v4 as uid } from 'uuid';
-// import ParsedText from "./parsedtext";
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
 
@@ -15,7 +14,13 @@ const Answer = React.memo(({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
-
+    const purify = (line) => {
+        const html = converter.makeHtml(line);
+        const sanitizedHtml = DOMPurify.sanitize(html, {
+            ALLOWED_ATTR: ['start'] // Allow start attribute for ordered lists
+        });
+        return sanitizedHtml;
+    }
     useEffect(() => {
         if (answer) {
             const lines = (answer).split('\n');
@@ -25,11 +30,9 @@ const Answer = React.memo(({ answer, searching }) => {
             // Convert markdown to HTML and sanitize
             const htmlLines = linesWithCodeBlocks.map(line => {
                 if (line.includes("```")) {
-                return line; // Keep code blocks as-is
+                    return line;
                 } else {
-                const html = converter.makeHtml(line);
-                const sanitizedHtml = DOMPurify.sanitize(html); // Sanitize HTML
-                return sanitizedHtml;
+                    return purify(line);
                 }
             });
             setFormattedLines(htmlLines);
@@ -61,16 +64,15 @@ const Answer = React.memo(({ answer, searching }) => {
                 :
                 <div 
                     key={uid()}
-                    className="markdown-body"
+                    className="markdown-body text-sm"
                     dangerouslySetInnerHTML={{ __html: line }}
-                    
                 />
             }
             </div>
             ))
         }
 
-        <div className={" absolute w-full -bottom-5 ml-3 flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
+        <div className={" absolute w-full -bottom-7 ml-3 flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
             <div onClick={copied} className={`flex py-[1px] px-2 bg-[#2f2f2f3a] border border-[#8181814b] rounded dark:bg-[#87858965]`}> 
                 <div className="flex items-center justify-center  mr-2 gap-1 hover:cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme === "light" ? "#2f2f2fa3" : "#ACABAE"} className="w-[14px] h-[14px]">

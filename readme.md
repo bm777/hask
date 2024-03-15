@@ -6,22 +6,15 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 
 
-
 | Provider           | Model              | Integration       |
 | ------------------ | ------------------ | ----------------- |
-| Perplexity         | pplx-7b-online     |  ✅               |
-| Perplexity         | pplx-70b-online    |  ✅               |
-| Perplexity         | pplx-8x7b-online   |  ✅               |
-| Perplexity         | sonar-small-online |  ✅               |
-| Perplexity         | sonar-small-chat   |  ✅               |
-| Perplexity         | sonar-medium-chat  |  ✅               |
-| Perplexity         | sonar-medium-chat  |  ✅               |
-| Groq               | llama2-70b-4096chat|  ✅               |
-| Groq               | llama2-8x7b-32768  |  ✅               |
-| OpenAI             | soon               |  ❌               |
-| Cohere             | soon               |  ❌               |
-| Anthropic          | soon               |  ❌               |
-| Mistral            | soon               |  ❌               |
+| Perplexity         | pplx-7b-online, pplx-70b-online, pplx-8x7b-online, sonar-small-online, sonar-small-chat, sonar-medium-chat |  ✅               |
+| Groq               | llama2-70b-4096chat, llama2-8x7b-32768 | ✅               | 
+| Ollama             | library models |  ✅               |
+| OpenAI             | soon |  ❌               |
+| Cohere             | soon |  ❌               |
+| Anthropic          | soon |  ❌               |
+| Mistral            | soon |  ❌               |
 
 
 

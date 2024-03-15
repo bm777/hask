@@ -111,10 +111,10 @@ async function createMainWindow() {
   });
 
   mainWindow.on('blur', (e) => {
-    // mainWindow.hide();
+    mainWindow.hide();
   });
   ipcMain.on('window-blur', (e) => {
-    // mainWindow.hide();
+    mainWindow.hide();
   });
 
   function get_content_block(block) {
@@ -307,8 +307,8 @@ async function createMainWindow() {
   }
 
   mainWindow.setAlwaysOnTop(true, "normal");
-  // mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
-  // mainWindow.setFullScreenable(false);
+  mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
+  mainWindow.setFullScreenable(false);
   return mainWindow;
 }
 

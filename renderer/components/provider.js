@@ -8,7 +8,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
     }
     const exit = () => { setHover(false); }
     const changeTab = () => { 
-        console.log("changeTab", _provider.toLowerCase());
+        // console.log("changeTab", _provider.toLowerCase());
         handleTabChange(_provider.toLowerCase()); 
     }
     
@@ -23,7 +23,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
         return (
                 <div onClick={changeTab} className="px-2 flex flex-col justify-end relative  ">
                     {
-                        _provider !== "Perplexity" && _provider !== "Groq" &&  _provider !== "Ollama" &&
+                        _provider !== "Perplexity" && _provider !== "Groq" &&  _provider !== "Ollama" && _provider !== "OpenAI" &&
                         <div id='soon' className={" flex justify-end absolute top-0 duration-300 transform transition-all " + ( hover ? "scale-100" : "scale-0")}>
                             <span className="border border-[#f68193] bg-[#f6819331] rounded-full px-2 text-xs ml-5 -mb-2">soon</span>
                         </div>

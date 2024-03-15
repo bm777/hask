@@ -7,6 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const { exec } = require('child_process');
 const Groq = require('groq-sdk');
+const OpenAI = require('openai').OpenAI
 
 const isProd = process.env.NODE_ENV === 'production';
 const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
@@ -157,7 +158,7 @@ async function createMainWindow() {
       },
       responseType: 'stream',
       data: {
-        model: model,
+        model: model ? model : 'pplx-7b-online',
         messages: [
           {role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.'},
           {role: 'user', content: query}
@@ -202,16 +203,7 @@ async function createMainWindow() {
   
     } catch( error ) {
         console.log("------", error)
-        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
-          
-          if (result.response === 0) {
-            if (!settingsWindow || settingsWindow.isDestroyed()) {
-              settingsWindow = await createSettingsWindow();
-            } else {
-              settingsWindow.focus();
-            }
-          }
-        });
+        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
       }
   })
   ipcMain.on("search-groq", async (event, args) => {
@@ -227,7 +219,7 @@ async function createMainWindow() {
             "content": query
           }
         ],
-        "model": model,
+        "model": model ? model : "mixtral-8x7b-32768",
         "temperature": temperature ? parseFloat(temperature) : 0.5,
         "max_tokens": maxTokens ? parseInt(maxTokens, 10) : 1024,
         "top_p": 1,
@@ -252,16 +244,39 @@ async function createMainWindow() {
       }
     } catch (error) {
         console.log("------", error)
-        dialog.showMessageBox(mainWindow, _options("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")).then(async (result) => {
-          
-          if (result.response === 0) {
-            if (!settingsWindow || settingsWindow.isDestroyed()) {
-              settingsWindow = await createSettingsWindow();
-            } else {
-              settingsWindow.focus();
-            }
-          }
-        });
+        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+    }
+    
+  })
+  ipcMain.on("search-openai", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
+    console.log('search-openai', query, model, token, systemPrompt, temperature, maxTokens)
+    const openai = new OpenAI({"apiKey": token});
+    try {
+      // const completion = await openai.complete({
+      //   prompt: query,
+      // });
+      const completion = await openai.chat.completions.create({
+        model: model ? model : 'gpt-3.5-turbo',
+        messages: [{ role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.' }, { role: 'user', content: query }],
+        stream: true,
+        temperature: temperature ? parseFloat(temperature) : 0.5,
+        max_tokens: maxTokens ? parseInt(maxTokens, 10) : 1024,
+      });
+
+      let bufferData = '';
+      for await (const chunk of completion) {
+        if (chunk.choices[0].delta?.content) {
+          bufferData += chunk.choices[0].delta.content
+          event.sender.send('search-result', bufferData);
+        } else {
+          event.sender.send('search-end');
+        }
+      }
+      console.log('search-end')
+    } catch (error) {
+        console.log("------", error)
+        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
     }
     
   })
@@ -327,11 +342,13 @@ async function createMainWindow() {
     ipcMain.on("logger", (event, object) => {
       console.log("[settings]-logger ->", object)
     })
-    ipcMain.on('relaunch-hask',  async (event) => {
-      // relaunch main window or create new one
-      if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.close(); }
-      mainWindow = await createMainWindow();
-    })
+    // ipcMain.on('relaunch-hask',  async (event) => {
+    //   // relaunch main window or create new one
+    //   if (mainWindow) {
+    //     mainWindow.close();
+    //   }
+    //   mainWindow = await createMainWindow();
+    // })
    
   } else {
     mainWindow = await createMainWindow();
@@ -340,6 +357,13 @@ async function createMainWindow() {
       if (error) { console.log(error); return; }
     });
   }
+  ipcMain.on('relaunch-hask',  async (event) => {
+    // relaunch main window or create new one
+    if (mainWindow) {
+      mainWindow.close();
+    }
+    mainWindow = await createMainWindow();
+  })
   
   const template = [
     {

@@ -2,15 +2,11 @@ import { useState, useRef, useEffect  } from "react";
 import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
-import { discordUrl, githubUrl, pplxModelList, groqModelList } from "../pages/api/constant";
+import { discordUrl, githubUrl, pplxModelList, groqModelList, openaiModelList } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
 import { capitalize,  generateOllama,  getOllamaTags} from "../pages/api/methods";
 
-// let ipcRenderer;
-// if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
-//     ipcRenderer = window.require("electron").ipcRenderer;
-// }
 
 export default function Search() {
     const [query, setQuery] = useState("");
@@ -25,7 +21,7 @@ export default function Search() {
     const [model, setModel] = useState("pplx-7b-online");
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState("0.75");
-    const [maxTokens, setMaxTokens] = useState("500");
+    const [maxTokens, setMaxTokens] = useState("900");
 
     const [settingsExpanded, setSettingsExpanded] = useState(false);
     const [modelExpanded, setModelExpanded] = useState(false);
@@ -35,6 +31,7 @@ export default function Search() {
     const [pplxId, setPplxId] = useState(0);
     const [groqId, setGroqId] = useState(0);
     const [ollamaId, setOllamaId] = useState(0);
+    const [openaiId, setOpenaiId] = useState(0);
 
     const [ollamaModelList, setOllamaModelList] = useState([]);
 
@@ -87,6 +84,8 @@ export default function Search() {
             setModelList(groqModelList);
         } else if (provider === "ollama") {
             setModelList(await getOllamaTags());
+        } else if (provider === "openai") {
+            setModelList(openaiModelList);
         }
     }
 
@@ -104,6 +103,8 @@ export default function Search() {
                 configureGroq();
             } else if (_provider === "ollama") {
                 configureOllama();
+            } else if (_provider === "openai") {
+                configureOpenai();
             }
         }
 
@@ -166,6 +167,16 @@ export default function Search() {
         setSystemPrompt(localStorage.getItem("ollama-system-prompt") || "You are a helpful assistant");
         setTemperature(localStorage.getItem("ollama-temperature") || "0.7");
         setMaxTokens(localStorage.getItem("ollama-max-tokens") || "500");
+    }
+    const configureOpenai = (skip_model=false) => {
+        setModelList(openaiModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("openai-model") || openaiModelList[openaiId]);
+        }
+        setToken(localStorage.getItem("openai-token"));
+        setSystemPrompt(localStorage.getItem("openai-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("openai-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("openai-max-tokens") || "500");
     }
 
     const handleQueryChange = (e) => {
@@ -234,6 +245,17 @@ export default function Search() {
                 window.ipc.send("logger", ["search-ollama-error", error]);
                 setSearching(false);
             }
+        } else if (provider === "openai") {
+            window.ipc.send(
+                "search-openai", 
+                { 
+                    query, 
+                    model, 
+                    token, 
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
         }
     }
     const handleSettings = () => {
@@ -263,7 +285,10 @@ export default function Search() {
             configureOllama(true);
             localStorage.setItem("ollama-model", _model);
             setOllamaId(ollamaModelList.indexOf(_model) || 0);
-
+        } else if (provider === "openai") {
+            configureOpenai(true);
+            localStorage.setItem("openai-model", _model);
+            setOpenaiId(openaiModelList.indexOf(_model) || 0);
         }
     }
 
@@ -415,6 +440,7 @@ export default function Search() {
                     <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
                     <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
                     <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
+                    <Pvd text="OpenAI" defaultModel={openaiModelList[openaiId]} selected={provider === "openai"} action={handleProvider} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

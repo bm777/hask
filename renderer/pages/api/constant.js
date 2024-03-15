@@ -5,6 +5,10 @@ export const pplxModelList = [
 export const groqModelList = [
     "llama2-70b-4096", "mixtral-8x7b-32768"
 ];
+export const openaiModelList = [
+    "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"
+]    
+
 export const discordUrl = "https://discord.gg/3tH8UKx5mY"
 export const githubUrl = "https://github.com/bm777/hask"
 

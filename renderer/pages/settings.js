@@ -3,7 +3,8 @@ import Provider from "../components/provider";
 import { 
     pplxModelList, 
     groqModelList, 
-    ollamaModelList as defaultOllamaModelList 
+    ollamaModelList as defaultOllamaModelList, 
+    openaiModelList
 } from "./api/constant";
 import { useTheme } from "next-themes";
 import OllamaModel from "../components/buttons/ollamaModel";
@@ -20,7 +21,7 @@ export default function Settings() {
     const [model, setModel] = useState("pplx-7b-online");
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState(0.7);
-    const [maxTokens, setMaxTokens] = useState(500);
+    const [maxTokens, setMaxTokens] = useState(900);
     const [showMore, setShowMore] = useState(false);
 
     // ollama setting
@@ -34,6 +35,7 @@ export default function Settings() {
     const [pplxStatus, setPplxStatus] = useState(false);
     const [groqStatus, setGroqStatus] = useState(false);
     const [ollamaStatus, setOllamaStatus] = useState(false);
+    const [openaiStatus, setOpenaiStatus] = useState(false);
 
 
     useEffect(() => {
@@ -50,6 +52,8 @@ export default function Settings() {
         }
         else if (_provider === "ollama") {
             configureOllama();
+        } else if (_provider === "openai") {
+            configureOpenai();
         }
 
         window.ipc.send("ping-ollama"); // ping ollama to check if it's ready
@@ -59,15 +63,11 @@ export default function Settings() {
                 
                 setNotifTitle("Configure your keys")
                 setNotifSubtitle("Collect the api-key from your provider!")
-
-                // await new Promise(r => setTimeout(r, 3000)); // 3 seconds sleep
-                // setNotifView(false);
             }
             if (arg === "installing-ollama") { 
                 setNotifView(true);
             }
         })
-
 
     }, [provider]);
 
@@ -77,31 +77,39 @@ export default function Settings() {
     const handleTemperature = (e) => { setTemperature(parseFloat(e.target.value));}
     const handleMaxTokens = (e) => {setMaxTokens(parseInt(e.target.value));}
 
-    const handleSave = async () => {
+    const saveLocal = () => {
+        let list_key_value = [];
         if (provider === "perplexity") {
-            localStorage.setItem("provider", provider);
-            localStorage.setItem("pplx-token", token);
-            localStorage.setItem("pplx-model", model);
-            localStorage.setItem("pplx-system-prompt", systemPrompt);
-            localStorage.setItem("pplx-temperature", temperature);
-            localStorage.setItem("pplx-max-tokens", maxTokens);
+            list_key_value = [
+                ["provider", provider], ["pplx-token", token], ["pplx-model", model], 
+                [`pplx-system-prompt`, systemPrompt],["pplx-temperature", temperature],
+                ["pplx-max-tokens", maxTokens]
+            ];
+         } else if (provider === "groq") {
+            list_key_value = [
+                ["provider", provider], ["groq-token", token], ["groq-model", model], 
+                [`groq-system-prompt`, systemPrompt],["groq-temperature", temperature],
+                ["groq-max-tokens", maxTokens]
+            ];
+        } else if (provider === "ollama") {
+            list_key_value = [
+                ["provider", provider], ["ollama-token", token], ["ollama-model", model], 
+                [`ollama-system-prompt`, systemPrompt],["ollama-temperature", temperature],
+                ["ollama-max-tokens", maxTokens]
+            ];
+        } else if (provider === "openai") {
+            list_key_value = [
+                ["provider", provider], ["openai-token", token], ["openai-model", model], 
+                [`openai-system-prompt`, systemPrompt],["openai-temperature", temperature],
+                ["openai-max-tokens", maxTokens]
+            ];
         }
-        if (provider === "groq") {
-            localStorage.setItem("provider", provider);
-            localStorage.setItem("groq-token", token);
-            localStorage.setItem("groq-model", model);
-            localStorage.setItem("groq-system-prompt", systemPrompt);
-            localStorage.setItem("groq-temperature", temperature);
-            localStorage.setItem("groq-max-tokens", maxTokens);
-        }
-        if (provider === "ollama") {
-            localStorage.setItem("provider", provider);
-            localStorage.setItem("ollama-token", token);
-            localStorage.setItem("ollama-model", model);
-            localStorage.setItem("ollama-system-prompt", systemPrompt);
-            localStorage.setItem("ollama-temperature", temperature);
-            localStorage.setItem("ollama-max-tokens", maxTokens);
-        }
+        list_key_value.forEach((item) => {
+            localStorage.setItem(item[0], item[1]);
+        });
+    }
+    const handleSave = async () => {
+        saveLocal();
         setLog("Configuration Saved!");
         await new Promise(r => setTimeout(r, 2000));
         setLog("");
@@ -112,14 +120,22 @@ export default function Settings() {
             setPplxStatus(true);
             setGroqStatus(false);
             setOllamaStatus(false);
+            setOpenaiStatus(false);
         } else if (prov === "groq") {
             setPplxStatus(false);
             setGroqStatus(true);
             setOllamaStatus(false);
+            setOpenaiStatus(false);
         } else if (prov === "ollama") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(true);
+            setOpenaiStatus(false);
+        } else if (prov === "openai") {
+            setPplxStatus(false);
+            setGroqStatus(false);
+            setOllamaStatus(false);
+            setOpenaiStatus(true);
         }
     }
     const configurePerplexity = () => {
@@ -163,6 +179,15 @@ export default function Settings() {
         setTemperature(localStorage.getItem("ollama-temperature") || temperature);
         setMaxTokens(localStorage.getItem("ollama-max-tokens") || maxTokens);
     }
+    const configureOpenai = () => {
+        changeStatus("openai");
+        setToken(localStorage.getItem("openai-token") || "");
+        setModel(localStorage.getItem("openai-model") || "gpt-3.5-turbo");
+        setModels(openaiModelList)
+        setSystemPrompt(localStorage.getItem("openai-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("openai-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("openai-max-tokens") || maxTokens);
+    }
     const handleTabChange = async (prov) => {
         setProvider(prov);
         localStorage.setItem("provider", prov);
@@ -175,8 +200,8 @@ export default function Settings() {
         else if (prov === "ollama") {
             await configureOllama();
         }
-        else {
-
+        else if (prov === "openai"){
+            configureOpenai();
         }
         // console.log("provider", provider, "prov", prov);
     }
@@ -200,7 +225,7 @@ export default function Settings() {
                     <Provider active={pplxStatus} _provider={"Perplexity"} handleTabChange={handleTabChange} />
                     <Provider active={groqStatus} _provider={"Groq"} handleTabChange={handleTabChange} />
                     <Provider active={ollamaStatus} _provider={"Ollama"} handleTabChange={handleTabChange} />
-                    <Provider active={false} _provider={"OpenAI"} handleTabChange={handleTabChange} />
+                    <Provider active={openaiStatus} _provider={"OpenAI"} handleTabChange={handleTabChange} />
                     <Provider active={false} _provider={"Cohere"} handleTabChange={handleTabChange} />
                 </div>
                 {

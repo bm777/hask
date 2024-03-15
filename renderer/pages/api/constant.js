@@ -8,6 +8,9 @@ export const groqModelList = [
 export const openaiModelList = [
     "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"
 ]    
+export const anthropicModelList = [
+    "claude-2.1", "claude-3-opus-20240229", "claude-2.0", "claude-instant-1.2", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"
+]
 
 export const discordUrl = "https://discord.gg/3tH8UKx5mY"
 export const githubUrl = "https://github.com/bm777/hask"

@@ -8,6 +8,7 @@ const os = require('os');
 const { exec } = require('child_process');
 const Groq = require('groq-sdk');
 const OpenAI = require('openai').OpenAI
+const Anthopic = require('@anthropic-ai/sdk');
 
 const isProd = process.env.NODE_ENV === 'production';
 const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
@@ -279,6 +280,35 @@ async function createMainWindow() {
         showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
     }
     
+  })
+  ipcMain.on("search-anthropic", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
+    console.log(args)
+    const anthropic = new Anthopic({ apiKey: token });
+
+    try {
+      const stream = await anthropic.messages.stream({
+        model: model ? model : 'claude-2.1',
+        messages: [{ role: 'user', content: query }],
+        temperature: temperature ? parseFloat(temperature) : 1,
+        max_tokens: maxTokens ? parseInt(maxTokens, 10) : 1024,
+      });
+
+      let bufferData = '';
+      stream.on("text", (text) => {
+        bufferData += text;
+        console.log('search-result', bufferData)
+        event.sender.send('search-result', bufferData);
+      });
+
+      stream.on("end", () => {
+        event.sender.send('search-end');
+      });
+
+    } catch (error) {
+      console.log("------", error)
+      showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+    }
   })
 
   ipcMain.on('warning', async (e, title, message) => {

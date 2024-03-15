@@ -12,8 +12,8 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 | Groq               | llama2-70b-4096chat, llama2-8x7b-32768 | ✅               | 
 | Ollama             | library models |  ✅               |
 | OpenAI             | gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview |  ✅               |
+| Anthropic          | claude-2.1, claude-3-opus-20240229, claude-2.0, claude-instant-1.2, claude-3-sonnet-20240229, claude-3-haiku-20240307 |  ✅               |
 | Cohere             | soon |  ❌               |
-| Anthropic          | soon |  ❌               |
 | Mistral            | soon |  ❌               |
 
 

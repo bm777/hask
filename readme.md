@@ -6,6 +6,11 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 
 
+This is only 10% of what we want to achieve.
+
+Wanna join our little discord community? [Join HASK](https://discord.gg/cSf3RpQdws)
+
+
 | Provider           | Model              | Integration       |
 | ------------------ | ------------------ | ----------------- |
 | Perplexity         | pplx-7b-online, pplx-70b-online, pplx-8x7b-online, sonar-small-online, sonar-small-chat, sonar-medium-chat |  ✅               |

@@ -12,6 +12,7 @@ import { useTheme } from "next-themes";
 import OllamaModel from "../components/buttons/ollamaModel";
 import { joinValue, getOllamaTags } from "./api/methods";
 import Preview from "../components/cards/modelPreview";
+import { set } from "cohere-ai/core/schemas";
 
 export default function Settings() {
     const { theme } = useTheme();
@@ -142,30 +143,42 @@ export default function Settings() {
             setOllamaStatus(false);
             setOpenaiStatus(false);
             setAnthropicStatus(false);
+            setCohereStatus(false);
         } else if (prov === "groq") {
             setPplxStatus(false);
             setGroqStatus(true);
             setOllamaStatus(false);
             setOpenaiStatus(false);
             setAnthropicStatus(false);
+            setCohereStatus(false);
         } else if (prov === "ollama") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(true);
             setOpenaiStatus(false);
             setAnthropicStatus(false);
+            setCohereStatus(false);
         } else if (prov === "openai") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(false);
             setOpenaiStatus(true);
             setAnthropicStatus(false);
+            setCohereStatus(false);
         } else if (prov === "anthropic") {
             setPplxStatus(false);
             setGroqStatus(false);
             setOllamaStatus(false);
             setOpenaiStatus(false);
             setAnthropicStatus(true);
+            setCohereStatus(false);
+        } else if (prov === "cohere") {
+            setPplxStatus(false);
+            setGroqStatus(false);
+            setOllamaStatus(false);
+            setOpenaiStatus(false);
+            setAnthropicStatus(false);
+            setCohereStatus(true);
         }
     }
     const configurePerplexity = () => {

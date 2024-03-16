@@ -330,7 +330,7 @@ async function createMainWindow() {
       let bufferData = '';
       for await (const message of stream) {
         if (message.eventType === "text-generation") {
-          msg += message.text;
+          bufferData += message.text;
           event.sender.send('search-result', bufferData);
         }
         if (message.eventType === "stream-end") {

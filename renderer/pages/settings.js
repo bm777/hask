@@ -5,7 +5,8 @@ import {
     groqModelList, 
     ollamaModelList as defaultOllamaModelList, 
     openaiModelList, 
-    anthropicModelList
+    anthropicModelList,
+    cohereModelList
 } from "./api/constant";
 import { useTheme } from "next-themes";
 import OllamaModel from "../components/buttons/ollamaModel";
@@ -38,6 +39,7 @@ export default function Settings() {
     const [ollamaStatus, setOllamaStatus] = useState(false);
     const [openaiStatus, setOpenaiStatus] = useState(false);
     const [anthropicStatus, setAnthropicStatus] = useState(false);
+    const [cohereStatus, setCohereStatus] = useState(false);
 
 
     useEffect(() => {
@@ -58,6 +60,8 @@ export default function Settings() {
             configureOpenai();
         } else if (_provider === "anthropic") {
             configureAnthropic();
+        } else if (_provider === "cohere") {
+            configureCohere();
         }
 
         window.ipc.send("ping-ollama"); // ping ollama to check if it's ready
@@ -112,6 +116,12 @@ export default function Settings() {
                 ["provider", provider], ["anthropic-token", token], ["anthropic-model", model], 
                 [`anthropic-system-prompt`, systemPrompt],["anthropic-temperature", temperature],
                 ["anthropic-max-tokens", maxTokens]
+            ];
+        } else if (provider === "cohere") {
+            list_key_value = [
+                ["provider", provider], ["cohere-token", token], ["cohere-model", model],
+                [`cohere-system-prompt`, systemPrompt],["cohere-temperature", temperature],
+                ["cohere-max-tokens", maxTokens]
             ];
         }
         list_key_value.forEach((item) => {
@@ -217,6 +227,15 @@ export default function Settings() {
         setTemperature(localStorage.getItem("anthropic-temperature") || temperature);
         setMaxTokens(localStorage.getItem("anthropic-max-tokens") || maxTokens);
     }
+    const configureCohere = () => {
+        changeStatus("cohere");
+        setToken(localStorage.getItem("cohere-token") || "");
+        setModel(localStorage.getItem("cohere-model") || "cohere-2.1");
+        setModels(cohereModelList)
+        setSystemPrompt(localStorage.getItem("cohere-system-prompt") || "Be precise and concise.");
+        setTemperature(localStorage.getItem("cohere-temperature") || temperature);
+        setMaxTokens(localStorage.getItem("cohere-max-tokens") || maxTokens);
+    }
     const handleTabChange = async (prov) => {
         setProvider(prov);
         localStorage.setItem("provider", prov);
@@ -258,7 +277,9 @@ export default function Settings() {
                     <Provider active={ollamaStatus} _provider={"Ollama"} handleTabChange={handleTabChange} />
                     <Provider active={openaiStatus} _provider={"OpenAI"} handleTabChange={handleTabChange} />
                     <Provider active={anthropicStatus} _provider={"Anthropic"} handleTabChange={handleTabChange} />
-                    <Provider active={false} _provider={"Cohere"} handleTabChange={handleTabChange} />
+                    <Provider active={cohereStatus} _provider={"Cohere"} handleTabChange={handleTabChange} />
+                    <Provider active={false} _provider={"Mistral"} handleTabChange={handleTabChange} />
+                    <Provider active={false} _provider={"Gemini"} handleTabChange={handleTabChange} />
                 </div>
                 {
                     !ollamaStatus &&

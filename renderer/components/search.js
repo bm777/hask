@@ -2,7 +2,13 @@ import { useState, useRef, useEffect  } from "react";
 import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
-import { discordUrl, githubUrl, pplxModelList, groqModelList, openaiModelList, anthropicModelList  } from "../pages/api/constant";
+import { discordUrl, githubUrl, 
+    pplxModelList, 
+    groqModelList, 
+    openaiModelList, 
+    anthropicModelList,
+    cohereModelList,
+  } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
 import { capitalize,  generateOllama,  getOllamaTags} from "../pages/api/methods";
@@ -33,6 +39,7 @@ export default function Search() {
     const [ollamaId, setOllamaId] = useState(0);
     const [openaiId, setOpenaiId] = useState(0);
     const [anthropicId, setAnthropicId] = useState(0);
+    const [cohereId, setCohereId] = useState(0);
 
     const [ollamaModelList, setOllamaModelList] = useState([]);
 
@@ -89,6 +96,8 @@ export default function Search() {
             setModelList(openaiModelList);
         } else if (provider === "anthropic") {
             setModelList(anthropicModelList);
+        } else if (provider === "cohere") {
+            setModelList(cohereModelList);
         }
     }
 
@@ -110,6 +119,8 @@ export default function Search() {
                 configureOpenai();
             } else if (_provider === "anthropic") {
                 configureAnthropic();
+            } else if (_provider === "cohere") {
+                configureCohere();
             }
         }
 
@@ -192,6 +203,16 @@ export default function Search() {
         setSystemPrompt(localStorage.getItem("anthropic-system-prompt") || "You are a helpful assistant");
         setTemperature(localStorage.getItem("anthropic-temperature") || "0.7");
         setMaxTokens(localStorage.getItem("anthropic-max-tokens") || "500");
+    }
+    const configureCohere = (skip_model=false) => {
+        setModelList(cohereModelList);
+        if (!skip_model) {
+            setModel(localStorage.getItem("cohere-model") || cohereModelList[cohereId]);
+        }
+        setToken(localStorage.getItem("cohere-token"));
+        setSystemPrompt(localStorage.getItem("cohere-system-prompt") || "You are a helpful assistant");
+        setTemperature(localStorage.getItem("cohere-temperature") || "0.7");
+        setMaxTokens(localStorage.getItem("cohere-max-tokens") || "500");
     }
 
     const handleQueryChange = (e) => {
@@ -282,7 +303,19 @@ export default function Search() {
                     temperature: parseFloat(temperature),
                     maxTokens: parseInt(maxTokens)
                 });
+        } else if (provider === "cohere") {
+            window.ipc.send(
+                "search-cohere",
+                {
+                    query,
+                    model,
+                    token,
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
         }
+
     }
     const handleSettings = () => {
         setSettingsExpanded(true);
@@ -319,6 +352,10 @@ export default function Search() {
             configureAnthropic(true);
             localStorage.setItem("anthropic-model", _model);
             setAnthropicId(anthropicModelList.indexOf(_model) || 0);
+        } else if (provider === "cohere") {
+            configureCohere(true);
+            localStorage.setItem("cohere-model", _model);
+            setCohereId(cohereModelList.indexOf(_model) || 0);
         }
     }
 
@@ -472,6 +509,7 @@ export default function Search() {
                     <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
                     <Pvd text="OpenAI" defaultModel={openaiModelList[openaiId]} selected={provider === "openai"} action={handleProvider} />
                     <Pvd text="Anthropic" defaultModel={anthropicModelList[anthropicId]} selected={provider === "anthropic"} action={handleProvider} />
+                    <Pvd text="Cohere" defaultModel={cohereModelList[cohereId]} selected={provider === "cohere"} action={handleProvider} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

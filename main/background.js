@@ -9,6 +9,7 @@ const { exec } = require('child_process');
 const Groq = require('groq-sdk');
 const OpenAI = require('openai').OpenAI
 const Anthopic = require('@anthropic-ai/sdk');
+const CohereClient = require('cohere-ai').CohereClient
 
 const isProd = process.env.NODE_ENV === 'production';
 const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
@@ -310,6 +311,39 @@ async function createMainWindow() {
       showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
     }
   })
+  ipcMain.on("search-cohere", async (event, args) => {
+    const { query, model, token, systemPrompt, temperature, maxTokens } = args
+    console.log(args)
+    const cohere = new CohereClient({token: token});
+
+    try {
+      const stream = await cohere.chatStream({
+        preamble: systemPrompt ? systemPrompt : 'Be precise and concise.',
+        model: model ? model : 'command',
+        message: query,
+        stream: true,
+        temperature: temperature ? parseFloat(temperature) : 0.2,
+        connectors: [{ id: "web-search" }],
+        max_tokens: maxTokens ? parseInt(maxTokens, 10) : 1024
+        });
+
+      let bufferData = '';
+      for await (const message of stream) {
+        if (message.eventType === "text-generation") {
+          bufferData += message.text;
+          event.sender.send('search-result', bufferData);
+        }
+        if (message.eventType === "stream-end") {
+          event.sender.send('search-end');
+        }
+    }
+    } catch (error) {
+      console.log("------", error)
+      showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+    }
+  })
+
+
 
   ipcMain.on('warning', async (e, title, message) => {
     await showDialog(title, message);

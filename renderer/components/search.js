@@ -247,7 +247,6 @@ export default function Search() {
         e.preventDefault()
         setSearching(true);
         if (provider === "perplexity") {
-            setAnswer(" ");
             window.ipc.send(
                 "search-pplx", 
                 {
@@ -259,7 +258,6 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         } else if (provider === "groq") {
-            setAnswer(" ");
             window.ipc.send(
                 "search-groq", 
                 { 
@@ -304,7 +302,6 @@ export default function Search() {
                 setSearching(false);
             }
         } else if (provider === "openai") {
-            setAnswer(" ");
             window.ipc.send(
                 "search-openai", 
                 { 
@@ -316,7 +313,6 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         } else if (provider === "anthropic") {
-            setAnswer(" ");
             window.ipc.send(
                 "search-anthropic", 
                 { 
@@ -328,7 +324,6 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         } else if (provider === "cohere") {
-            setAnswer(" ");
             window.ipc.send(
                 "search-cohere",
                 {

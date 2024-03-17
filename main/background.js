@@ -149,7 +149,7 @@ async function createMainWindow() {
     console.log('logger ->', object)
   })
   ipcMain.on("search-pplx", async (event, args) => {
-    event.sender.send('search-result', "");
+    event.sender.send('search-result', " ");
     console.log('search-pplx', args)
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
@@ -211,7 +211,7 @@ async function createMainWindow() {
       }
   })
   ipcMain.on("search-groq", async (event, args) => {
-    event.sender.send('search-result', "");
+    event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
     const groq = new Groq({apiKey: token});
@@ -254,7 +254,7 @@ async function createMainWindow() {
     
   })
   ipcMain.on("search-openai", async (event, args) => {
-    event.sender.send('search-result', "");
+    event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-openai', query, model, token, systemPrompt, temperature, maxTokens)
     const openai = new OpenAI({"apiKey": token});
@@ -287,7 +287,7 @@ async function createMainWindow() {
     
   })
   ipcMain.on("search-anthropic", async (event, args) => {
-    event.sender.send('search-result', "");
+    event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log(args)
     const anthropic = new Anthopic({ apiKey: token });
@@ -317,7 +317,7 @@ async function createMainWindow() {
     }
   })
   ipcMain.on("search-cohere", async (event, args) => {
-    event.sender.send('search-result', "");
+    event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log(args)
     const cohere = new CohereClient({token: token});

@@ -33,13 +33,13 @@ Wanna join our little discord community? [Join HASK](https://discord.gg/cSf3RpQd
 ## Executable
 It is available for:
 
-Mac Silicon (M1, M2, M3): [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-arm64.pkg) | [DMG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-arm64.dmg)
+Mac Silicon (M1, M2, M3): [PKG](https://github.com/bm777/hask/releases/download/v1.3/hask-ai-arm64.pkg) | [DMG](https://github.com/bm777/hask/releases/download/v1.3/hask-ai-arm64.dmg)
 
-Mac Intel: [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-intel.pkg) [DMG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-intel.dmg)
+Mac Intel: [PKG](https://github.com/bm777/hask/releases/download/v1.3/hask-ai-intel.pkg) [DMG](https://github.com/bm777/hask/releases/download/v1.3/hask-ai-intel.dmg)
 
-[Windows available in preview](https://github.com/bm777/hask/releases)
+[Windows on demand](https://github.com/bm777/hask/issues/new)
 
-[Linux available in preview](https://github.com/bm777/hask/releases)
+[Linux on demand](https://github.com/bm777/hask/issues/new)
 
 
 ## 1. Development

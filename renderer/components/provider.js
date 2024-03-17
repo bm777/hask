@@ -29,7 +29,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
                         </div>
                     }
 
-                    <div className="text-[#A7A6A8] hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-[#2C2B2F] " onMouseEnter={handleHover} onMouseOut={exit}>
+                    <div className=" text-gray-900/80 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:text-[#A7A6A8] dark:hover:bg-[#2C2B2F] " onMouseEnter={handleHover} onMouseOut={exit}>
                         { _provider }
                     </div>
                     <div className="border-b-[3px] border-[#00000000] -mb-[2px]"></div>

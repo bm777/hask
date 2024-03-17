@@ -8,7 +8,7 @@ export default function Pvd({ text, action, defaultModel, selected }) {
     return (
         <div onClick={handleClick} className={"hover:bg-[#c5ccdb9a]  flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F] " + (selected ? "bg-[#c5ccdb9a] dark:bg-[#2c2b2fb7]" : "")}>
             <div className=" flex items-center gap-3 h-full w-[90%]">
-                <div className="text-sm font-medium text-[#2f2f2fa3] dark:text-[#A7A6A8]">{text}</div>
+                <div className="text-sm font-medium text-[#2f2f2fa3] dark:text-[#A7A6A8]">{text === "Openai" ? "OpenAI" : text }</div>
                 { selected && 
                     <>
                         <div className="h-[12px] w-[2px] rounded-full bg-[#2f2f2f47]"></div> 

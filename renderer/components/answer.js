@@ -33,6 +33,7 @@ const Answer = React.memo(({ answer, searching }) => {
                     return line;
                 } else {
                     return purify(line);
+                    // return line
                 }
             });
             setFormattedLines(htmlLines);

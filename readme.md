@@ -14,11 +14,11 @@ Wanna join our little discord community? [Join HASK](https://discord.gg/cSf3RpQd
 | Provider           | Model              | Integration       |
 | ------------------ | ------------------ | ----------------- |
 | Perplexity         | pplx-7b-online, pplx-70b-online, pplx-8x7b-online, sonar-small-online, sonar-small-chat, sonar-medium-chat |  ✅               |
-| Groq               | llama2-70b-4096chat, llama2-8x7b-32768 | ✅               | 
-| Ollama             | library models |  ✅               |
-| OpenAI             | gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview |  ✅               |
-| Anthropic          | claude-2.1, claude-3-opus-20240229, claude-2.0, claude-instant-1.2, claude-3-sonnet-20240229, claude-3-haiku-20240307 |  ✅               |
 | Cohere             | command, command-light, command-r, command-nightly, command-light-nightly |  ✅               |
+| OpenAI             | gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview |  ✅               |
+| Groq               | llama2-70b-4096chat, llama2-8x7b-32768 | ✅               | 
+| Anthropic          | claude-2.1, claude-3-opus-20240229, claude-2.0, claude-instant-1.2, claude-3-sonnet-20240229, claude-3-haiku-20240307 |  ✅               |
+| Ollama             | library models |  ✅               |
 | Mistral            | soon |  ❌               |
 | Gemini             | soon |  ❌               |
 
@@ -45,9 +45,9 @@ Mac Intel: [PKG](https://github.com/bm777/hask/releases/download/v1.1/hask-ai-in
 ## 1. Development
 Clone the repository:
 
+```bash
 git clone https://github.com/bm777/hask.git
 cd hask
-```bash
 npm i
 npm run dev
 

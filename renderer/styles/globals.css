@@ -347,7 +347,7 @@
     .markdown-body :not(pre) > code {
         /* Inline code styles */
         padding: 2px 4px;
-        font-size: 90%;
+        font-size: 80%;
         color: #d4d4d4;
         background-color: #1e1e1e;
         border-radius: 4px;

@@ -22,12 +22,16 @@ export default function Search() {
     const [tps, setTps] = useState(0);
     const [time, setTime] = useState(0);
     const {theme, setTheme} = useTheme();
-
+    
     const [token, setToken] = useState("");
     const [model, setModel] = useState("pplx-7b-online");
     const [systemPrompt, setSystemPrompt] = useState("Be precise and concise.");
     const [temperature, setTemperature] = useState("0.75");
     const [maxTokens, setMaxTokens] = useState("900");
+    // let possibleProviders = [];
+    const [possibleProviders, setPossibleProviders] = useState([]);
+    const providers = ["perplexity", "cohere", "openai", "groq", "anthropic", "ollama" ];
+    
 
     const [settingsExpanded, setSettingsExpanded] = useState(false);
     const [modelExpanded, setModelExpanded] = useState(false);
@@ -41,6 +45,13 @@ export default function Search() {
     const [anthropicId, setAnthropicId] = useState(0);
     const [cohereId, setCohereId] = useState(0);
 
+    // const [pplxStatus, setPplxStatus] = useState(true);
+    // const [cohereStatus, setCohereStatus] = useState(true);
+    // const [openaiStatus, setOpenaiStatus] = useState(true);
+    // const [groqStatus, setGroqStatus] = useState(false);
+    // const [anthropicStatus, setAnthropicStatus] = useState(false);
+    // const [ollamaStatus, setOllamaStatus] = useState(false);
+    
     const [ollamaModelList, setOllamaModelList] = useState([]);
 
     let inputRef = useRef(null);
@@ -122,6 +133,15 @@ export default function Search() {
             } else if (_provider === "cohere") {
                 configureCohere();
             }
+            let temp = []
+            for (let i = 0; i < providers.length; i++) {
+                const status = localStorage.getItem( providers[i] === "perplexity" ? "pplx-status" : providers[i] + "-status" );
+                if (status === "true") {
+                    temp.push(providers[i]);
+                    setPossibleProviders(temp);
+                } 
+                window.ipc.send("logger", [providers[i], status, possibleProviders] );
+            }
         }
 
         document.addEventListener("mousedown", handleClickOutside);
@@ -170,7 +190,7 @@ export default function Search() {
                     if (tags[0] !== "loading...") {
                         setOllamaModelList(tags);
                         setModelList(tags);
-                        setModel(localStorage.getItem("ollama-model") || tags[ollamaId || 0]);
+                        setModel(localStorage.getItem("ollama-model") || tags[ollamaId] || 0);
                         clearInterval(interval);
                     } else {
                         setOllamaModelList(["loading..."]);
@@ -227,17 +247,19 @@ export default function Search() {
         e.preventDefault()
         setSearching(true);
         if (provider === "perplexity") {
-        window.ipc.send(
-            "search-pplx", 
-            {
-                query, 
-                model, 
-                token, 
-                systemPrompt,
-                temperature: parseFloat(temperature),
-                maxTokens: parseInt(maxTokens)
-            });
+            setAnswer(" ");
+            window.ipc.send(
+                "search-pplx", 
+                {
+                    query, 
+                    model, 
+                    token, 
+                    systemPrompt,
+                    temperature: parseFloat(temperature),
+                    maxTokens: parseInt(maxTokens)
+                });
         } else if (provider === "groq") {
+            setAnswer(" ");
             window.ipc.send(
                 "search-groq", 
                 { 
@@ -282,6 +304,7 @@ export default function Search() {
                 setSearching(false);
             }
         } else if (provider === "openai") {
+            setAnswer(" ");
             window.ipc.send(
                 "search-openai", 
                 { 
@@ -293,6 +316,7 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         } else if (provider === "anthropic") {
+            setAnswer(" ");
             window.ipc.send(
                 "search-anthropic", 
                 { 
@@ -304,6 +328,7 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         } else if (provider === "cohere") {
+            setAnswer(" ");
             window.ipc.send(
                 "search-cohere",
                 {
@@ -356,6 +381,21 @@ export default function Search() {
             configureCohere(true);
             localStorage.setItem("cohere-model", _model);
             setCohereId(cohereModelList.indexOf(_model) || 0);
+        }
+    }
+    const getDefaultModel = (pvd) => {
+        if (pvd === "perplexity") {
+            return pplxModelList[pplxId];
+        } else if (pvd === "groq") {
+            return groqModelList[groqId];
+        } else if (pvd === "ollama") {
+            return ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId];
+        } else if (pvd === "openai") {
+            return openaiModelList[openaiId];
+        } else if (pvd === "anthropic") {
+            return anthropicModelList[anthropicId];
+        } else if (pvd === "cohere") {
+            return cohereModelList[cohereId];
         }
     }
 
@@ -504,12 +544,16 @@ export default function Search() {
                 modelExpanded && query!=="" &&
                 <div ref={modelRef} className={`px-2 border border-gray-600/30 rounded-md fixed bottom-12 right-3 z-10 w-[350px] min-h-[250px] max-h-[300px] overflow-auto shadow-xl bg-[#d8dcea] shadow-[#0000002e] dark:bg-[#19171C]`}>
                     <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-[#93929497]`}>Models</div>
-                    <Pvd text="Perplexity" defaultModel={pplxModelList[pplxId]} selected={provider === "perplexity"} action={handleProvider} />
-                    <Pvd text="Groq" defaultModel={groqModelList[groqId]} selected={provider === "groq"} action={handleProvider} />
-                    <Pvd text="Ollama" defaultModel={ ollamaModelList?.length === 0 && "loading..." || ollamaModelList[ollamaId] } selected={provider === "ollama"} action={handleProvider} />
-                    <Pvd text="OpenAI" defaultModel={openaiModelList[openaiId]} selected={provider === "openai"} action={handleProvider} />
-                    <Pvd text="Anthropic" defaultModel={anthropicModelList[anthropicId]} selected={provider === "anthropic"} action={handleProvider} />
-                    <Pvd text="Cohere" defaultModel={cohereModelList[cohereId]} selected={provider === "cohere"} action={handleProvider} />
+                    {
+                        possibleProviders.map((pvd, index) => {
+                            return <Pvd key={index} 
+                                        text={capitalize(pvd)} 
+                                        selected={provider === pvd} 
+                                        defaultModel={ getDefaultModel(pvd)}
+                                        action={handleProvider} 
+                                    />
+                        })
+                    }
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>
                 </div>
             }

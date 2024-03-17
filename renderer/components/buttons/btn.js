@@ -11,7 +11,7 @@ export default function Btn({ type, text, action }) {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m0 17.726-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205 12 12m6.894 5.785-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />
                         </svg>
                     </div>
-                    <div className="text-sm text-[#2f2f2fa3] dark:text-[#A7A6A8] ">{text}</div>
+                    <div className="text-sm text-[#2f2f2f] dark:text-[#A7A6A8] ">{text}</div>
                 </div>
                 <div className=" flex items-center justify-center gap-1 ">
                     <div className="bg-[#2f2f2f1d] h-[24px] w-[24px] flex items-center justify-center rounded-md border border-[#8181814b] dark:bg-[#414045]">
@@ -41,14 +41,14 @@ export default function Btn({ type, text, action }) {
                         </svg>
                     }
                 </div>
-                <div className="text-sm text-[#2f2f2fa3] dark:text-[#A7A6A8]">{text}</div>
+                <div className="text-sm text-[#2f2f2f] dark:text-[#A7A6A8]">{text}</div>
             </div>
             <div className=" "> </div>
         </div>
     )
     else if(type==="exit") 
     return (
-        <div onClick={action} className="hover:bg-[#c5ccdb9a] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F]">
+        <div onClick={action} className="hover:bg-[#c5ccdbca] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F]">
             <div className=" flex items-center justify-center gap-1">
                 <div className="">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#ff0000" viewBox="0 0 256 256" className="w-[20px] h-[20px]">

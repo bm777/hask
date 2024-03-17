@@ -15,6 +15,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const postInstallFlagPath = path.join(app.getPath('userData'), 'postInstallDone.flag');
 let settingsWindow;
 let mainWindow;
+let pingOllamaSender;
 
 if (isProd) {
   serve({ directory: 'app' }); // important for the build
@@ -77,7 +78,7 @@ async function createSettingsWindow() {
   settingsWindow = createWindow('settings-window', {
     width: 750,
     height: 480,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: false,
     // backgroundColor: "#19171B", //"#fa2E292F",
@@ -148,6 +149,7 @@ async function createMainWindow() {
     console.log('logger ->', object)
   })
   ipcMain.on("search-pplx", async (event, args) => {
+    event.sender.send('search-result', "");
     console.log('search-pplx', args)
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
@@ -209,6 +211,7 @@ async function createMainWindow() {
       }
   })
   ipcMain.on("search-groq", async (event, args) => {
+    event.sender.send('search-result', "");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
     const groq = new Groq({apiKey: token});
@@ -251,6 +254,7 @@ async function createMainWindow() {
     
   })
   ipcMain.on("search-openai", async (event, args) => {
+    event.sender.send('search-result', "");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-openai', query, model, token, systemPrompt, temperature, maxTokens)
     const openai = new OpenAI({"apiKey": token});
@@ -283,6 +287,7 @@ async function createMainWindow() {
     
   })
   ipcMain.on("search-anthropic", async (event, args) => {
+    event.sender.send('search-result', "");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log(args)
     const anthropic = new Anthopic({ apiKey: token });
@@ -312,6 +317,7 @@ async function createMainWindow() {
     }
   })
   ipcMain.on("search-cohere", async (event, args) => {
+    event.sender.send('search-result', "");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log(args)
     const cohere = new CohereClient({token: token});
@@ -391,28 +397,26 @@ async function createMainWindow() {
 
     ipcMain.on('ollama-ready', () => {
       fs.writeFileSync(postInstallFlagPath, 'done');
-      // settingsWindow.close();
-      // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-      // app.exit(0)
     })
     ipcMain.on('ping-ollama', async (event) => {
       console.log('[settings]-logger -> None')
-      setInterval(async () => {
-        const isOllamaRunning = await isUrlRunning('http://localhost:11434');
-        if (isOllamaRunning) event.sender.send("ollama-reply", "ollama-ready")
-        else event.sender.send("ollama-reply", "installing-ollama")
+      pingOllamaSender = event.sender;
+      const intervalId = setInterval(async () => {
+        if (pingOllamaSender && !pingOllamaSender.isDestroyed()) {
+          const isOllamaRunning = await isUrlRunning('http://localhost:11434');
+          if (isOllamaRunning) {
+            pingOllamaSender.send("ollama-reply", "ollama-ready");
+          } else { pingOllamaSender.send("ollama-reply", "installing-ollama"); }
+        } else {  clearInterval(intervalId); }
       }, 500);
+
+      event.sender.on('destroyed', () => {
+        clearInterval(intervalId);
+      });
     })
     ipcMain.on("logger", (event, object) => {
       console.log("[settings]-logger ->", object)
     })
-    // ipcMain.on('relaunch-hask',  async (event) => {
-    //   // relaunch main window or create new one
-    //   if (mainWindow) {
-    //     mainWindow.close();
-    //   }
-    //   mainWindow = await createMainWindow();
-    // })
    
   } else {
     mainWindow = await createMainWindow();

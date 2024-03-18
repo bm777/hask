@@ -44,13 +44,6 @@ export default function Search() {
     const [openaiId, setOpenaiId] = useState(0);
     const [anthropicId, setAnthropicId] = useState(0);
     const [cohereId, setCohereId] = useState(0);
-
-    // const [pplxStatus, setPplxStatus] = useState(true);
-    // const [cohereStatus, setCohereStatus] = useState(true);
-    // const [openaiStatus, setOpenaiStatus] = useState(true);
-    // const [groqStatus, setGroqStatus] = useState(false);
-    // const [anthropicStatus, setAnthropicStatus] = useState(false);
-    // const [ollamaStatus, setOllamaStatus] = useState(false);
     
     const [ollamaModelList, setOllamaModelList] = useState([]);
 
@@ -61,14 +54,14 @@ export default function Search() {
     const modelRef = useRef(null);
 
     // Event listener functions
-    const handleSearchResult = (result) => {
+    const handleSearchResult = async (result) => {
         setAnswer(result);
         if (scrollerRef.current) {
             scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
         }
     };
     const handleSearchEnd = () => { setSearching(false); };
-    const handleSearchError = (error) => { console.error(error); setSearching(false); };
+    const handleSearchError = (error) => { console.error(error); setSearching(false);};
     const openUrl = async (socialType) => { 
         window.ipc.send("open-url", socialType==="discord" ? discordUrl.toString() : githubUrl.toString()); 
         setSettingsExpanded(false);
@@ -271,7 +264,6 @@ export default function Search() {
         } else if (provider === "ollama") {
             window.ipc.send("logger", "generating-token...");
             try {
-                setSearching(true);
                 setAnswer(" ");
                 const stream = await generateOllama({
                     model: model,
@@ -294,9 +286,12 @@ export default function Search() {
                         setAnswer(prevAnswer => prevAnswer + out.response);
                         // temp += out.response;
                         // setAnswer(temp);
+                    } else {
+                        window.ipc.send("logger", ["---->", "done"]);
+                        setSearching(false);
                     }
                 }
-                setSearching(false)
+                
             } catch (error) {
                 window.ipc.send("logger", ["search-ollama-error", error]);
                 setSearching(false);
@@ -335,7 +330,6 @@ export default function Search() {
                     maxTokens: parseInt(maxTokens)
                 });
         }
-
     }
     const handleSettings = () => {
         setSettingsExpanded(true);
@@ -442,7 +436,7 @@ export default function Search() {
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] rounded p-0 animate-pulse`}></div>
                                 :
                                 <div className={`mx-4 mt-2 bg-[#c5ccdb9a] text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-8 mb-4 dark:bg-[#312F32] dark:text-[#A7A6A8]`} >
-                                        <Answer key={"0"} answer={answer} searching={searching} />
+                                        <Answer key={"0"} answer={answer} searching={searching} pvd={provider} />
                                 </div>
                             }
                         </>

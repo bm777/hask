@@ -10,7 +10,7 @@ import showdown from 'showdown';
 
 const converter = new showdown.Converter();
 
-const Answer = React.memo(({ answer, searching }) => {
+const Answer = ({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
@@ -21,22 +21,20 @@ const Answer = React.memo(({ answer, searching }) => {
         });
         return sanitizedHtml;
     }
+
     useEffect(() => {
         if (answer) {
-            const lines = (answer).split('\n');
-            const linesWithLinksParsed = lines.map(line => parseLink(line));
+            let lines = (answer).split("\n");
+            const linesWithLinksParsed = lines.map(line => parseLink(line)); // to be adjusted, after the glitch is fixed
             const linesWithCodeBlocks = get_code_blocks(linesWithLinksParsed);
+
+            // setFormattedLines(linesWithCodeBlocks.map((line, index) => {
+            if (answer === " " && searching) { setFormattedLines([]); } 
+            else {
+                // incrmental rendering :-)
+                setFormattedLines(linesWithCodeBlocks.map(processLine));
+            }
             
-            // Convert markdown to HTML and sanitize
-            const htmlLines = linesWithCodeBlocks.map(line => {
-                if (line.includes("```")) {
-                    return line;
-                } else {
-                    return purify(line);
-                    // return line
-                }
-            });
-            setFormattedLines(htmlLines);
         }
     }, [answer]);
 
@@ -53,25 +51,24 @@ const Answer = React.memo(({ answer, searching }) => {
             }, 1000);
         });
     }
-
+    // offload the processLine function from the useeffect()
+    const processLine = (line) => {
+        if (line.includes("```")) {
+            return <CodeText key={uid()} >{line}</CodeText>;
+        } else {
+            return (
+                <div
+                    key={uid()}
+                    className="markdown-body text-sm"
+                    dangerouslySetInnerHTML={{ __html: purify(line) }}
+                />
+            );
+        }
+    };
 
   return (
     <div className="relative">
-        {formattedLines.map((line, index) => (
-            <div key={uid()}>
-            {
-                line.includes("```") ? // .slice(3, -3)
-                <CodeText key={uid()} searching={searching} >{line}</CodeText>
-                :
-                <div 
-                    key={uid()}
-                    className="markdown-body text-sm"
-                    dangerouslySetInnerHTML={{ __html: line }}
-                />
-            }
-            </div>
-            ))
-        }
+        {formattedLines}
 
         <div className={" absolute w-full -bottom-7 ml-3 flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
             <div onClick={copied} className={`flex py-[1px] px-2 bg-[#2f2f2f3a] border border-[#8181814b] rounded dark:bg-[#87858965]`}> 
@@ -85,6 +82,6 @@ const Answer = React.memo(({ answer, searching }) => {
         </div>
     </div>
   );
-})
+}
 
 export default Answer;

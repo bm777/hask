@@ -331,6 +331,12 @@
         margin: 10px 0;
         list-style-type: disc;
     }
+    .markdown-body ul ul {
+        /* List unordored nested */
+        padding-left: 32px;
+        margin: 10px 0;
+        list-style-type: square;
+    }
     .markdown-body ol {
         /* List ordored styles */
         padding-left: 32px;

@@ -15,6 +15,15 @@ const Answer = ({ answer, searching }) => {
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
     const purify = (line) => {
+        if (line.trim().startsWith('+')) {
+            if (line.match(/^\t\+\s*/)) {
+                window.ipc.send("logger", ["captured-------", line]);
+                const content = line.replace(/^\t\+\s*/, '');
+                // Convert the content to a sublist
+                const sublist = `<ul><ul><li>${content}</li></ul></ul>`;
+                return DOMPurify.sanitize(sublist);
+            }
+        }
         const html = converter.makeHtml(line);
         const sanitizedHtml = DOMPurify.sanitize(html, {
             ALLOWED_ATTR: ['start'] // Allow start attribute for ordered lists
@@ -53,6 +62,7 @@ const Answer = ({ answer, searching }) => {
     }
     // offload the processLine function from the useeffect()
     const processLine = (line) => {
+        window.ipc.send("logger", ["line", purify(line)]);
         if (line.includes("```")) {
             return <CodeText key={uid()} >{line}</CodeText>;
         } else {

@@ -275,9 +275,13 @@ async function createMainWindow() {
         if (chunk.choices[0].delta?.content) {
           bufferData += chunk.choices[0].delta.content
           event.sender.send('search-result', bufferData);
-        } else {
-          event.sender.send('search-end');
         }
+        if (chunk.choices[0].finish_reason === "stop") {
+          event.sender.send('search-end');
+          console.log('search-result', chunk.choices[0])
+          break
+        }
+        
       }
       console.log('search-end')
     } catch (error) {

@@ -430,11 +430,16 @@ async function createMainWindow() {
     });
   }
   ipcMain.on('relaunch-hask',  async (event) => {
-    // relaunch main window or create new one
     if (mainWindow) {
+      // quit the app and relaunch it
       mainWindow.close();
+      settingsWindow.close();
+      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+      app.exit(0)
     }
     mainWindow = await createMainWindow();
+    settingsWindow = await createSettingsWindow();
+    settingsWindow.show();
   })
   
   const template = [

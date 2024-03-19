@@ -13,15 +13,10 @@ const CodeText = ({ children }) => {
 
     useEffect(() => {
         if (children) {
-            // setLang(children.split("\n")[0])
-            // setCode(children.split("\n").slice(1, -1).join("\n"))
             setCode(children)
             window.ipc.send("logger", ["code", children])
-            // console.log("children", children.split("\n").slice(1, -1).join("\n"));
         }
-        // Prism.highlightAll();
         return () => {
-            Prism.highlightAll();
             Prism.highlightAll();
         }
     }, [children]);
@@ -29,27 +24,24 @@ const CodeText = ({ children }) => {
     const copied = () => {
         navigator.clipboard.writeText(code).then(function() {
             setStatus("copied");
-            setTimeout(() => {
-                setStatus("copy");
-            }, 1000); 
+            setTimeout(() => { setStatus("copy"); }, 1000); 
         }, function(err) {
             setStatus("error");
-            setTimeout(() => {
-                setStatus("copy");
-            }, 1000); 
+            setTimeout(() => { setStatus("copy"); }, 1000); 
         });
     }
 
     const purifyCode = (line) => {
-        const html = converter.makeHtml(line);
+        const html = converter.makeHtml(line.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
         const sanitizedHtml = DOMPurify.sanitize(html, {
             ADD_CLASSES: {
                 code: 'language-js',
-                // pre: 'language-js',
+                pre: 'language-js',
             },
-            decodeEntities: true,
+            ALLOWED_ATTR: ['start'],
+
         });
-        return sanitizedHtml;
+        return sanitizedHtml
     }
     
     return (

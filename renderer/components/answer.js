@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef} from "react";
 import { parseLink } from "../pages/api/methods";
 import CodeText from "../components/codetext";
 import { get_code_blocks } from "../pages/api/methods";
@@ -15,7 +15,9 @@ const Answer = ({ answer, searching }) => {
     const { theme } = useTheme();
     const converter = new showdown.Converter();
     const [tableFlag, setTableFlag] = useState(false);
-    const [table, setTable] = useState("")
+    var tableData = [];
+    const [tableContent, setTableContent] = useState(null);
+    const tableRef = useRef(null);
 
 
     const purify = (line) => {
@@ -33,86 +35,75 @@ const Answer = ({ answer, searching }) => {
                 return DOMPurify.sanitize(sublist);
             }
         }
-        
-        const rg = /^\s*\|.+\|.*$/ // check if line is a table
-        const rg2 = /^\s*\|.+\|.*\|\n$/ // rg for ending with |\n
-        const rg3 = /\|$/ // rg for ending with |
-        const rg4 = /[^\|]$/ // rg for not ending with |
-        var _line
 
-        rg.test(line) ? setTableFlag(true) : setTableFlag(false);
-        if (rg.test(line) && !tableFlag) {
-            if (rg2.test(line)) {
-                window.ipc.send("logger", ["--------just render", line, ])
-                _line = line;
-            } else if (rg3.test(line)){    
-                window.ipc.send("logger", ["++++++++append \n", line+ "\n"])
-                _line = line + "\n";
-            } else if (rg4.test(line)) {
-                window.ipc.send("logger", ["||||||||append |\n", line+ "|\n"])
-                _line = line + "|\n";
-            } 
-            converter.setOption('tables', true);
-            const html = converter.makeHtml(table + _line);
-            setTable(table + _line);
-            return DOMPurify.sanitize(html, {
-                ALLOWED_ATTR: ['start']
-            });
-        } else {
-            setTableFlag(false);
+        if (line.startsWith("|")) {
+            setTableFlag(true);
+            if (line.match(/^\|.*\|.*\|.*$/) ) {
+                const content = line.split("|").map((item) => item.trim());
+                const table = content.map((item, index) => {
+                    if (item === "") return;
+                    if (index === 0) {
+                        return `${converter.makeHtml(item)}`;
+                    } else {
+                        return `<td>${converter.makeHtml(item)}</td>`;
+                    }
+                }).join('');
+                tableData.push(`<tr>${table}</tr>`);
+                return tableData.join("");
+            } else {
+                return DOMPurify.sanitize(converter.makeHtml(line));
+            }
         }
         
-        // window.ipc.send("logger", line)
         const html = converter.makeHtml(line);
-        const sanitizedHtml = DOMPurify.sanitize(html, {
-            ALLOWED_ATTR: ['start'] // Allow start attribute for ordered lists
-        });
-        return sanitizedHtml;
+        return DOMPurify.sanitize(html, { ALLOWED_ATTR: ['start'] });
     }
     const purifyCode = (line) => {
         const html = converter.makeHtml(line);
-        const sanitizedHtml = DOMPurify.sanitize(html, {
-            ADD_CLASSES: {
-                code: 'language-js'
-            }
-        });
-        return sanitizedHtml;
+        return DOMPurify.sanitize(html, {  ADD_CLASSES: { code: 'language-js' } });
     }
 
     useEffect(() => {
         if (answer) {
             let lines = (answer).split("\n");
             const linesWithLinksParsed = lines.map(line => parseLink(line)); // to be adjusted, after the glitch is fixed
-            const linesWithCodeBlocks = get_code_blocks(linesWithLinksParsed);
+            const rg = /.*\|.*\|.*$/ // rg for checking if the line is a table
+            const linesWithCodeBlocks = !rg.test(linesWithLinksParsed) ? linesWithLinksParsed : get_code_blocks(linesWithLinksParsed);
 
-            // setFormattedLines(linesWithCodeBlocks.map((line, index) => {
             if (answer === " " && searching) { setFormattedLines([]); } 
-            else {
-                // incrmental rendering :-)
-                setFormattedLines(linesWithCodeBlocks.map(processLine));
-            }
-            
+            else { setFormattedLines(linesWithCodeBlocks.map(processLine)); }
         }
     }, [answer]);
 
     const copied = () => {
         navigator.clipboard.writeText(answer).then(function() {
             setStatus("copied");
-            setTimeout(() => {
-                setStatus("copy");
-            }, 1000);
+            setTimeout(() => { setStatus("copy"); }, 1000);
         }, function(err) {
             setStatus("error");
-            setTimeout(() => {
-                setStatus("copy");
-            }, 1000);
+            setTimeout(() => { setStatus("copy"); }, 1000);
         });
     }
     // offload the processLine function from the useeffect()
     const processLine = (line) => {
+        if (line === "") return <div key={uid()} className="h-2 bg-transparent" />;
+
         if (line.includes("```")) {
             return <CodeText key={uid()} >{purifyCode(line)}</CodeText>;
         } else {
+            const purified = purify(line)
+            // if (purified.includes("<tr>")) {
+            //     return (
+            //         <table ref={tableRef} className="markdown-body text-sm">
+            //             <tbody dangerouslySetInnerHTML={{ __html: purified }} />
+            //         </table>
+            //     );
+            // }
+            if (purified.includes("<tr>")) {
+                window.ipc.send("logger", ["inside td", purified])
+                setTableContent(purified); 
+                return null; 
+            }
             return (
                 <div
                     key={uid()}
@@ -126,6 +117,13 @@ const Answer = ({ answer, searching }) => {
   return (
     <div className="relative">
         {formattedLines}
+
+        {tableContent && (
+            <table className="markdown-body text-sm">
+                <tbody dangerouslySetInnerHTML={{ __html: tableContent }} />
+            </table>
+        )}
+
 
         <div className={" absolute w-full -bottom-7 ml-3 flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
             <div onClick={copied} className={`flex py-[1px] px-2 bg-[#2f2f2f3a] border border-[#8181814b] rounded dark:bg-[#87858965]`}> 

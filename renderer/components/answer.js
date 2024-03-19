@@ -8,25 +8,73 @@ import { v4 as uid } from 'uuid';
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
 
-const converter = new showdown.Converter();
 
 const Answer = ({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
+    const converter = new showdown.Converter();
+    const [tableFlag, setTableFlag] = useState(false);
+    const [table, setTable] = useState("")
+
+
     const purify = (line) => {
         if (line.trim().startsWith('+')) {
             if (line.match(/^\t\+\s*/)) {
-                window.ipc.send("logger", ["captured-------", line]);
                 const content = line.replace(/^\t\+\s*/, '');
-                // Convert the content to a sublist
-                const sublist = `<ul><ul><li>${content}</li></ul></ul>`;
+                const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
                 return DOMPurify.sanitize(sublist);
             }
         }
+        if (line.startsWith('    -')) {
+            if (line.match(/^ {4}-\s*/)) {
+                const content = line.replace(/^ {4}-\s*/, '');
+                const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
+                return DOMPurify.sanitize(sublist);
+            }
+        }
+        
+        const rg = /^\s*\|.+\|.*$/ // check if line is a table
+        const rg2 = /^\s*\|.+\|.*\|\n$/ // rg for ending with |\n
+        const rg3 = /\|$/ // rg for ending with |
+        const rg4 = /[^\|]$/ // rg for not ending with |
+        var _line
+
+        rg.test(line) ? setTableFlag(true) : setTableFlag(false);
+        if (rg.test(line) && !tableFlag) {
+            if (rg2.test(line)) {
+                window.ipc.send("logger", ["--------just render", line, ])
+                _line = line;
+            } else if (rg3.test(line)){    
+                window.ipc.send("logger", ["++++++++append \n", line+ "\n"])
+                _line = line + "\n";
+            } else if (rg4.test(line)) {
+                window.ipc.send("logger", ["||||||||append |\n", line+ "|\n"])
+                _line = line + "|\n";
+            } 
+            converter.setOption('tables', true);
+            const html = converter.makeHtml(table + _line);
+            setTable(table + _line);
+            return DOMPurify.sanitize(html, {
+                ALLOWED_ATTR: ['start']
+            });
+        } else {
+            setTableFlag(false);
+        }
+        
+        // window.ipc.send("logger", line)
         const html = converter.makeHtml(line);
         const sanitizedHtml = DOMPurify.sanitize(html, {
             ALLOWED_ATTR: ['start'] // Allow start attribute for ordered lists
+        });
+        return sanitizedHtml;
+    }
+    const purifyCode = (line) => {
+        const html = converter.makeHtml(line);
+        const sanitizedHtml = DOMPurify.sanitize(html, {
+            ADD_CLASSES: {
+                code: 'language-js'
+            }
         });
         return sanitizedHtml;
     }
@@ -62,9 +110,8 @@ const Answer = ({ answer, searching }) => {
     }
     // offload the processLine function from the useeffect()
     const processLine = (line) => {
-        window.ipc.send("logger", ["line", purify(line)]);
         if (line.includes("```")) {
-            return <CodeText key={uid()} >{line}</CodeText>;
+            return <CodeText key={uid()} >{purifyCode(line)}</CodeText>;
         } else {
             return (
                 <div

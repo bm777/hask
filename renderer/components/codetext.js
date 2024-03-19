@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
 import React from "react";
 import Prism from 'prismjs';
+import DOMPurify from 'dompurify';
+import showdown from 'showdown';
 
 
 const CodeText = ({ children }) => {
     const [status, setStatus] = useState("copy");
     const [lang, setLang] = useState("");
     const [code, setCode] = useState("");
+    const converter = new showdown.Converter();
+
     useEffect(() => {
-        Prism.highlightAll(); 
         if (children) {
-            setLang(children.split("\n")[0])
-            setCode(children.split("\n").slice(1, -1).join("\n"))
+            // setLang(children.split("\n")[0])
+            // setCode(children.split("\n").slice(1, -1).join("\n"))
+            setCode(children)
+            window.ipc.send("logger", ["code", children])
             // console.log("children", children.split("\n").slice(1, -1).join("\n"));
         }
-        Prism.highlightAll();
+        // Prism.highlightAll();
+        return () => {
+            Prism.highlightAll();
+            Prism.highlightAll();
+        }
     }, [children]);
     
     const copied = () => {
@@ -30,6 +39,18 @@ const CodeText = ({ children }) => {
             }, 1000); 
         });
     }
+
+    const purifyCode = (line) => {
+        const html = converter.makeHtml(line);
+        const sanitizedHtml = DOMPurify.sanitize(html, {
+            ADD_CLASSES: {
+                code: 'language-js',
+                // pre: 'language-js',
+            },
+            decodeEntities: true,
+        });
+        return sanitizedHtml;
+    }
     
     return (
         <div className={`rounded-md bg-[#1e1e1e] text-sm overflow-auto border mx-auto my-1 w-[97%] dark:border-[#49484C] duration-700`}>
@@ -44,11 +65,10 @@ const CodeText = ({ children }) => {
                 </div>
                 
             </div>
-            <pre>
-                <code className="language-js language-regex" >
-                    { code }
-                </code>
-            </pre>
+            <div 
+                className="px-4 py-2 "
+                dangerouslySetInnerHTML={{ __html: purifyCode(code) }}
+            />
         </div>
     );
 }

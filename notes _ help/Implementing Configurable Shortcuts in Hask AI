@@ -1,0 +1,99 @@
+Implementing Configurable Shortcuts in Hask AI
+Here's a detailed guide to implementing the plan and achieving the objective of configurable shortcuts in Hask AI, with instructions suitable for someone with rudimentary coding knowledge:
+1. Design the Configuration System:
+1.1. Settings UI (/renderer/pages/settings.js):
+Add a new section: Within the Settings component, create a new section dedicated to shortcut configuration. You can use HTML elements like div and h3 to structure the section.
+Provider dropdown: Add a dropdown list (select) to allow users to choose a model provider. Populate the list with options based on the available providers (e.g., pplxModelList, groqModelList, etc.).
+Shortcut input: Add an input field (input) where users can enter the desired key combination for the shortcut. You can use libraries like react-hotkeys to handle key combinations more easily.
+Save button: Add a button (button) to save the configuration. When clicked, this button should trigger a function that stores the selected provider and shortcut in electron-store.
+Example code snippet:
+// Inside the Settings component
+<div>
+  <h3>Shortcut Configuration</h3>
+  <label htmlFor="provider">Model Provider:</label>
+  <select id="provider" value={selectedProvider} onChange={(e) => setSelectedProvider(e.target.value)}>
+    {/* Add options for each provider */}
+  </select>
+
+  <label htmlFor="shortcut">Shortcut:</label>
+  <input id="shortcut" value={shortcut} onChange={(e) => setShortcut(e.target.value)} />
+
+  <button onClick={saveShortcutConfig}>Save</button>
+</div>
+
+// Function to save configuration
+function saveShortcutConfig() {
+  const config = {
+    provider: selectedProvider,
+    shortcut: shortcut,
+  };
+  // Use electron-store to save the config object
+}
+Use code with caution.
+Jsx
+1.2. Shortcut Storage (electron-store):
+Install electron-store:
+npm install electron-store
+Use code with caution.
+Bash
+Import and create a store instance in settings.js:
+import Store from 'electron-store';
+
+const store = new Store();
+Use code with caution.
+Jsx
+Modify saveShortcutConfig to store the configuration:
+function saveShortcutConfig() {
+  const config = { ... }; // your configuration object
+  store.set('shortcuts', config);
+}
+Use code with caution.
+Jsx
+2. Implement Shortcut Registration:
+2.1. Background Script (/main/background.js):
+Listen for configuration changes: Use ipcMain.on to listen for a channel like 'shortcut-config-changed'. This channel will be used to notify the background script when the user saves the configuration in the settings window.
+Unregister existing shortcuts: Inside the listener, use globalShortcut.unregister to remove any existing shortcuts for the affected providers. You can access the currently registered shortcuts using globalShortcut.isRegistered.
+Register new shortcuts: Use globalShortcut.register to register new shortcuts based on the updated configuration retrieved from electron-store. Make sure to handle potential conflicts with existing shortcuts.
+Example code snippet:
+// Inside background.js
+ipcMain.on('shortcut-config-changed', (event, config) => {
+  const { provider, shortcut } = config;
+
+  // Unregister existing shortcuts for the provider
+  if (globalShortcut.isRegistered(shortcut)) {
+    globalShortcut.unregister(shortcut);
+  }
+
+  // Register the new shortcut
+  globalShortcut.register(shortcut, () => {
+    // Send a message to the main window to activate the provider
+    mainWindow.webContents.send('activate-provider', provider);
+  });
+});
+Use code with caution.
+Jsx
+3. Integrate with UI:
+3.1. Main Window (/renderer/components/search.js):
+Listen for shortcut activation: Use ipcRenderer.on to listen for the 'activate-provider' channel.
+Update UI: Inside the listener, extract the provider name from the received message and update the state variables related to the selected provider and model list. You can use functions like configurePerplexity, configureGroq, etc., based on the provider name.
+Focus search input: Use inputRef.current.focus() to focus the search input after activating the provider.
+Example code snippet:
+// Inside the Search component
+useEffect(() => {
+  // ... other effects
+
+  ipcRenderer.on('activate-provider', (event, providerName) => {
+    setProvider(providerName);
+    // Update model list and other state based on providerName
+    inputRef.current.focus();
+  });
+
+  // ... other effects
+}, []);
+Use code with caution.
+Jsx
+Additional Notes:
+Make sure to handle potential errors and edge cases throughout the implementation.
+Consider adding visual feedback to the UI when a shortcut is triggered.
+You can extend this basic implementation to support more complex shortcut configurations, such as different shortcuts for different models within the same provider.
+Remember to adapt these code snippets to your specific implementation and ensure proper integration with the existing codebase.

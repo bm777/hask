@@ -17,8 +17,6 @@ const Answer = ({ answer, searching }) => {
     const [tableFlag, setTableFlag] = useState(false);
     var tableData = [];
     const [tableContent, setTableContent] = useState(null);
-    const [textContent, setTextContent] = useState(null);
-    const tableRef = useRef(null);
 
 
     const purify = (line) => {

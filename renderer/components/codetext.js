@@ -14,7 +14,7 @@ const CodeText = ({ children }) => {
     useEffect(() => {
         if (children) {
             setCode(children)
-            window.ipc.send("logger", ["code", children])
+            // window.ipc.send("logger", ["code", children])
         }
         return () => {
             Prism.highlightAll();
@@ -32,6 +32,7 @@ const CodeText = ({ children }) => {
     }
 
     const purifyCode = (line) => {
+        converter.setOption('tables', true);
         const html = converter.makeHtml(line.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
         const sanitizedHtml = DOMPurify.sanitize(html, {
             ADD_CLASSES: {

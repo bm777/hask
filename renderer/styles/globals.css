@@ -15,6 +15,20 @@
         background: #2d2d2d00;
     }
 
+    table {
+        /* border-collapse: collapse; */
+        /* border none */
+        border-radius: 10px;
+        padding: 10px;
+        width: 100%;
+        /* background-color: #1e1e1e; */
+      }
+      
+      tr {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.691); /* Change the color and style as needed */
+      }
+      
+
     pre[class*="language-"],
     code[class*="language-"] {
         color: #d4d4d4;

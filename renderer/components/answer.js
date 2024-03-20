@@ -17,6 +17,7 @@ const Answer = ({ answer, searching }) => {
     const [tableFlag, setTableFlag] = useState(false);
     var tableData = [];
     const [tableContent, setTableContent] = useState(null);
+    const [textContent, setTextContent] = useState(null);
     const tableRef = useRef(null);
 
 
@@ -92,18 +93,14 @@ const Answer = ({ answer, searching }) => {
             return <CodeText key={uid()} >{purifyCode(line)}</CodeText>;
         } else {
             const purified = purify(line)
-            // if (purified.includes("<tr>")) {
-            //     return (
-            //         <table ref={tableRef} className="markdown-body text-sm">
-            //             <tbody dangerouslySetInnerHTML={{ __html: purified }} />
-            //         </table>
-            //     );
-            // }
+
             if (purified.includes("<tr>")) {
                 window.ipc.send("logger", ["inside td", purified])
                 setTableContent(purified); 
+                setTableFlag(true)
                 return null; 
             }
+
             return (
                 <div
                     key={uid()}
@@ -116,14 +113,24 @@ const Answer = ({ answer, searching }) => {
 
   return (
     <div className="relative">
-        {formattedLines}
+        
+        
 
         {tableContent && (
-            <table className="markdown-body text-sm">
-                <tbody dangerouslySetInnerHTML={{ __html: tableContent }} />
-            </table>
+                <div className="placeholder">Table is below</div>
         )}
 
+        { formattedLines}
+
+        {tableContent && (
+            <div className="bg-[#1e1e1e] p-2 rounded-md">
+                <table className=" text-sm">
+                    <tbody dangerouslySetInnerHTML={{ __html: tableContent }} />
+                </table>
+            </div>
+        )}
+
+        
 
         <div className={" absolute w-full -bottom-7 ml-3 flex items-center justify-end transition-all duration-500  " + (answer === "" ? "scale-0" : "scale-100") }>
             <div onClick={copied} className={`flex py-[1px] px-2 bg-[#2f2f2f3a] border border-[#8181814b] rounded dark:bg-[#87858965]`}> 

@@ -44,9 +44,13 @@ const Answer = ({ answer, searching }) => {
                     if (index === 0) {
                         return `${converter.makeHtml(item)}`;
                     } else {
+                        if (item.includes("---")) {
+                            return ;
+                        }
                         return `<td>${converter.makeHtml(item)}</td>`;
                     }
                 }).join('');
+                // tableData.push(tableData.length === 0 ? `<th>${table}</th>` : `<tr>${table}</tr>`);
                 tableData.push(`<tr>${table}</tr>`);
                 return tableData.join("");
             } else {
@@ -121,8 +125,11 @@ const Answer = ({ answer, searching }) => {
         { formattedLines}
 
         {tableContent && (
-            <div className="bg-[#1e1e1e] p-2 rounded-md">
-                <table className=" text-sm">
+            <div className="mt-3 w-full mb-1 border-b border-b-1 border-gray-400 duration-700 dark:border-[#424242]"></div>
+        )}
+        {tableContent && (
+            <div className="bg-[#e0e5f6] p-2 rounded-md mt-2 relative overflow-auto border border-gray-400 duration-700 dark:border-[#414141] dark:bg-[#1e1e1e] ">
+                <table className="rounded text-sm">
                     <tbody dangerouslySetInnerHTML={{ __html: tableContent }} />
                 </table>
             </div>

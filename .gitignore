@@ -24,6 +24,7 @@ logs/
 # Testing
 coverage/
 
+
 # Dependency directories
 jspm_packages/
 bower_components/
@@ -39,3 +40,7 @@ webpack.config.js
 *.tmp
 *.tmp.*
 *.~lock.*
+renderer/.next
+app
+notes _ help
+package-lock.json

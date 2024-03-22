@@ -22,6 +22,15 @@
       "target": "deb",
       "icon": "resources/icon.png"
     },
+    "extraResources": [
+      {
+        "from": "./resources/top_bar/",
+        "to": "top_bar/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "extraFiles": [
       {
         "from": "scripts/",

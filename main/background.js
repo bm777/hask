@@ -368,7 +368,6 @@ async function createMainWindow() {
   })
 
   ///////////////////////////////
-
   // --------> 
   // mainWindow.toggleDevTools();
   // 
@@ -395,7 +394,7 @@ async function createMainWindow() {
     settingsWindow = await createSettingsWindow();
 
     const scriptPath = path.join(getParentDir(), 'scripts/init.sh');
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+    exec(`sh ${scriptPath} > ~/hask.log 2>&1`, (error, stdout, stderr) => {
       if (error) { console.log(error); return; }
     });
 
@@ -425,7 +424,7 @@ async function createMainWindow() {
   } else {
     mainWindow = await createMainWindow();
     const scriptPath = resolveHome('~/.hask/ollama.sh');
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+    exec(`sh ${scriptPath} > ~/hask.log 2>&1`, (error, stdout, stderr) => {
       if (error) { console.log(error); return; }
     });
   }

@@ -11,8 +11,6 @@ electron-builder.yml
 script/notarize.js
 assets/record.mov
 package-lock.json
-notes _ help
 **/.DS_Store
 temp.js
-*.~lock.*
-renderer/.next
+ollama

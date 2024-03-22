@@ -29,15 +29,13 @@
       }
       th {
         padding: 5px;
-        border: 1px solid #424242;
+        /* border: 1px solid #424242; */
         font-weight: bold;
       }
       td {
         padding: 5px;
-        border: 1px solid #424242;
-        /* border-left: 1px solid #424242; */
-        text-align: center;
-        /* text wrap diable, show inline */
+        border-bottom: 1px solid #424242;
+        /* text-align: center; */
         white-space: nowrap;
       }
       

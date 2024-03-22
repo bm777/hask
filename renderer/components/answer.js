@@ -73,7 +73,7 @@ const Answer = ({ answer, searching }) => {
             const rg = /.*\|.*\|.*$/ // rg for checking if the line is a table
             const linesWithCodeBlocks = !rg.test(linesWithLinksParsed) ? linesWithLinksParsed : get_code_blocks(linesWithLinksParsed);
 
-            if (answer === " " && searching) { setFormattedLines([]); } 
+            if (answer === " " && searching) { setFormattedLines([]); setTableContent(null); } 
             else { setFormattedLines(linesWithCodeBlocks.map(processLine)); }
         }
     }, [answer]);
@@ -128,8 +128,8 @@ const Answer = ({ answer, searching }) => {
             <div className="mt-3 w-full mb-1 border-b border-b-1 border-gray-400 duration-700 dark:border-[#424242]"></div>
         )}
         {tableContent && (
-            <div className="bg-[#e0e5f6] p-2 rounded-md mt-2 relative overflow-auto border border-gray-400 duration-700 dark:border-[#414141] dark:bg-[#1e1e1e] ">
-                <table className="rounded text-sm">
+            <div className="bg-[#373737] p-2 rounded-md mt-2 relative overflow-auto  duration-700 dark:border-[#414141] dark:bg-[#1e1e1e] ">
+                <table className="rounded text-sm text-gray-400 dark:text-current ">
                     <tbody dangerouslySetInnerHTML={{ __html: tableContent }} />
                 </table>
             </div>

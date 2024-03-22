@@ -389,7 +389,7 @@ async function createMainWindow() {
 
 (async () => {
   await app.whenReady();
-  console.log("---------------------->", fs.existsSync(postInstallFlagPath))
+  // console.log("---------------------->", fs.existsSync(postInstallFlagPath))
   const img = nativeImage.createFromPath(path.join(getParentDir(), isProd ? 'Resources/top_bar/hsk-16.png' : 'resources/top_bar/hsk-16.png')) // { size: { width: 16, height: 16 } }
   tray = new Tray(img);
   const contextMenu = Menu.buildFromTemplate([

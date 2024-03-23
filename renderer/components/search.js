@@ -518,10 +518,10 @@ export default function Search() {
             {
                 settingsExpanded &&
                 <div ref={settingsRef} className="px-2 ml-3 border border-gray-600/30 rounded-md fixed bottom-12 z-10 w-[350px] max-h-[300px] overflow-auto shadow-xl bg-light-modal shadow-black/20 dark:bg-dark-modal">
-                    <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-neutral-500`}>Hask v0.1.5</div>
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3 dark:text-neutral-500">Hask v1.4</div>
                     <Btn text="Settings" type={"settings"} action={openSettings} />
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px]"></div>
-                    <div className={`text-xs text-[#4d4e509a] font-bold mt-3 dark:text-neutral-500`}>Community</div>
+                    <div className="text-xs text-[#4d4e509a] font-bold mt-3 dark:text-neutral-500">Community</div>
                     <Btn text="Join our community" type={"discord"} action={openUrl}/>
                     <Btn text="Support Us" type={"github"} action={openUrl}/>
                     <div className="w-full h-1 border-b border-gray-600/20 my-[6px] mb-2"></div>

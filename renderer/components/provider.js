@@ -14,7 +14,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
     
     if (active) { return (
                 <div className="px-2 flex flex-col justify-end relative">
-                    <div className="text-gray-900 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-[#2C2B2F] dark:bg-[#2C2B2F] dark:text-[#A7A6A8]">
+                    <div className="text-gray-900 hover:bg-light-secondary/60 hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-neutral-400/10 dark:bg-neutral-400/10 dark:text-dark-text">
                         { _provider }
                     </div>
                     <div className="border-b-[3px] border-gray-600 -mb-[2px]"></div>
@@ -25,14 +25,14 @@ export default function Provider({ _provider, active, handleTabChange }) {
                     {
                         _provider !== "Perplexity" && _provider !== "Groq" &&  _provider !== "Ollama" && _provider !== "OpenAI" && _provider !== "Anthropic" && _provider !== "Cohere" &&
                         <div id='soon' className={" flex justify-end absolute top-0 duration-300 transform transition-all " + ( hover ? "scale-100" : "scale-0")}>
-                            <span className="border border-[#f68193] bg-[#f6819331] rounded-full px-2 text-xs ml-5 -mb-2">soon</span>
+                            <span className="border border-soon bg-soon/25 rounded-full px-2 text-xs ml-5 -mb-2">soon</span>
                         </div>
                     }
 
-                    <div className=" text-gray-900/80 hover:bg-[#c5ccdb9a] hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:text-[#A7A6A8] dark:hover:bg-[#2C2B2F] " onMouseEnter={handleHover} onMouseOut={exit}>
+                    <div className=" text-gray-900/80 hover:bg-light-secondary/60 hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:text-dark-text dark:hover:bg-neutral-400/10 " onMouseEnter={handleHover} onMouseOut={exit}>
                         { _provider }
                     </div>
-                    <div className="border-b-[3px] border-[#00000000] -mb-[2px]"></div>
+                    <div className="border-b-[3px] border-transparent -mb-[2px]"></div>
                 </div>
         )
     }

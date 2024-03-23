@@ -4,30 +4,30 @@ export default function Btn({ type, text, action }) {
 
     if(type==="settings")
         return (
-            <div onClick={() => action("discord")} className="hover:bg-[#c5ccdb9a] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F]">
+            <div onClick={() => action("discord")} className="hover:bg-slate-400/20 flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-100 hover:cursor-default dark:hover:bg-neutral-400/10">
                 <div className="flex items-center justify-center gap-1">
                     <div className="">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke={theme==="light" ? "#2f2f2fa3": "#A7A6A8"} className="w-[20px] h-[20px]">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0 0 15 0m-15 0a7.5 7.5 0 1 1 15 0m-15 0H3m16.5 0H21m-1.5 0H12m-8.457 3.077 1.41-.513m14.095-5.13 1.41-.513M5.106 17.785l1.15-.964m11.49-9.642 1.149-.964M7.501 19.795l.75-1.3m7.5-12.99.75-1.3m-6.063 16.658.26-1.477m2.605-14.772.26-1.477m0 17.726-.26-1.477M10.698 4.614l-.26-1.477M16.5 19.794l-.75-1.299M7.5 4.205 12 12m6.894 5.785-1.149-.964M6.256 7.178l-1.15-.964m15.352 8.864-1.41-.513M4.954 9.435l-1.41-.514M12.002 12l-3.75 6.495" />
                         </svg>
                     </div>
-                    <div className="text-sm text-[#2f2f2f] dark:text-[#A7A6A8] ">{text}</div>
+                    <div className="text-sm text-neutral-600 dark:text-neutral-400 ">{text}</div>
                 </div>
                 <div className=" flex items-center justify-center gap-1 ">
-                    <div className="bg-[#2f2f2f1d] h-[24px] w-[24px] flex items-center justify-center rounded-md border border-[#8181814b] dark:bg-[#414045]">
+                    <div className="bg-neutral-700/10 h-[24px] w-[24px] flex items-center justify-center rounded-md border border-gray-700/20 dark:border-gray-300/20 dark:bg-[#414045]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill={theme==="light" ?"#2f2f2fb9":"#ACABAE"} viewBox="0 0 256 256" className="w-4 h-4">
                             <path d="M180,144H160V112h20a36,36,0,1,0-36-36V96H112V76a36,36,0,1,0-36,36H96v32H76a36,36,0,1,0,36,36V160h32v20a36,36,0,1,0,36-36ZM160,76a20,20,0,1,1,20,20H160ZM56,76a20,20,0,0,1,40,0V96H76A20,20,0,0,1,56,76ZM96,180a20,20,0,1,1-20-20H96Zm16-68h32v32H112Zm68,88a20,20,0,0,1-20-20V160h20a20,20,0,0,1,0,40Z"></path>
                         </svg>
                     </div>
-                    <div className="bg-[#2f2f2f1d] flex items-center justify-center rounded-md border border-[#8181814b] h-[24px] w-[24px] dark:bg-[#414045]">
-                        <span className="text-[#2f2f2fb9] text-sm dark:text-[#ACABAE] ">,</span>
+                    <div className="bg-neutral-700/10 flex items-center justify-center rounded-md border border-gray-700/20 dark:border-gray-300/20 h-[24px] w-[24px] dark:bg-[#414045]">
+                        <span className="text-[#2f2f2fb9] text-sm dark:text-neutral-400 ">,</span>
                     </div>
                 </div>
             </div>
         )
     else if(type==="discord" || type==="github")
     return (
-        <div onClick={() => action(type)} className="hover:bg-[#c5ccdb9a] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F]">
+        <div onClick={() => action(type)} className="hover:bg-slate-400/20 flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-100 hover:cursor-default dark:hover:bg-neutral-400/10">
             <div className=" flex items-center justify-center gap-1">
                 <div className="">
                     {
@@ -41,21 +41,21 @@ export default function Btn({ type, text, action }) {
                         </svg>
                     }
                 </div>
-                <div className="text-sm text-[#2f2f2f] dark:text-[#A7A6A8]">{text}</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">{text}</div>
             </div>
             <div className=" "> </div>
         </div>
     )
     else if(type==="exit") 
     return (
-        <div onClick={action} className="hover:bg-[#c5ccdbca] flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default dark:hover:bg-[#2C2B2F]">
+        <div onClick={action} className="hover:bg-slate-400/20 flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-100 hover:cursor-default dark:hover:bg-neutral-400/10">
             <div className=" flex items-center justify-center gap-1">
                 <div className="">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#ff0000" viewBox="0 0 256 256" className="w-[20px] h-[20px]">
                         <path d="M112,216a8,8,0,0,1-8,8H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32h56a8,8,0,0,1,0,16H48V208h56A8,8,0,0,1,112,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L196.69,120H104a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,221.66,122.34Z"></path>
                     </svg>
                 </div>
-                <div className="text-sm text-[#ff0000]">{text}</div>
+                <div className="text-sm text-red-600">{text}</div>
             </div>
             <div className=" "> </div>
         </div>)

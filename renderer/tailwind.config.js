@@ -1,12 +1,20 @@
-const colors = require('tailwindcss/colors');
+import colors from 'tailwindcss/colors'
+
+import { haskColors } from './styles/custom'
+
 
 module.exports = {
   darkMode: "class",
+  important: true,
   content: [
     './renderer/pages/**/*.{js,ts,jsx,tsx}',
     './renderer/components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
+    colors: {
+      ...colors,
+    ...haskColors,
+    },
     extend: {
       'animation': {
         'gradient-x':'gradient-x 15s ease infinite',

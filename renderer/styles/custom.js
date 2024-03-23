@@ -38,5 +38,6 @@ export const haskColors = {
     line: "#2E2E2E",
     grayish: "#2f2f2f",
     blackish: "#4d4e50",
-    soon: "#f68193"
+    soon: "#f68193",
+    code: "#1e1e1e",
 }

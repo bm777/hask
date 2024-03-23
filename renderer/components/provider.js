@@ -13,7 +13,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
     }
     
     if (active) { return (
-                <div className="px-2 flex flex-col justify-end relative">
+                <div className="flex flex-col justify-end relative px-2 ">
                     <div className="text-gray-900 hover:bg-light-secondary/60 hover:cursor-pointer mb-[3px] px-2 py-1 rounded dark:hover:bg-neutral-400/10 dark:bg-neutral-400/10 dark:text-dark-text">
                         { _provider }
                     </div>
@@ -21,7 +21,7 @@ export default function Provider({ _provider, active, handleTabChange }) {
                 </div>
     )} else {
         return (
-                <div onClick={changeTab} className="px-2 flex flex-col justify-end relative  ">
+                <div onClick={changeTab} className="flex flex-col justify-end relative px-2">
                     {
                         _provider !== "Perplexity" && _provider !== "Groq" &&  _provider !== "Ollama" && _provider !== "OpenAI" && _provider !== "Anthropic" && _provider !== "Cohere" &&
                         <div id='soon' className={" flex justify-end absolute top-0 duration-300 transform transition-all " + ( hover ? "scale-100" : "scale-0")}>

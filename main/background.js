@@ -102,7 +102,7 @@ async function createMainWindow() {
     width: 750,
     height: 480,
     // alwaysOnTop: true,
-    resizable: false,
+    resizable: true,
     maximizable: false,
     minimizable: false,
     transparent: true,

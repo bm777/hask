@@ -109,7 +109,7 @@ export default function Preview({ cursorModel }) {
                 <div className=" px-2 bg-gray-400 h-[1px] dark:bg-line"></div>
                 <div className=" h-[150px] w-[465px] flex items-center justify-center relative">
                     <div className=" h-[120px] w-[465px] border flex items-center rounded-xl border-gray-400 relative dark:border-line/55 overflow-auto">
-                        <div className="absolute h-7 rounded-bl-xl px-4 text-xs top-0 right-0 flex items-center text-rose bg-grayish/10 border-l border-b border-gray-400 dark:bg-grayish/20">{modelName !== "--" && status}</div>
+                        <div className="absolute h-7 rounded-bl-xl px-4 text-xs top-0 right-0 flex items-center text-rose bg-grayish/10 border-l border-b border-gray-400 dark:border-line/55 dark:bg-grayish/20">{modelName !== "--" && status}</div>
                         <div className="h-[100px] w-[100px] flex items-center justify-center">
                             <div className="border rounded-full h-[70%] w-[70%] flex items-center justify-center border-gray-400 dark:border-line">
                                 <div className=" rounded-full h-[90%] w-[90%] bg-gray-400 flex items-center justify-center dark:bg-line/70">

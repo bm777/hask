@@ -4,7 +4,7 @@ export default function ModelItem({ category, label}) {
     const { theme } = useTheme()
 
     return (
-        <div className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-[#2f2f2f1d] border border-[#8181814b] dark:bg-[#2c2b2fb7]">
+        <div className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-grayish/10 border border-[#8181814b] dark:bg-[#2c2b2fb7]">
             {
                 category === "family" &&
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill={theme==="light" ?"#2f2f2fa3":"#A7A6A8"} viewBox="0 0 256 256" className="h-[18px] w-[18px]">

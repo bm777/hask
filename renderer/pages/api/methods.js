@@ -164,7 +164,6 @@ export async function getOllamaTags(withTag = false) {
         return ["loading..."];
     }
     else {
-        window.ipc.send("logger", "ollama is running, fetching tags")
         const response = await fetch('http://localhost:11434/api/tags');
         const data = await response.json();
         const models = data.models;

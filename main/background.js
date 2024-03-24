@@ -385,11 +385,25 @@ async function createMainWindow() {
   mainWindow.setFullScreenable(false);
   return mainWindow;
 }
-
+async function closeProcesses() {
+  const scriptPath = resolveHome('~/.hask/close_process.sh');
+  exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`ERROR: Error closing processes: ${error}`);
+      return;
+    }
+  });
+  // close every window
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((window) => {
+    window.removeAllListeners('close');
+    window.close();
+  });
+  app.quit()
+}
 
 (async () => {
   await app.whenReady();
-  // console.log("---------------------->", fs.existsSync(postInstallFlagPath))
   const img = nativeImage.createFromPath(path.join(getParentDir(), isProd ? 'Resources/top_bar/hsk-16.png' : 'resources/top_bar/hsk-16.png')) // { size: { width: 16, height: 16 } }
   tray = new Tray(img);
   const contextMenu = Menu.buildFromTemplate([
@@ -414,9 +428,18 @@ async function createMainWindow() {
         } else { settingsWindow.focus(); } 
       }, accelerator: 'Command+,'
     },
-    { label: 'Quit', type: 'normal', role: 'quit'}
+    { label: 'Quit', type: 'normal', click: async () => {
+      const windows = BrowserWindow.getAllWindows();
+      windows.forEach((window) => {
+        window.removeAllListeners('close');
+        window.close();
+      });
+      app.quit();
+    }}
   ])
   tray.setContextMenu(contextMenu)
+  tray.setToolTip('Hask AI')
+
   if(!fs.existsSync(postInstallFlagPath)) {
 
     settingsWindow = await createSettingsWindow();
@@ -456,11 +479,12 @@ async function createMainWindow() {
       if (error) { console.log(error); return; }
     });
   }
+
   ipcMain.on('relaunch-hask',  async (event) => {
     if (mainWindow) {
       // quit the app and relaunch it
-      mainWindow.close();
-      settingsWindow.close();
+      if(mainWindow) mainWindow.close();
+      if(settingsWindow) settingsWindow.close();
       app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
       app.exit(0)
     }
@@ -531,29 +555,11 @@ async function createMainWindow() {
       app.quit();
     }
   });
-
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       mainWindow = await createMainWindow();
     }
-
   });
-  app.on('before-quit', () => {
-    const scriptPath = resolveHome('~/.hask/close_process.sh');
-    exec(`sh ${scriptPath} > /dev/null 2>&1`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`ERROR: Error closing processes: ${error}`);
-        return;
-      }
-    });
-    // close every window
-    const windows = BrowserWindow.getAllWindows();
-    windows.forEach((window) => {
-      window.removeAllListeners('close');
-      window.close();
-    });
-    app.quit()
-  
-  });
+  app.on('before-quit', closeProcesses);
 
 })();

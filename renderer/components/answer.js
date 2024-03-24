@@ -60,11 +60,7 @@ const Answer = ({ answer, searching }) => {
         const html = converter.makeHtml(line);
         return DOMPurify.sanitize(html, { ALLOWED_ATTR: ['start'] });
     }
-    const purifyCode = (line) => {
-        const html = converter.makeHtml(line);
-        return DOMPurify.sanitize(html, {  ADD_CLASSES: { code: 'language-js' } });
-    }
-
+    
     useEffect(() => {
         if (answer) {
             let lines = (answer).split("\n");
@@ -91,7 +87,7 @@ const Answer = ({ answer, searching }) => {
         if (line === "") return <div key={uid()} className="h-2 bg-transparent" />;
 
         if (line.includes("```")) {
-            return <CodeText key={uid()} >{purifyCode(line)}</CodeText>;
+            return <CodeText key={uid()} >{line}</CodeText>;
         } else {
             const purified = purify(line)
 

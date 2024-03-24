@@ -85,10 +85,10 @@ export default function Preview({ cursorModel }) {
     }
 
     return (
-            <div className="border-l border-[#2e2e2e8c] w-[465px] h-[330px] pl-1 flex flex-col">
+            <div className="border-l border-line/55 w-[465px] h-[330px] pl-1 flex flex-col">
                 <div className="flex flex-col py-1 h-[180px] relative">
                     <p className="text-3xl truncate px-2">{modelName}</p>
-                    <p className="text-xs text-wrap mt-1 px-2 text-[#2f2f2fa3] max-h-[40%] overflow-auto dark:text-[#A7A6A8] ">
+                    <p className="text-xs text-wrap mt-1 px-2 text-grayish/70 max-h-[40%] overflow-auto dark:text-dark-text">
                         {modelDescription}
                     </p>
                     <div className="h-[40px] w-full mt-1 flex items-center justify-between p-1 absolute bottom-1">
@@ -106,13 +106,13 @@ export default function Preview({ cursorModel }) {
                     </div>
                 </div>
                 
-                <div className=" px-2 bg-gray-400 h-[1px] dark:bg-[#2E2E2E]"></div>
+                <div className=" px-2 bg-gray-400 h-[1px] dark:bg-line"></div>
                 <div className=" h-[150px] w-[465px] flex items-center justify-center relative">
-                    <div className=" h-[120px] w-[465px] border flex items-center rounded-xl border-gray-400 relative dark:border-[#2e2e2eac]">
-                        <div className="absolute h-7 rounded-bl-xl px-4 text-xs top-0 right-0 flex items-center text-[#FF5F57] bg-[#2f2f2f1d] border-l border-b border-[#8181814b] dark:bg-[#2c2b2f2e]">{modelName !== "--" && status}</div>
+                    <div className=" h-[120px] w-[465px] border flex items-center rounded-xl border-gray-400 relative dark:border-line/55 overflow-auto">
+                        <div className="absolute h-7 rounded-bl-xl px-4 text-xs top-0 right-0 flex items-center text-rose bg-grayish/10 border-l border-b border-gray-400 dark:bg-grayish/20">{modelName !== "--" && status}</div>
                         <div className="h-[100px] w-[100px] flex items-center justify-center">
-                            <div className="border rounded-full h-[70%] w-[70%] flex items-center justify-center border-gray-400 dark:border-[#3c3c3c]">
-                                <div className=" rounded-full h-[90%] w-[90%] bg-gray-400 flex items-center justify-center dark:bg-[#2e2e2eac]">
+                            <div className="border rounded-full h-[70%] w-[70%] flex items-center justify-center border-gray-400 dark:border-line">
+                                <div className=" rounded-full h-[90%] w-[90%] bg-gray-400 flex items-center justify-center dark:bg-line/70">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#949497" viewBox="0 0 256 256">
                                         <path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"></path>
                                     </svg>
@@ -123,13 +123,12 @@ export default function Preview({ cursorModel }) {
                             <div className=" h-[70px] w-full">
                                 <div className=" h-[50px] flex justify-between">
                                     <div className=" h-full flex items-center">
-                                        <div className="text-[#2f2f2fa3] dark:text-[#A7A6A8]">{descProgress}</div>
+                                        <div className="text-grayish/60 dark:text-dark-text">{descProgress}</div>
                                     </div>
-                                    {/* <div className="h-[70%] rounded-md px-4 text-xs flex items-center text-[#FF5F57] bg-[#2f2f2f1d] border border-[#8181814b] dark:bg-[#2c2b2f2e] mr-2">Downloading</div> */}
                                 </div>
                                 <div className="h-[20px] mr-2 flex items-center">
-                                    <div className="w-full h-2 rounded-full bg-[#ff5f5725] flex items-center">
-                                        <div className={"h-2 rounded-full bg-[#ff5f57] "} style={{ width: `${progress}%` }}></div>
+                                    <div className="w-full h-2 rounded-full bg-rose/15 flex items-center">
+                                        <div className="h-2 rounded-full bg-rose " style={{ width: `${progress}%` }}></div>
                                     </div>
                                 </div>
                             </div>

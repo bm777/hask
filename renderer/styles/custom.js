@@ -12,6 +12,7 @@ export const haskColors = {
         table: "#373737",
     },
     pink: "#FFB2BE",
+    rose: "#FF5F57",
     bordeau: "#561D2A",
     input: "#afafaf",
     phtext: "#4c4c4d",

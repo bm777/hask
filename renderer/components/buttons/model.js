@@ -6,7 +6,7 @@ export default function Model({ selected, text , action}) {
         action(text)
     }
     return (
-        <div onClick={handleClick} className={" flex items-center justify-between mt-1 py-[8px] px-2 rounded-md transition-all duration-200 hover:cursor-default hover:bg-[#c5ccdb9a] dark:hover:bg-[#2c2b2f82] "  + (selected ? "bg-[#c5ccdb9a] dark:bg-[#2c2b2fb7]" : "")}>
+        <div onClick={handleClick} className={" flex items-center justify-between mt-1 p-2 rounded-md transition-all duration-200 hover:cursor-default hover:bg-light-secondary/60 dark:hover:bg-neutral-400/10 "  + (selected ? "bg-light-secondary/50 dark:bg-neutral-400/5" : "")}>
             <div className=" flex items-center justify-center gap-1">
                 <div className="">
                     {
@@ -20,7 +20,7 @@ export default function Model({ selected, text , action}) {
                         </svg> 
                     }
                 </div>
-                <div className={"text-sm text-[#2f2f2fa3] dark:text-[#A7A6A8] " + (selected ? "font-medium" : "")}>{text}</div>
+                <div className={"text-sm text-grayish/60 dark:text-dark-text " + (selected ? "font-medium" : "")}>{text}</div>
             </div>
             <div className=""> </div>
         </div>

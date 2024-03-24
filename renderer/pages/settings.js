@@ -284,7 +284,7 @@ export default function Settings() {
                             <p className="w-full text-right text-gray-500 text-sm font-medium ">Theme:</p>
                         </div>
                         <div className="h-7 w-[50%] flex items-center bg-gray-400/10 border border-gray-900/20 rounded relative">
-                            <select onChange={handleThemeChange} defaultValue={theme} className="w-full h-full bg-transparent rounded-md text-sm text-black placeholder:text-gray-500/80 focus:outline-none dark:text-[#A7A6A8]">
+                            <select onChange={handleThemeChange} defaultValue={theme || "dark"} className="w-full h-full bg-transparent rounded-md text-sm text-black placeholder:text-gray-500/80 focus:outline-none dark:text-[#A7A6A8]">
                                 {
                                     ["light", "dark"].map((th, index) => {
                                         return <option key={index} value={th}>{th === "light" ? "Hask Light" : "Hask Dark"}</option>
@@ -479,7 +479,6 @@ export default function Settings() {
                     </div>
                 </div>
             }
-            
 
             {
                 OllamaPreview &&

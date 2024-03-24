@@ -14,11 +14,8 @@ const CodeText = ({ children }) => {
     useEffect(() => {
         if (children) {
             setCode(children)
-            // window.ipc.send("logger", ["code", children])
         }
-        return () => {
-            Prism.highlightAll();
-        }
+        Prism.highlightAll();
     }, [children]);
     
     const copied = () => {
@@ -46,8 +43,8 @@ const CodeText = ({ children }) => {
     }
     
     return (
-        <div className={`rounded-md bg-[#1e1e1e] text-sm overflow-auto border mx-auto my-1 w-[97%] dark:border-[#49484C] duration-700`}>
-            <div className={`w-full bg-[#2F2F2F] flex items-center pl-[16px] text-[#B4B4B4] justify-between py-[2px]`}>
+        <div className=" mx-auto my-1 w-[97%] rounded-md bg-code text-sm overflow-auto border dark:border-gray-400/30 duration-700">
+            <div className={`w-full bg-grayish flex items-center pl-[16px] text-[#B4B4B4] justify-between py-[2px]`}>
                 <div className="ml-3 ">{lang.replace('`', '').replace('`', '').replace('`', '') }</div>
 
                 <div onClick={copied} className="flex items-center justify-center  mr-2 gap-1 hover:cursor-pointer">

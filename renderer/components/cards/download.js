@@ -10,7 +10,7 @@ export default function download({label, action}) {
     }
 
     return (
-        <div onClick={handleDownload} className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-grayish/10 hover:cursor-pointer border border-gray-600/30 dark:bg-neutral-400/10">
+        <div onClick={handleDownload} className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-grayish/10 hover:cursor-pointer border border-gray-600/30 dark:bg-3">
             {
                 label === "Up to date" ?
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF5F57" className="h-[14px] w-[14px]">

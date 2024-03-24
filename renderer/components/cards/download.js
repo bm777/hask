@@ -10,7 +10,7 @@ export default function download({label, action}) {
     }
 
     return (
-        <div onClick={handleDownload} className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-[#2f2f2f1d] hover:cursor-pointer border border-[#8181814b] dark:bg-[#2c2b2fb7]">
+        <div onClick={handleDownload} className="flex items-center h-6 rounded-md gap-1 px-[6px] bg-grayish/10 hover:cursor-pointer border border-gray-600/30 dark:bg-neutral-400/10">
             {
                 label === "Up to date" ?
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FF5F57" className="h-[14px] w-[14px]">
@@ -23,7 +23,7 @@ export default function download({label, action}) {
                     
             }
             
-            <span className="text-xs text-[#FF5F57] dark:text-[#FF5F57]">{label}</span>
+            <span className="text-xs text-rose dark:text-rose">{label}</span>
         </div>
     )
 }

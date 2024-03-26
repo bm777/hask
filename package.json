@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "hask-ai",
+  "name": "Hask",
   "description": "Search as you type",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "Bayangmbe Mounmo <bayangp0@gmail.com>",
   "main": "app/background.js",
   "asar": true,
@@ -69,6 +69,7 @@
   "devDependencies": {
     "@electron/notarize": "^2.2.1",
     "autoprefixer": "^10.4.7",
+    "cssnano": "^6.1.1",
     "electron": "^20.1.0",
     "electron-builder": "^23.3.3",
     "electron-packager": "^17.1.2",

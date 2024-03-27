@@ -32,5 +32,6 @@ else
     chmod +x "$SERVICE_NAME"
 
     echo "Starting the service..."
+    cd ~/.hask/
     ./"$SERVICE_NAME" serve &
 fi

@@ -1,16 +1,2 @@
-node_modules/
-*.log
-.vscode
-.next
-out
-app/
-dist/
-server/
-electron-builder.env
-electron-builder.yml
-script/notarize.js
-assets/record.mov
-package-lock.json
-**/.DS_Store
-temp.js
-ollama
+# Added by cargo
+/target

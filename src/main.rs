@@ -32,6 +32,7 @@ struct UrlRequest {
 #[derive(Serialize)]
 struct UrlResponse {
     url: String,
+    timestamp: String,
     status: String,
 }
 
@@ -59,30 +60,37 @@ async fn save_url(
     Ok(HttpResponse::Created().json(link))
 }
 
-// check_url fn (to be post)
-#[get("/url/{url}")]
+// check_url fn
+#[post("/check/url")]
 async fn check_url(
     pool: web::Data<DbPool>,
-    form: web::Path<UrlRequest>
+    form: web::Json<models::NewLink>
 ) -> Result<HttpResponse> {
-    // println!("Checking if the url exists: {}...", form.url);
+    println!("Checking if the url exists: {}...", form.url);
 
     let url_clone = form.url.clone(); // clone the url, because we need to move it to the closure :D
     let exists = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        let mut conn = pool.get().expect("couldn't get db connection from pool"); // or  there might be an issue of sharing the datz over the pool (thread safety)
         utils::is_url_exists(&mut conn, &url_clone)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
-
+    println!("Url exists: --------> {}", exists);
     let response = UrlResponse {
-        url: form.url.clone(
-
-        ),
+        url: form.url.clone(),
+        timestamp: "random time".to_string(),
         status: if exists { "exists" } else { "not exists" }.to_string(),
     };
     Ok(HttpResponse::Ok().json(response))
 }
+
+// indexing pipeline of browser history
+// knowledge caming are in the format: (url, title, timestamp, content or chunks)
+
+// search function: retrieve most relevant visited url to the user query
+
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

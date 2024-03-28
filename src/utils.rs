@@ -1,8 +1,8 @@
 // utils functions
-use diesel::prelude::*;
 use diesel::SqliteConnection;
-use uuid::Uuid;
+use diesel::prelude::*;
 use diesel::sql_query;
+use uuid::Uuid;
 
 use crate::models;
 
@@ -19,6 +19,7 @@ pub fn store_url(
     let new_link = models::Link {
         id: Uuid::new_v4().to_string(),
         url: _url.to_string(),
+        timestamp: chrono::Local::now().to_string(),
     };
     diesel::insert_into(links)
         .values(&new_link)
@@ -47,7 +48,8 @@ pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
     // id is uuid
     sql_query("CREATE TABLE IF NOT EXISTS links (
         id TEXT PRIMARY KEY, 
-        url TEXT NOT NULL
+        url TEXT NOT NULL,
+        timestamp TEXT NOT NULL
     )").execute(conn).expect("Error creating links table");
 
     Ok(format!("Table created successfully!"))

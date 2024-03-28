@@ -5,7 +5,7 @@ use crate::schema::links;
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
 #[diesel(table_name = links)]
 pub struct Link {
-    pub id: String,
+    pub id: String, // fro the moment, we don't use yet.
     pub url: String,
 }
 

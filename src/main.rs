@@ -59,7 +59,7 @@ async fn save_url(
     Ok(HttpResponse::Created().json(link))
 }
 
-// check_url fn
+// check_url fn (to be post)
 #[get("/url/{url}")]
 async fn check_url(
     pool: web::Data<DbPool>,

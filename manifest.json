@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Hbe",
+  "version": "1.0.0",
+  "action": { "default_popup": "index.html" },
+  "content_scripts": [
+    {
+      "js": ["src/content.jsx"],
+      "matches": ["https://www.google.com/*"]
+    }
+  ]
+}

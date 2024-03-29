@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+
+body {
+  @apply flex justify-center  bg-gradient-to-t from-[#2260FF] to-[#5696FF];
+}
+

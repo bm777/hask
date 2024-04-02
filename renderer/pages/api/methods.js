@@ -2,7 +2,7 @@ import axios from 'axios';
 import { processStreamableRequest } from "./ollamaPuller";
 
 export async function searchPPLXlegacy(query, token, model) {
-    const auth = 'Bearer ' +token
+    const auth = 'Bearer ' + token
     const options = {
         method: 'POST',
         headers: {
@@ -10,27 +10,27 @@ export async function searchPPLXlegacy(query, token, model) {
             'content-type': 'text/event-stream',
             authorization: auth
         },
-        body: JSON.stringify({
-            model: model ? model : 'pplx-7b-online',
-            messages: [{role: 'system', content: 'Be consistent with your answers.'}, {role: 'user', content: query}],
+        data: JSON.stringify({
+            model: model ? model : 'sonar-medium-online',
+            messages: [{ role: 'system', content: '' }, { role: 'user', content: query }],
             stream: true
         })
     }
 
     try {
-        console.log(options);
-        const response = await fetch('https://api.perplexity.ai/chat/completions', options);
-        const json = await response.json();
-        console.log(json);
+        const response = await axios.post('https://api.perplexity.ai/chat/completions', options.data, {
+            headers: options.headers
+        });
+        console.log('Raw API Response:', response.data); // New log
         let choices
-        if(json["choices"]) {
-            choices = json["choices"][0]
-            return {choices: choices["message"]["content"]};
+        if (response.data["choices"]) {
+            choices = response.data["choices"][0]
+            return { choices: choices["message"]["content"] };
         }
-        return {error: "No choices found"};
+        return { error: "No choices found" };
     } catch (error) {
         console.error("Error in searchPPLX", error.message);
-        return {error: error};
+        return { error: error };
     }
 }
 
@@ -40,20 +40,20 @@ export const optionsConstructor = (url, key, model, query) => {
         method: "POST",
         url: url,
         headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-          authorization: auth
+            accept: 'application/json',
+            'content-type': 'application/json',
+            authorization: auth
         },
         data: {
-          model: model,
-          messages: [
-            {role: 'system', content: 'Be precise and concise.'},
-            {role: 'user', content: query}
-          ],
-          stream: true
+            model: model,
+            messages: [
+                { role: 'system', content: 'You are a helpful assistant. Please respond directly; niceties and pro forma intros/conclusions are not necessary. Focus on substance and accuracy. Take your time; priorise rigour over speed.'},
+                { role: 'user', content: query }
+            ],
+            stream: true
         },
         responseType: 'stream',
-      };
+    };
 }
 
 export const parseLink = (line) => {
@@ -80,7 +80,7 @@ export function retrieve(provider) {
         return false;
     }
 }
-export function get_code_blocks(lines){
+export function get_code_blocks(lines) {
     let insideCodeBlock = false;
     let linesWithCodeBlocks = [];
 
@@ -106,7 +106,7 @@ export function get_code_blocks(lines){
 }
 
 // get backtick code blocks
-export function get_backtick_block(lines){
+export function get_backtick_block(lines) {
     let insideCodeBlock = false;
     let linesWithCodeBlocks = [];
 
@@ -151,8 +151,8 @@ export function joinValue(obj) {
 
 async function isUrlRunning(url) {
     try {
-      const response = await axios.get(url);
-      return response.status === 200;
+        const response = await axios.get(url);
+        return response.status === 200;
     } catch (error) { return false }
 }
 
@@ -170,7 +170,7 @@ export async function getOllamaTags(withTag = false) {
         let modelNames = [];
         for (let i = 0; i < models.length; i++) {
             if (withTag) {
-                modelNames.push({model: models[i].name, digest: models[i].digest});
+                modelNames.push({ model: models[i].name, digest: models[i].digest });
             } else {
                 modelNames.push(models[i].name.split(':')[0]);
             }
@@ -184,7 +184,7 @@ async function jsonhash(json) {
     const messageBuffer = new TextEncoder().encode(jsonstring);
     const hashBuffer = await crypto.subtle.digest("SHA-256", messageBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');  
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export async function isLatest(model, localdisgest) {
@@ -194,7 +194,7 @@ export async function isLatest(model, localdisgest) {
     const remoteModelInfo = await fetch(`https://ollama.ai/v2/${repo}/manifests/${tag}`, {
         headers: { "Accept": "application/vnd.docker.distribution.manifest.v2+json" }
     })
-    if(remoteModelInfo.status === 200) {
+    if (remoteModelInfo.status === 200) {
         const _json = await remoteModelInfo.json()
         const hash = await jsonhash(_json);
         return hash === localdisgest
@@ -213,4 +213,4 @@ export async function pullOllamaModel(request) {
 }
 export async function generateOllama(request) {
     return processStreamableRequest('generate', request);
-  }
+}

@@ -3,13 +3,13 @@ import Answer from "./answer";
 import Btn from "./buttons/btn";
 import Model from "./buttons/model";
 import {
-  discordUrl,
-  githubUrl,
-  pplxModelList,
-  groqModelList,
-  openaiModelList,
-  anthropicModelList,
-  cohereModelList,
+    discordUrl,
+    githubUrl,
+    perplexityModelList,
+    groqModelList,
+    openaiModelList,
+    anthropicModelList,
+    cohereModelList,
 } from "../pages/api/constant";
 import Pvd from "./buttons/pvd";
 import { useTheme } from "next-themes";
@@ -38,8 +38,8 @@ export default function Search() {
     const [modelExpanded, setModelExpanded] = useState(false);
     const [modelSelectionExpanded, setModelSelectionExpanded] = useState(false);
     const [provider, setProvider] = useState("perplexity");
-    const [modelList, setModelList] = useState(pplxModelList);
-    const [pplxId, setPplxId] = useState(0);
+    const [modelList, setModelList] = useState(perplexityModelList);
+    const [perplexityId, setperplexityId] = useState(0);
     const [groqId, setGroqId] = useState(0);
     const [ollamaId, setOllamaId] = useState(0);
     const [openaiId, setOpenaiId] = useState(0);
@@ -81,20 +81,21 @@ export default function Search() {
             setModelExpanded(!modelExpanded);
         }
 
-        if (e.key === "p" && e.metaKey) {
-            handleProvider("perplexity");
-        } else if (e.key === "|" && e.metaKey) {
-            handleProvider("cohere");
-        } else if (e.key === "o" && e.metaKey) {
-            handleProvider("openai");
-        } else if (e.key === "g" && e.metaKey) {
-            handleProvider("groq");
-        } else if (e.key === "c" && e.metaKey) {
-            handleProvider("anthropic");
-        } else if (e.key === "~" && e.metaKey && e.shiftKey) {
-            handleProvider("ollama");
+        if (e.key === "8" && e.metaKey) {
+            activateProvider("cohere");
+        } else if (e.key === "4" && e.metaKey) {
+            activateProvider("perplexity");
+        } else if (e.key === "2" && e.metaKey) {
+            activateProvider("openai");
+        } else if (e.key === "5" && e.metaKey) {
+            activateProvider("groq");
+        } else if (e.key === "3" && e.metaKey) {
+            activateProvider("anthropic");
+        } else if (e.key === "0" && e.metaKey && e.shiftKey) {
+            activateProvider("ollama");
         }
     };
+
     // handle click outside of settings
     const handleClickOutside = (event) => {
         if (settingsRef.current && !settingsRef.current.contains(event.target)) {
@@ -109,7 +110,7 @@ export default function Search() {
         localStorage.setItem("provider", provider);
         setModelSelectionExpanded(true);
         if (provider === "perplexity") {
-            setModelList(pplxModelList);
+            setModelList(perplexityModelList);
         } else if (provider === "groq") {
             setModelList(groqModelList);
         } else if (provider === "ollama") {
@@ -123,6 +124,40 @@ export default function Search() {
         }
     }
 
+    const activateProvider = async (providerName) => {
+        const providerStatus = localStorage.getItem(providerName === "perplexity" ? "perplexity-status" : `${providerName}-status`);
+        if (providerStatus === "true") {
+            const defaultModel = await getDefaultModel(providerName);
+            setProvider(providerName);
+            setModel(defaultModel);
+            setModelExpanded(false);
+
+            // Configure the selected provider
+            switch (providerName) {
+                case "perplexity":
+                    configurePerplexity(true);
+                    break;
+                case "openai":
+                    configureOpenai(true);
+                    break;
+                case "anthropic":
+                    configureAnthropic(true);
+                    break;
+                case "cohere":
+                    configureCohere(true);
+                    break;
+                case "groq":
+                    configureGroq(true);
+                    break;
+                case "ollama":
+                    await configureOllama(true);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
@@ -130,23 +165,11 @@ export default function Search() {
         }
         if (window !== undefined) {
             const _provider = localStorage.getItem("provider") || "perplexity";
-            setProvider(_provider);
-            if (_provider === "perplexity") {
-                configurePerplexity();
-            } else if (_provider === "groq") {
-                configureGroq();
-            } else if (_provider === "ollama") {
-                configureOllama();
-            } else if (_provider === "openai") {
-                configureOpenai();
-            } else if (_provider === "anthropic") {
-                configureAnthropic();
-            } else if (_provider === "cohere") {
-                configureCohere();
-            }
-            let temp = []
+            activateProvider(_provider);
+
+            let temp = [];
             for (let i = 0; i < providers.length; i++) {
-                const status = localStorage.getItem(providers[i] === "perplexity" ? "pplx-status" : providers[i] + "-status");
+                const status = localStorage.getItem(providers[i] + "-status");
                 if (status === "true") {
                     temp.push(providers[i]);
                     setPossibleProviders(temp);
@@ -171,9 +194,9 @@ export default function Search() {
     }, []);
 
     const configurePerplexity = (skip_model = false) => {
-        setModelList(pplxModelList);
+        setModelList(perplexityModelList);
         if (!skip_model) {
-            setModel(localStorage.getItem("pplx-model") || pplxModelList[pplxId]);
+            setModel(localStorage.getItem("pplx-model") || perplexityModelList[perplexityId]);
         }
         setToken(localStorage.getItem("pplx-token"));
         setSystemPrompt(localStorage.getItem("pplx-system-prompt") || "Be precise and concise.");
@@ -365,7 +388,7 @@ export default function Search() {
         if (provider === "perplexity") {
             configurePerplexity(true);
             localStorage.setItem("pplx-model", _model);
-            setPplxId(pplxModelList.indexOf(_model) || 0);
+            setperplexityId(perplexityModelList.indexOf(_model) || 0);
 
         } else if (provider === "groq") {
             configureGroq(true);
@@ -392,7 +415,7 @@ export default function Search() {
     }
     const getDefaultModel = (pvd) => {
         if (pvd === "perplexity") {
-            return pplxModelList[pplxId];
+            return perplexityModelList[perplexityId]; // Use "perplexity" consistently
         } else if (pvd === "groq") {
             return groqModelList[groqId];
         } else if (pvd === "ollama") {

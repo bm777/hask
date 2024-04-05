@@ -8,7 +8,7 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 This is only 10% of what we want to achieve.
 
-Wanna join our little discord community? [Join HASK](https://discord.gg/cSf3RpQdws)
+Wanna join our little discord community? [Join HASK discord server](https://discord.gg/cSf3RpQdws)
 
 
 | Provider           | Model              | Integration       |
@@ -19,8 +19,8 @@ Wanna join our little discord community? [Join HASK](https://discord.gg/cSf3RpQd
 | Groq               | llama2-70b-4096chat, llama2-8x7b-32768 | ✅               | 
 | Anthropic          | claude-2.1, claude-3-opus-20240229, claude-2.0, claude-instant-1.2, claude-3-sonnet-20240229, claude-3-haiku-20240307 |  ✅               |
 | Ollama             | library models |  ✅               |
-| Mistral            | soon |  ❌               |
 | Gemini             | soon |  ❌               |
+| Mistral            | soon |  ❌               |
 
 
 

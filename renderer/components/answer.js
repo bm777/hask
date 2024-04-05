@@ -39,7 +39,6 @@ const Answer = ({ answer, searching }) => {
     const [status, setStatus] = useState("copy");
     const { theme } = useTheme();
     const converter = new showdown.Converter();
-    const [tableFlag, setTableFlag] = useState(false);
     var tableData = [];
     const [tableContent, setTableContent] = useState(null);
 

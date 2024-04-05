@@ -73,9 +73,11 @@ export default function createWindow(windowName, options) {
       webSecurity: false,
       nodeIntegration: false,
       contextIsolation: true,
+      webviewTag: true, // Enable webview
       ...options.webPreferences,
     },
   });
+  
 
   win.on('close', saveState);
 

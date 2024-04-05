@@ -59,7 +59,6 @@ export const optionsConstructor = (url, key, model, query) => {
 export const parseLink = (line) => {
     const urlRegex = /((?:https?:\/\/|www\.)[^\s,"]+)/g;
     const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const citationRegex = /(\([^)(]+\))\(([^)]+)\)/g;
 
     line = line.replace(urlRegex, (match, url) => {
         const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
@@ -71,12 +70,6 @@ export const parseLink = (line) => {
         const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
         const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
         return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${text}</a>`;
-    });
-
-    line = line.replace(citationRegex, (match, citation, url) => {
-        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
-        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
-        return `${citation}(<a href="${fullUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>)`;
     });
 
     return line;

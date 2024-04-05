@@ -7,6 +7,7 @@ import React from "react";
 import { v4 as uid } from 'uuid';
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
+import ParsedText from './parsedText';
 
 const Answer = ({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
@@ -168,23 +169,17 @@ const Answer = ({ answer, searching }) => {
 
     const processLine = (line) => {
         if (line === "") return <div key={uid()} className="h-2 bg-transparent" />;
-
+    
         if (line.includes("```")) {
             return <CodeText key={uid()} >{line}</CodeText>;
         } else {
             const purified = purify(line)
-
+            
             if (purified === null) {
                 return null;
             }
-
-            return (
-                <div
-                    key={uid()}
-                    className="markdown-body text-sm"
-                    dangerouslySetInnerHTML={{ __html: purified }}
-                />
-            );
+            
+            return <ParsedText key={uid()} text={purified} />;
         }
     };
 

@@ -57,19 +57,17 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
-    const urlRegex = /((?:https?:\/\/|www\.)[^\s,"]+)/g;
-    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-
-    line = line.replace(urlRegex, (match, url) => {
-        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
-        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
-        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>`;
-    });
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s>"]+)/g;
+    const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|www\.)[^)"]+)\)/g;
 
     line = line.replace(markdownLinkRegex, (match, text, url) => {
         const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
-        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
-        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${text}</a>`;
+        return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${text}</a>`;
+    });
+
+    line = line.replace(urlRegex, (match, url) => {
+        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+        return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>`;
     });
 
     return line;

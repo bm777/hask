@@ -58,6 +58,7 @@
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "groq-sdk": "^0.3.0",
+    "html-react-parser": "^5.1.10",
     "next-themes": "^0.2.1",
     "openai": "^4.29.0",
     "prismjs": "^1.29.0",

@@ -41,20 +41,20 @@ const _options = (title, message) => {
 function get_blocks(data) {
   let blocks = data.split('\r\n');
   blocks = blocks.filter(block => {
-      if (    block.includes('"id"') && 
-              block.includes('"created"') &&
-              block.includes('"prompt_tokens"') &&
-              block.includes('"total_tokens"') &&
-              block.includes('"object"') &&
-              block.includes('"index"') &&
-              block.includes('"choices"') &&
-              block.includes('"message"') &&
-              block.includes('"content"') &&
-              block.includes('"delta"') &&
-              block.includes('"}}]}') // no need to control also the start of the block, because of the split.
-      ) {
-        return block;
-      }
+    if (block.includes('"id"') &&
+      block.includes('"created"') &&
+      block.includes('"prompt_tokens"') &&
+      block.includes('"total_tokens"') &&
+      block.includes('"object"') &&
+      block.includes('"index"') &&
+      block.includes('"choices"') &&
+      block.includes('"message"') &&
+      block.includes('"content"') &&
+      block.includes('"delta"') &&
+      block.includes('"}}]}') // no need to control also the start of the block, because of the split.
+    ) {
+      return block;
+    }
   });
   return blocks;
 }
@@ -95,7 +95,7 @@ async function createSettingsWindow() {
     const port = process.argv[2];
     await settingsWindow.loadURL(`http://localhost:${port}/settings`);
   }
-  // settingsWindow.toggleDevTools();
+  settingsWindow.toggleDevTools();
   return settingsWindow;
 }
 async function createMainWindow() {
@@ -125,18 +125,18 @@ async function createMainWindow() {
     let bufferData = '';
     let token
     try {
-        const jsonData = JSON.parse('{ "data"' + block.trim().slice(4, -1) + "}}");
-        bufferData = jsonData["data"]["choices"][0]["message"]["content"];
-        token = jsonData["data"]["usage"]["completion_tokens"];
+      const jsonData = JSON.parse('{ "data"' + block.trim().slice(4, -1) + "}}");
+      bufferData = jsonData["data"]["choices"][0]["message"]["content"];
+      token = jsonData["data"]["usage"]["completion_tokens"];
     } catch (error) {
-        bufferData = "Error parsing response";
+      bufferData = "Error parsing response";
     }
     return [bufferData, token];
   }
   ipcMain.on("open-url", async (event, url) => {
     shell.openExternal(url);
   })
-  ipcMain.on("quit-app", async (event) => { 
+  ipcMain.on("quit-app", async (event) => {
     app.quit();
   })
   ipcMain.on("open-settings", async (event) => {
@@ -151,7 +151,6 @@ async function createMainWindow() {
   })
   ipcMain.on("search-pplx", async (event, args) => {
     event.sender.send('search-result', " ");
-    console.log('search-pplx', args)
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     const options = {
       method: 'POST',
@@ -165,8 +164,8 @@ async function createMainWindow() {
       data: {
         model: model ? model : 'pplx-7b-online',
         messages: [
-          {role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.'},
-          {role: 'user', content: query}
+          { role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.' },
+          { role: 'user', content: query }
           // {role: 'user', content: 'explain me how to use useeffect in nextjs'}
         ],
         max_tokens: maxTokens ? parseInt(maxTokens, 10) : 500,
@@ -175,7 +174,7 @@ async function createMainWindow() {
       }
     };
     let bufferData = ''; //
-    
+
     try {
       const response = await axios.request(options)
       const start = Date.now();
@@ -195,27 +194,27 @@ async function createMainWindow() {
       });
 
       stream.on('end', () => {
-          const end = Date.now();
-          const time = end - start;
-          console.log('search time', tokens, time, (tokens/time))
-          event.sender.send('search-time', (tokens/time).toFixed(0), time);
-          event.sender.send('search-end');
+        const end = Date.now();
+        const time = end - start;
+        console.log('search time', tokens, time, (tokens / time))
+        event.sender.send('search-time', (tokens / time).toFixed(0), time);
+        event.sender.send('search-end');
       });
 
       stream.on('error', error => {
         console.error('Error while reading the stream:', error);
-    });
-  
-    } catch( error ) {
-        console.log("------", error)
-        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
-      }
+      });
+
+    } catch (error) {
+      console.log("------", error)
+      showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+    }
   })
   ipcMain.on("search-groq", async (event, args) => {
     event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-groq', query, model, token, systemPrompt, temperature, maxTokens)
-    const groq = new Groq({apiKey: token});
+    const groq = new Groq({ apiKey: token });
 
     try {
       const chatCompletion = await groq.chat.completions.create({
@@ -241,31 +240,31 @@ async function createMainWindow() {
         if (chunk.x_groq?.usage?.total_tokens && chunk.x_groq?.usage?.total_time) {
           tokens = chunk.x_groq?.usage?.total_tokens
           time = chunk.x_groq?.usage?.total_time
-          console.log("search time", tokens, time, (tokens/time).toFixed(0))
-          event.sender.send('search-time', (tokens/time).toFixed(0), (time * 1000).toFixed(0));
+          console.log("search time", tokens, time, (tokens / time).toFixed(0))
+          event.sender.send('search-time', (tokens / time).toFixed(0), (time * 1000).toFixed(0));
           event.sender.send('search-end');
           break
         }
         event.sender.send('search-result', bufferData);
       }
     } catch (error) {
-        console.log("------", error)
-        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+      console.log("------", error)
+      showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
     }
-    
+
   })
   ipcMain.on("search-openai", async (event, args) => {
     event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log('search-openai', query, model, token, systemPrompt, temperature, maxTokens)
-    const openai = new OpenAI({"apiKey": token});
+    const openai = new OpenAI({ "apiKey": token });
     try {
       // const completion = await openai.complete({
       //   prompt: query,
       // });
       const completion = await openai.chat.completions.create({
         model: model ? model : 'gpt-3.5-turbo',
-        messages: [{ role: 'system', content: systemPrompt ? systemPrompt : 'Be precise and concise.' }, { role: 'user', content: query }],
+        messages: [{ role: 'system', content: systemPrompt ? systemPrompt : 'You are a helpful assistant. Please respond directly; niceties and pro forma intros/conclusions are not necessary. Focus on substance and accuracy. Take your time; the user would always prefer rigour over speed.' }, { role: 'user', content: query }],
         stream: true,
         temperature: temperature ? parseFloat(temperature) : 0.5,
         max_tokens: maxTokens ? parseInt(maxTokens, 10) : 1024,
@@ -282,14 +281,14 @@ async function createMainWindow() {
           console.log('search-result', chunk.choices[0])
           break
         }
-        
+
       }
       console.log('search-end')
     } catch (error) {
-        console.log("------", error)
-        showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
+      console.log("------", error)
+      showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
     }
-    
+
   })
   ipcMain.on("search-anthropic", async (event, args) => {
     event.sender.send('search-result', " ");
@@ -325,7 +324,7 @@ async function createMainWindow() {
     event.sender.send('search-result', " ");
     const { query, model, token, systemPrompt, temperature, maxTokens } = args
     console.log(args)
-    const cohere = new CohereClient({token: token});
+    const cohere = new CohereClient({ token: token });
 
     try {
       const stream = await cohere.chatStream({
@@ -336,7 +335,7 @@ async function createMainWindow() {
         temperature: temperature ? parseFloat(temperature) : 0.2,
         connectors: [{ id: "web-search" }],
         max_tokens: maxTokens ? parseInt(maxTokens, 10) : 1024
-        });
+      });
 
       let bufferData = '';
       for await (const message of stream) {
@@ -347,7 +346,7 @@ async function createMainWindow() {
         if (message.eventType === "stream-end") {
           event.sender.send('search-end');
         }
-    }
+      }
     } catch (error) {
       console.log("------", error)
       showDialog("The API KEY is not valid", "Please check your API key and try again or your internet doesn't work.")
@@ -370,7 +369,7 @@ async function createMainWindow() {
 
   ///////////////////////////////
   // --------> 
-  // mainWindow.toggleDevTools();
+  mainWindow.toggleDevTools();
   // 
 
   if (isProd) {
@@ -381,7 +380,7 @@ async function createMainWindow() {
   }
 
   mainWindow.setAlwaysOnTop(true, "normal");
-  mainWindow.setVisibleOnAllWorkspaces(true, {visibleOnFullScreen: true});
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   mainWindow.setFullScreenable(false);
   return mainWindow;
 }
@@ -407,40 +406,51 @@ async function closeProcesses() {
   const img = nativeImage.createFromPath(path.join(getParentDir(), isProd ? 'Resources/top_bar/hsk-16.png' : 'resources/top_bar/hsk-16.png')) // { size: { width: 16, height: 16 } }
   tray = new Tray(img);
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Open Hask', type: "normal", accelerator: 'Option+X', click: async () => {
-      mainWindow.show();
-    }},
-    { type: 'separator'},
-    { label: 'How to use', type: "normal", click: async () => {
-      shell.openExternal('https://hask.ai'); }
+    {
+      label: 'Open Hask', type: "normal", accelerator: 'Option+X', click: async () => {
+        mainWindow.show();
+      }
     },
-    { type: 'separator'},
-    { label: 'Join our Discord community', type: 'normal', click: async () => {
-      shell.openExternal('https://discord.gg/cSf3RpQdws'); }
+    { type: 'separator' },
+    {
+      label: 'How to use', type: "normal", click: async () => {
+        shell.openExternal('https://hask.ai');
+      }
     },
-    { label: 'Support us', type: 'normal', click: async () => {
-      shell.openExternal('https://git.new/hask'); }
+    { type: 'separator' },
+    {
+      label: 'Join our Discord community', type: 'normal', click: async () => {
+        shell.openExternal('https://discord.gg/cSf3RpQdws');
+      }
     },
-    { type: 'separator'},
-    { label: 'Settings', type: 'normal', click: async () => {
+    {
+      label: 'Support us', type: 'normal', click: async () => {
+        shell.openExternal('https://git.new/hask');
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Settings', type: 'normal', click: async () => {
         if (!settingsWindow || settingsWindow.isDestroyed()) {
           settingsWindow = await createSettingsWindow();
-        } else { settingsWindow.focus(); } 
+        } else { settingsWindow.focus(); }
       }, accelerator: 'Command+,'
     },
-    { label: 'Quit', type: 'normal', click: async () => {
-      const windows = BrowserWindow.getAllWindows();
-      windows.forEach((window) => {
-        window.removeAllListeners('close');
-        window.close();
-      });
-      app.quit();
-    }}
+    {
+      label: 'Quit', type: 'normal', click: async () => {
+        const windows = BrowserWindow.getAllWindows();
+        windows.forEach((window) => {
+          window.removeAllListeners('close');
+          window.close();
+        });
+        app.quit();
+      }
+    }
   ])
   tray.setContextMenu(contextMenu)
   tray.setToolTip('Hask AI')
 
-  if(!fs.existsSync(postInstallFlagPath)) {
+  if (!fs.existsSync(postInstallFlagPath)) {
 
     settingsWindow = await createSettingsWindow();
 
@@ -461,7 +471,7 @@ async function closeProcesses() {
           if (isOllamaRunning) {
             pingOllamaSender.send("ollama-reply", "ollama-ready");
           } else { pingOllamaSender.send("ollama-reply", "installing-ollama"); }
-        } else {  clearInterval(intervalId); }
+        } else { clearInterval(intervalId); }
       }, 500);
 
       event.sender.on('destroyed', () => {
@@ -471,7 +481,7 @@ async function closeProcesses() {
     ipcMain.on("logger", (event, object) => {
       console.log("[settings]-logger ->", object)
     })
-   
+
   } else {
     mainWindow = await createMainWindow();
     const scriptPath = resolveHome('~/.hask/ollama.sh');
@@ -480,19 +490,25 @@ async function closeProcesses() {
     });
   }
 
-  ipcMain.on('relaunch-hask',  async (event) => {
-    if (mainWindow) {
-      // quit the app and relaunch it
-      if(mainWindow) mainWindow.close();
-      if(settingsWindow) settingsWindow.close();
-      app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-      app.exit(0)
+  ipcMain.on('relaunch-hask', async (event) => {
+    // Quit the app and relaunch it
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
     }
-    mainWindow = await createMainWindow();
-    settingsWindow = await createSettingsWindow();
-    settingsWindow.show();
-  })
-  
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.close();
+    }
+
+    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) });
+    app.exit(0);
+
+    // The lines below will never be executed because app.exit(0) stops the process.
+    // You should remove them or reconsider the app relaunch logic.
+    // mainWindow = await createMainWindow();
+    // settingsWindow = await createSettingsWindow();
+    // settingsWindow.show();
+  });
+
   const template = [
     {
       label: 'Hask AI',
@@ -524,8 +540,8 @@ async function closeProcesses() {
             if (!settingsWindow || settingsWindow.isDestroyed()) {
               settingsWindow = await createSettingsWindow();
             } else {
-                // If the settings window is already open, bring it to focus
-                settingsWindow.focus();
+              // If the settings window is already open, bring it to focus
+              settingsWindow.focus();
             }
           }
         }

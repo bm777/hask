@@ -47,7 +47,7 @@ export const optionsConstructor = (url, key, model, query) => {
         data: {
             model: model,
             messages: [
-                { role: 'system', content: 'You are a helpful assistant. Please respond directly; niceties and pro forma intros/conclusions are not necessary. Focus on substance and accuracy. Take your time; priorise rigour over speed.'},
+                { role: 'system', content: 'You are a helpful assistant. Please respond directly; niceties and pro forma intros/conclusions are not necessary. Focus on substance and accuracy. Take your time; priorise rigour over speed.' },
                 { role: 'user', content: query }
             ],
             stream: true
@@ -57,9 +57,13 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
-    // const urlRegex = /(https?:\/\/[^\s]+)/g;
-    // return line.replace(urlRegex, '<a href="$1" target="_blank" className="text-blue-600">$1</a>');
-    return line
+    const urlRegex = /(?<!<)(https?:\/\/[^\s]+)/g;
+    const citationRegex = /\*\s+(https?:\/\/[^\s]+)/g;
+
+    line = line.replace(urlRegex, '<a href="$1" target="_blank" class="text-blue-600">$1</a>');
+    line = line.replace(citationRegex, '<li><a href="$1" target="_blank" class="text-blue-600">$1</a></li>');
+
+    return line;
 };
 export function store(provdider, models) {
     try {

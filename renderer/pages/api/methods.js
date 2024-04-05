@@ -57,11 +57,24 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
-    const urlRegex = /(?<!<)(https?:\/\/[^\s]+)/g;
-    const citationRegex = /\*\s+(https?:\/\/[^\s]+)/g;
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s,\)]+)/g;
+    const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|www\.)[^)]+)\)/g;
+    const angleBracketUrlRegex = /<((?:https?:\/\/|www\.)[^>]+)>/g;
 
-    line = line.replace(urlRegex, '<a href="$1" target="_blank" class="text-blue-600">$1</a>');
-    line = line.replace(citationRegex, '<li><a href="$1" target="_blank" class="text-blue-600">$1</a></li>');
+    line = line.replace(markdownLinkRegex, (match, text, url) => {
+        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
+        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${text}</a>`;
+    });
+
+    line = line.replace(angleBracketUrlRegex, (match, url) => {
+        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
+        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${url}</a>`;
+    });
+
+    line = line.replace(urlRegex, (match, url) => {
+        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
+        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${url}</a>`;
+    });
 
     return line;
 };

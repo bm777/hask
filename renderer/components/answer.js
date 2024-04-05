@@ -74,60 +74,58 @@ const Answer = ({ answer, searching }) => {
         }
     }, [answer]);
 
+    const openLinkInNewTab = (event, url) => {
+        event.preventDefault();
+        window.open(url, '_blank', 'width=800,height=600,resizable=yes');
+    };
+
+    const openLinkInSameWindow = (event, url) => {
+        event.preventDefault();
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.width = '100%';
+        iframe.style.height = '100vh'; // Make the iframe fill the entire window height 
+        iframe.style.border = 'none';
+        const iframeContainer = document.querySelector('.iframe-container');
+        iframeContainer.appendChild(iframe);
+        showNavigationBar(iframe);
+        hideContent();
+        setIframeVisible(true);
+    };
+
+    const showNavigationBar = (iframe) => {
+        const navigationBar = document.createElement('div');
+        navigationBar.classList.add('navigation-bar');
+        navigationBar.innerHTML = `
+            <button class="back-button">&#8592;</button>
+        `;
+        navigationBar.style.position = 'absolute';
+        navigationBar.style.top = '10px';
+        navigationBar.style.left = '10px';
+        navigationBar.style.zIndex = '9999';
+        const iframeContainer = document.querySelector('.iframe-container');
+        iframeContainer.appendChild(navigationBar);
+    
+        const backButton = navigationBar.querySelector('.back-button');
+        backButton.addEventListener('click', () => {
+            iframeContainer.removeChild(iframe);
+            iframeContainer.removeChild(navigationBar);
+            showContent();
+            setIframeVisible(false);
+        });
+    };
+    
+    const hideContent = () => {
+        const answerContent = document.querySelector('.answer-content');
+        answerContent.style.display = 'none';
+    };
+
+    const showContent = () => {
+        const answerContent = document.querySelector('.answer-content');
+        answerContent.style.display = 'block';
+    };
+
     useEffect(() => {
-        const openLinkInNewTab = (event, url) => {
-            event.preventDefault();
-            window.open(url, '_blank', 'width=800,height=600,resizable=yes');
-        };
-
-        const openLinkInSameWindow = (event, url) => {
-            event.preventDefault();
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.style.width = '100%';
-            iframe.style.height = 'calc(100vh - 50px)'; // Adjust the height to fill the window minus the navigation bar height
-            iframe.style.border = 'none';
-            const iframeContainer = document.querySelector('.iframe-container');
-            iframeContainer.appendChild(iframe);
-            showNavigationBar(iframe);
-            hideContent();
-            setIframeVisible(true);
-        };
-
-        const showNavigationBar = (iframe) => {
-            const navigationBar = document.createElement('div');
-            navigationBar.classList.add('navigation-bar');
-            navigationBar.innerHTML = `
-                <button class="back-button">Back</button>
-                <button class="reload-button">Reload</button>
-            `;
-            const iframeContainer = document.querySelector('.iframe-container');
-            iframeContainer.appendChild(navigationBar);
-
-            const backButton = navigationBar.querySelector('.back-button');
-            backButton.addEventListener('click', () => {
-                iframeContainer.removeChild(iframe);
-                iframeContainer.removeChild(navigationBar);
-                showContent();
-                setIframeVisible(false);
-            });
-
-            const reloadButton = navigationBar.querySelector('.reload-button');
-            reloadButton.addEventListener('click', () => {
-                iframe.contentWindow.location.reload();
-            });
-        };
-
-        const hideContent = () => {
-            const answerContent = document.querySelector('.answer-content');
-            answerContent.style.display = 'none';
-        };
-
-        const showContent = () => {
-            const answerContent = document.querySelector('.answer-content');
-            answerContent.style.display = 'block';
-        };
-
         const links = document.querySelectorAll('.markdown-body a');
         links.forEach(link => {
             link.addEventListener('click', (event) => {

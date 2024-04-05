@@ -57,23 +57,26 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
-    const urlRegex = /((?:https?:\/\/|www\.)[^\s,\)]+)/g;
-    const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|www\.)[^)]+)\)/g;
-    const angleBracketUrlRegex = /<((?:https?:\/\/|www\.)[^>]+)>/g;
+    const urlRegex = /((?:https?:\/\/|www\.)[^\s,"]+)/g;
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const citationRegex = /(\([^)(]+\))\(([^)]+)\)/g;
+
+    line = line.replace(urlRegex, (match, url) => {
+        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
+        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>`;
+    });
 
     line = line.replace(markdownLinkRegex, (match, text, url) => {
-        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
+        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
         return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${text}</a>`;
     });
 
-    line = line.replace(angleBracketUrlRegex, (match, url) => {
-        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
-        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${url}</a>`;
-    });
-
-    line = line.replace(urlRegex, (match, url) => {
-        const fullUrl = url.startsWith('http') ? url : `http://${url}`;
-        return `<a href="${fullUrl}" target="_blank" class="text-blue-600">${url}</a>`;
+    line = line.replace(citationRegex, (match, citation, url) => {
+        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+        const fullUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `http://${trimmedUrl}`;
+        return `${citation}(<a href="${fullUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>)`;
     });
 
     return line;

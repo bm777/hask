@@ -53,6 +53,29 @@ export default function Search() {
     const settingsRef = useRef(null);
     const modelListRef = useRef(null);
     const modelRef = useRef(null); // Define modelRef here
+    const maxHeight = 200; // Maximum height in pixels
+
+    const autoExpand = (e) => {
+        const textarea = e.target;
+        textarea.style.height = 'inherit'; // Reset the height to enable shrinking
+        textarea.style.overflowY = 'hidden'; // Temporarily hide scrollbar to measure correct scrollHeight
+        const desiredHeight = Math.min(textarea.scrollHeight, maxHeight);
+        textarea.style.height = `${desiredHeight}px`; // Set the new height
+
+        // If the scrollHeight is greater than maxHeight, enable scrolling
+        textarea.style.overflowY = desiredHeight >= maxHeight ? 'auto' : 'hidden';
+    };
+
+    const handleKeyPress = (e) => {
+        // Check if 'Enter' is pressed without 'Shift'
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Prevent default action (new line)
+            handleSearch(e); // Execute your search function
+        }
+    };
+
+
+
 
     // Event listener functions
     const handleSearchResult = async (result) => {
@@ -434,6 +457,11 @@ export default function Search() {
         window.ipc.send('window-blur');
     }
 
+    // const autoExpand = (e) => {
+    //     e.target.style.height = 'inherit'; // Reset the height to enable shrinking
+    //     e.target.style.height = `${Math.max(e.target.scrollHeight, 60)}px`; // Expand to fit content or maintain min height
+    // };
+
     return (
         <div className=" h-[100vh] w-full flex flex-col relative">
             <div className={`w-full h-[60px] flex items-center rounded-lg relative duration-700 draggable z-10 bg-light-primary dark:bg-dark-primary`}>
@@ -443,13 +471,20 @@ export default function Search() {
                     </div>
                 </div>
                 <form className="w-full h-[90%] flex" onSubmit={handleSearch}>
-                    <input
+                    <textarea
                         ref={inputRef}
                         onChange={handleQueryChange}
+                        onInput={autoExpand}
+                        onKeyDown={handleKeyPress} // Attach handleKeyPress function here
                         value={query}
                         placeholder="Hask anything..."
-                        className={`w-full h-full text-bordeau outline-none text-xl font-medium bg-transparent custom-input dark:text-input/60 dark:placeholder:text-phtext`}
+                        className="w-full h-full text-bordeau outline-none text-xl font-medium bg-transparent custom-input dark:text-input/60 dark:placeholder:text-phtext multiline-input"
+                        style={{ resize: "none" }}
                     />
+
+
+
+
                 </form>
             </div>
             {

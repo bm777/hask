@@ -436,6 +436,22 @@
         cursor: pointer;
     }
 
+    .multiline-input::-webkit-scrollbar {
+        display: block; /* Ensure scrollbar is shown */
+        width: 8px; /* Adjust width as necessary */
+    }
+    
+    .multiline-input::-webkit-scrollbar-thumb {
+        background: #888; /* Adjust scroll thumb color */
+        border-radius: 4px; /* Optional: rounded corners */
+    }    
+    
+    .multiline-input {
+        overflow-y: auto; /* Enables vertical scrolling */
+        max-height: 200px; /* Or any other max height you prefer */
+    }
+    
+
 
 
 }

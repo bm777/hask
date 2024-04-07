@@ -21,6 +21,13 @@ use shellexpand;
 mod schema;
 mod models;
 mod utils;
+mod cohere;
+
+use crate::cohere::{
+    embed::generate_embed,
+    rerank::rerank,
+    sum::summarize,
+};
 
 // Database connection pool -> thoughout teh APP
 type DbPool = Pool<ConnectionManager<SqliteConnection>>;
@@ -103,6 +110,52 @@ async fn main() -> std::io::Result<()> {
     utils::create_table(&mut pool.get().expect("couldn't get db connection from pool")).expect("Failed to create table.");
 
     log::info!("Server running.... -> 1777");
+
+    let api = "C6z92rBNOj1oZ28eZmMiLJdn2SKYOh8QNh4aiyP0";
+    // let response = generate_embed(&api.to_string(), &vec!["I ping you!".to_string(), "I try another string".to_string()])
+    //                 .await
+    //                 .unwrap();  
+    // println!("Response: {}", response);
+
+    let _query = "how to write python code?";
+    let _docs = vec![
+        "it is easy to write python code".to_string(), 
+        "I try another letter here, and i love paris".to_string(),
+        "I am a software engineer".to_string(),
+        "I am a mechanical engineer".to_string(),
+        "I am a civil engineer".to_string(),
+    ];
+    // let response = rerank(
+    //             &api.to_string(), 
+    //             &query.to_string(),
+    //             &docs)
+    //             .await
+    //             .unwrap();
+    // let results = response.get("results").unwrap();
+    // let arr = results.as_array().unwrap();
+    // let top3pages = vec![
+    //     docs[arr[0].get("index").unwrap().as_i64().unwrap() as usize].clone(),
+    //     docs[arr[1].get("index").unwrap().as_i64().unwrap() as usize].clone(),
+    //     docs[arr[2].get("index").unwrap().as_i64().unwrap() as usize].clone(),
+    // ];
+    // println!("Response: {}", results);
+    // println!("Top 3 pages: {:?}", top3pages);
+
+    let _page = "Fiat money is a type of currency that is not backed by a precious metal, such as gold or silver. 
+                It is typically designated by the issuing government to be legal tender, and is authorized by government 
+                regulation. Since the end of the Bretton Woods system in 1971, the major currencies in the world are fiat money.
+                Fiat money generally does not have intrinsic value and does not have use value. It has value only because the individuals 
+                who use it as a unit of account - or, in the case of currency, a medium of exchange - agree on its value.[1] 
+                They trust that it will be accepted by merchants and other people as a means of payment for liabilities.";
+
+    // let response = summarize(&api.to_string(), &page.to_string())
+    //                 .await
+    //                 .unwrap();
+
+    // let summary = response.get("text").unwrap().to_string();
+
+    // println!("Response: {}", response);
+    // println!("Summary: {:?}", summary);
 
     HttpServer::new(move || {
         App::new()

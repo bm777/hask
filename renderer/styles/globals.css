@@ -409,13 +409,13 @@
     .markdown-body a {
         color: #4299e1;
         text-decoration: none;
-      }
-      
-      .markdown-body a:hover {
-        text-decoration: underline;
-      }
+    }
 
-      .navigation-bar {
+    .markdown-body a:hover {
+        text-decoration: underline;
+    }
+
+    .navigation-bar {
         position: fixed;
         top: 0;
         left: 0;
@@ -426,7 +426,7 @@
         justify-content: space-between;
         z-index: 9999;
     }
-    
+
     .navigation-bar button {
         padding: 5px 10px;
         background-color: #007bff;
@@ -436,21 +436,29 @@
         cursor: pointer;
     }
 
+    .multiline-input {
+        min-height: 1em; /* Typically the line-height of a single line of text */
+        overflow-y: auto; /* Hides the scrollbar initially */
+        padding: 12px; /* Adjust to your preferred padding */
+        line-height: 1.2em; /* Typically line-height for single line, adjust to your preference */
+        resize: vertical; /* Keeps the textarea resizable vertically */
+        max-height: 50px; /* Maximum height before scrolling, adjust as needed */
+    }
+        
+    
+    
+    /* Keep the scrollbar styles as they are */
     .multiline-input::-webkit-scrollbar {
-        display: block; /* Ensure scrollbar is shown */
-        width: 8px; /* Adjust width as necessary */
+        width: 8px;
     }
     
     .multiline-input::-webkit-scrollbar-thumb {
-        background: #888; /* Adjust scroll thumb color */
-        border-radius: 4px; /* Optional: rounded corners */
-    }    
-    
-    .multiline-input {
-        overflow-y: auto; /* Enables vertical scrolling */
-        max-height: 200px; /* Or any other max height you prefer */
+        background-color: #888;
+        border-radius: 4px;
     }
     
+
+
 
 
 

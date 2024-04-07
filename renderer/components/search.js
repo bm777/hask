@@ -53,7 +53,7 @@ export default function Search() {
     const settingsRef = useRef(null);
     const modelListRef = useRef(null);
     const modelRef = useRef(null); // Define modelRef here
-    const maxHeight = 200; // Maximum height in pixels
+    const maxHeight = 100; // Maximum height in pixels
 
     const autoExpand = (e) => {
         const textarea = e.target;
@@ -297,9 +297,11 @@ export default function Search() {
         if (e.target.value.length !== 0) {
             setExpanded(true);
         } else {
-            setAnswer("");
+            setAnswer("");  // This will clear the response when the input field is cleared
+            setExpanded(false);
         }
     }
+    
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
@@ -472,12 +474,14 @@ export default function Search() {
                 </div>
                 <form className="w-full h-[90%] flex" onSubmit={handleSearch}>
                     <textarea
+                        rows="1"
                         ref={inputRef}
                         onChange={handleQueryChange}
                         onInput={autoExpand}
                         onKeyDown={handleKeyPress} // Attach handleKeyPress function here
                         value={query}
                         placeholder="Hask anything..."
+                        autoFocus
                         className="w-full h-full text-bordeau outline-none text-xl font-medium bg-transparent custom-input dark:text-input/60 dark:placeholder:text-phtext multiline-input"
                         style={{ resize: "none" }}
                     />

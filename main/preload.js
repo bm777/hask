@@ -1,17 +1,14 @@
-import { contextBridge, ipcRenderer } from 'electron'
+// preload.js (main)
+import { contextBridge, ipcRenderer } from 'electron';
 
 const handler = {
-  send(channel, value) {
-    ipcRenderer.send(channel, value)
+  send: (channel, value) => ipcRenderer.send(channel, value),
+  on: (channel, callback) => {
+    const subscription = (...args) => callback(...args);
+    ipcRenderer.on(channel, subscription);
+    return () => ipcRenderer.removeListener(channel, subscription);
   },
-  on(channel, callback) {
-    const subscription = (_event, ...args) => callback(...args)
-    ipcRenderer.on(channel, subscription)
+  removeListener: (channel, callback) => ipcRenderer.removeListener(channel, callback),
+};
 
-    return () => {
-      ipcRenderer.removeListener(channel, subscription)
-    }
-  },
-}
-
-contextBridge.exposeInMainWorld('ipc', handler)
+contextBridge.exposeInMainWorld('ipc', handler);

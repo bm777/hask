@@ -379,6 +379,29 @@ async function createMainWindow() {
     await mainWindow.loadURL(`http://localhost:${port}/hask`);
   }
 
+  const contextMenuTemplate = [
+    {
+      label: 'Copy',
+      click: () => {
+        mainWindow.webContents.send('context-menu-command', 'copy');
+      }
+    },
+    {
+      label: 'Save',
+      click: () => {
+        mainWindow.webContents.send('context-menu-command', 'save');
+      }
+    },
+    // Add more menu items as needed
+  ];
+  
+  const contextMenu = Menu.buildFromTemplate(contextMenuTemplate);
+  
+  mainWindow.webContents.on('context-menu', (event, params) => {
+    event.preventDefault();
+    contextMenu.popup(mainWindow, params.x, params.y);
+  });
+  
   mainWindow.setAlwaysOnTop(true, "normal");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   mainWindow.setFullScreenable(false);

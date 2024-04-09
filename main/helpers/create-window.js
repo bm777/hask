@@ -3,6 +3,7 @@ import {
   BrowserWindow,
 } from 'electron';
 import Store from 'electron-store';
+import path from 'path';
 
 export default function createWindow(windowName, options) {
   const key = 'window-state';
@@ -72,11 +73,13 @@ export default function createWindow(windowName, options) {
     webPreferences: {
       webSecurity: false,
       nodeIntegration: false,
-      contextIsolation: true,
-      webviewTag: true, // Enable webview
+      contextIsolation: true, // Keep this true for security reasons
+      preload: path.join(__dirname, '..', 'preload.js'),
+      webviewTag: true, // If you need webview tag support
       ...options.webPreferences,
     },
   });
+  
   
 
   win.on('close', saveState);

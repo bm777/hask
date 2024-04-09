@@ -61,6 +61,8 @@ const Answer = ({ answer, searching }) => {
     }
 
     useEffect(() => {
+        console.log('Answer prop type:', typeof answer, '; value:', answer); // Add this line
+
         if (answer) {
             let lines = answer.split("\n");
             const linesWithLinksParsed = lines.map(line => parseLink(line));
@@ -75,6 +77,7 @@ const Answer = ({ answer, searching }) => {
             }
         }
     }, [answer]);
+
 
     const openLinkInNewTab = (event, url) => {
         event.preventDefault();
@@ -97,7 +100,7 @@ const Answer = ({ answer, searching }) => {
         hideContent();
         setIframeVisible(true);
     };
-    
+
 
     const showNavigationBar = (iframe) => {
         const backButton = document.createElement('button');
@@ -115,19 +118,19 @@ const Answer = ({ answer, searching }) => {
         backButton.style.cursor = 'pointer';
         backButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
         backButton.setAttribute('aria-label', 'Go back'); // Accessibility enhancement
-    
+
         // Hover effect
-        backButton.onmouseover = function() {
+        backButton.onmouseover = function () {
             this.style.backgroundColor = 'rgba(255, 0, 0, 0.7)'; // Lighten on hover
             this.style.border = '1px solid rgba(255,0,0,0.3)'; // Slightly darker border on hover
         };
-        backButton.onmouseout = function() {
+        backButton.onmouseout = function () {
             this.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Revert to original styles
             this.style.border = '1px solid rgba(255,0,0,0.2)';
         };
-    
+
         document.body.appendChild(backButton);
-    
+
         backButton.addEventListener('click', () => {
             // Correctly targeting the webviewContainerRef to clear the webview
             if (webviewContainerRef.current) {
@@ -137,9 +140,9 @@ const Answer = ({ answer, searching }) => {
             showContent(); // Showing the main content again
             setIframeVisible(false); // Updating state to reflect the UI change
         });
-        
+
     };
-    
+
     const hideContent = () => {
         const answerContent = document.querySelector('.answer-content');
         answerContent.style.display = 'none';
@@ -193,19 +196,50 @@ const Answer = ({ answer, searching }) => {
 
     const processLine = (line) => {
         if (line === "") return <div key={uid()} className="h-2 bg-transparent" />;
-    
+
         if (line.includes("```")) {
             return <CodeText key={uid()} >{line}</CodeText>;
         } else {
             const purified = purify(line)
-            
+
             if (purified === null) {
                 return null;
             }
-            
+
             return <ParsedText key={uid()} text={purified} />;
         }
     };
+
+    const saveAnswer = () => {
+        const blob = new Blob([answer], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'answer.txt';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    useEffect(() => {
+        const handleContextMenuCommand = (event, command) => {
+            if (command === 'copy') {
+                // Handle the "Copy" command
+                copied();
+            } else if (command === 'save') {
+                // Handle the "Save" command
+                saveAnswer();
+            }
+        };
+
+        window.ipc.on('context-menu-command', handleContextMenuCommand);
+
+        return () => {
+            window.ipc.removeListener('context-menu-command', handleContextMenuCommand);
+        };
+    }, [answer]);
 
     return (
         <div className="relative">
@@ -222,7 +256,7 @@ const Answer = ({ answer, searching }) => {
                         </table>
                     </div>
                 )}
-    
+
                 <div className={"w-full flex items-center justify-end absolute -bottom-7 ml-3 transition-all duration-500 " + (answer === "" ? "scale-0" : "scale-100")}>
                     <div onClick={copied} className="copy-button flex py-[1px] px-2 bg-grayish/20 border border-gray-700/20 rounded dark:bg-gray-300/20">
                         {/* Button Content */}
@@ -232,7 +266,7 @@ const Answer = ({ answer, searching }) => {
             <div className="webview-container" ref={webviewContainerRef} style={{ width: '100%', height: '100vh', display: iframeVisible ? 'block' : 'none' }}></div>
         </div>
     );
-    
+
 }
 
 export default Answer;

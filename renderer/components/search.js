@@ -78,12 +78,15 @@ export default function Search() {
 
 
     // Event listener functions
-    const handleSearchResult = async (result) => {
+    const handleSearchResult = (event, result) => {
+        console.log("Received search result:", result);
         setAnswer(result);
         if (scrollerRef.current) {
             scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
         }
     };
+
+
     const handleSearchEnd = () => { setSearching(false); };
     const handleSearchError = (error) => { console.error(error); setSearching(false); };
     const openUrl = async (socialType) => {
@@ -301,7 +304,7 @@ export default function Search() {
             setExpanded(false);
         }
     }
-    
+
     const handleSearch = async (e) => {
         e.preventDefault()
         setSearching(true);
@@ -516,7 +519,7 @@ export default function Search() {
                                         <div className={`mx-4 mt-2 bg-light-secondary/60 rounded p-0 animate-pulse`}></div>
                                         :
                                         <div className={`mx-4 mt-2 bg-light-secondary/60 text-lg rounded text-gray-600 duration-700 px-4 pt-4 pb-8 mb-4 dark:bg-dark-secondary dark:text-neutral-400`} >
-                                            <Answer key={"0"} answer={answer} searching={searching} pvd={provider} />
+                                            <Answer answer={answer} searching={searching} pvd={provider} />
                                         </div>
                                 }
                             </>

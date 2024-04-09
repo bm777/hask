@@ -1,38 +1,26 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Prism from 'prismjs';
-import DOMPurify from 'dompurify';
-// Ensure all necessary language definitions are imported
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-python';
-// ... other imports
+import React, { useEffect, useState } from 'react';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
-const CodeText = ({ children }) => {
+// Import only the necessary language syntax
+import javascript from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
+import python from 'react-syntax-highlighter/dist/cjs/languages/prism/python';
+// ... import other languages you need
+
+// Register the language syntax
+SyntaxHighlighter.registerLanguage('javascript', javascript);
+SyntaxHighlighter.registerLanguage('python', python);
+// ... register other languages you need
+
+const CodeText = ({ children, language }) => {
     const [status, setStatus] = useState('copy');
-    const [language, setLanguage] = useState('');
     const [code, setCode] = useState('');
-    const codeRef = useRef(null);
 
     useEffect(() => {
-        // Regex to match code blocks and extract language and code
-        const regex = /^```(\w+)[\s\S]*?\n([\s\S]+?)```$/;
-        const result = regex.exec(children);
-        if (result) {
-            // Set the extracted language and code
-            setLanguage(result[1]);
-            setCode(result[2]);
-        } else {
-            // Default to plain text if no language is found
-            setLanguage('plaintext');
-            setCode(children);
-        }
+        // Remove the leading and trailing backticks and any leading/trailing newlines
+        const cleanedCode = children.replace(/^```.*\n|\n```$/g, '');
+        setCode(cleanedCode);
     }, [children]);
-
-    useEffect(() => {
-        // Ensure the language is available in Prism
-        if (language && Prism.languages[language] && codeRef.current) {
-            Prism.highlightElement(codeRef.current);
-        }
-    }, [language, code]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(code).then(
@@ -49,19 +37,12 @@ const CodeText = ({ children }) => {
 
     return (
         <div className="code-block-container">
-            {language && language !== 'plaintext' && (
+            {language && (
                 <div className="code-language-label">{language.toUpperCase()}</div>
             )}
-            <pre className={`language-${language}`} ref={codeRef}>
-                <code
-                    className={`language-${language}`}
-                    dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(
-                            Prism.highlight(code, Prism.languages[language] || Prism.languages.plaintext, language)
-                        ),
-                    }}
-                />
-            </pre>
+            <SyntaxHighlighter language={language} style={oneDark}>
+                {code}
+            </SyntaxHighlighter>
             <button className="code-copy-button" onClick={handleCopy}>
                 {status}
             </button>

@@ -22,77 +22,60 @@ const Answer = ({ answer, searching }) => {
     const webviewContainerRef = useRef(null);
 
     const purify = (line) => {
-        if (line.trim().startsWith('+')) {
-            if (line.match(/^\t\+\s*/)) {
-                const content = line.replace(/^\t\+\s*/, '');
-                const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
-                return DOMPurify.sanitize(sublist);
+        if (typeof line === 'string') {
+            if (line.trim().startsWith('+')) {
+                if (line.match(/^\t\+\s*/)) {
+                    const content = line.replace(/^\t\+\s*/, '');
+                    const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
+                    return DOMPurify.sanitize(sublist);
+                }
             }
-        }
-        if (line.startsWith('    -')) {
-            if (line.match(/^ {4}-\s*/)) {
-                const content = line.replace(/^ {4}-\s*/, '');
-                const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
-                return DOMPurify.sanitize(sublist);
+            if (line.startsWith('    -')) {
+                if (line.match(/^ {4}-\s*/)) {
+                    const content = line.replace(/^ {4}-\s*/, '');
+                    const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
+                    return DOMPurify.sanitize(sublist);
+                }
             }
-        }
-
-        if (line.startsWith("|")) {
-            if (line.match(/^\|.*\|.*\|.*$/)) {
-                const content = line.split("|").map((item) => item.trim());
-                const table = content.map((item, index) => {
-                    if (item === "") return;
-                    if (index === 0) {
-                        return `${converter.makeHtml(item)}`;
-                    } else {
-                        if (item.includes("---")) {
-                            return;
+    
+            if (line.startsWith("|")) {
+                if (line.match(/^\|.*\|.*\|.*$/)) {
+                    const content = line.split("|").map((item) => item.trim());
+                    const table = content.map((item, index) => {
+                        if (item === "") return;
+                        if (index === 0) {
+                            return `${converter.makeHtml(item)}`;
+                        } else {
+                            if (item.includes("---")) {
+                                return;
+                            }
+                            return `<td>${converter.makeHtml(item)}</td>`;
                         }
-                        return `<td>${converter.makeHtml(item)}</td>`;
-                    }
-                }).join('');
-                setTableData(prevData => [...prevData, `<tr>${table}</tr>`]);
-                return null;
-            } else {
-                return DOMPurify.sanitize(converter.makeHtml(line));
+                    }).join('');
+                    setTableData(prevData => [...prevData, `<tr>${table}</tr>`]);
+                    return null;
+                } else {
+                    return DOMPurify.sanitize(converter.makeHtml(line));
+                }
             }
+    
+            const html = converter.makeHtml(line);
+            return DOMPurify.sanitize(html, { ALLOWED_ATTR: ['start', 'target', 'href'] });
         }
-
-        const html = converter.makeHtml(line);
-        return DOMPurify.sanitize(html, { ALLOWED_ATTR: ['start', 'target', 'href'] });
-    }
+        return null; // Add this line to handle the case when the line is not a string
+    };
 
     useEffect(() => {
         if (answer) {
-            const lines = answer.split("\n");
-            let newFormattedLines = [];
-            let isInsideCodeBlock = false;
-            let codeBlockLines = [];
-
-            lines.forEach((line) => {
-                if (line.startsWith("```")) {
-                    isInsideCodeBlock = !isInsideCodeBlock;
-                    if (!isInsideCodeBlock) {
-                        // End of a code block
-                        newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
-                        codeBlockLines = []; // Reset the code block lines
-                    }
-                } else if (isInsideCodeBlock) {
-                    codeBlockLines.push(line);
+            const codeBlocks = get_code_blocks(answer.split("\n"));
+            const newFormattedLines = codeBlocks.map((block, index) => {
+                if (typeof block === 'object' && block.language) {
+                    return <CodeText key={index} language={block.language}>{block.content}</CodeText>;
                 } else {
-                    // Regular line
-                    const purifiedLine = purify(line);
-                    if (purifiedLine) {
-                        newFormattedLines.push(<ParsedText key={uuidv4()} text={purifiedLine} />);
-                    }
+                    const purifiedLine = purify(block);
+                    return purifiedLine ? <ParsedText key={index} text={purifiedLine} /> : null;
                 }
             });
-
-            // If the answer ends inside a code block, add the remaining lines as a code block
-            if (isInsideCodeBlock && codeBlockLines.length > 0) {
-                newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
-            }
-
             setFormattedLines(newFormattedLines);
         }
     }, [answer]);

@@ -2,11 +2,17 @@
   "manifest_version": 3,
   "name": "Hbe",
   "version": "1.0.0",
+  "description": "Extracts text content from the body of web pages and summarize it.",
   "action": { "default_popup": "index.html" },
+  "permissions": ["tabs", "scripting"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": ["background.js"]
+  },
   "content_scripts": [
     {
-      "js": ["src/content.jsx"],
-      "matches": ["https://www.google.com/*"]
+      "js": ["content-script.js"],
+      "matches": ["https://*/*", "http://*/*"]
     }
   ]
 }

@@ -437,26 +437,93 @@
     }
 
     .multiline-input {
-        min-height: 1em; /* Typically the line-height of a single line of text */
-        overflow-y: auto; /* Hides the scrollbar initially */
-        padding: 12px; /* Adjust to your preferred padding */
-        line-height: 1.2em; /* Typically line-height for single line, adjust to your preference */
-        resize: vertical; /* Keeps the textarea resizable vertically */
-        max-height: 50px; /* Maximum height before scrolling, adjust as needed */
+        min-height: 1em;
+        /* Typically the line-height of a single line of text */
+        overflow-y: auto;
+        /* Hides the scrollbar initially */
+        padding: 12px;
+        /* Adjust to your preferred padding */
+        line-height: 1.2em;
+        /* Typically line-height for single line, adjust to your preference */
+        resize: vertical;
+        /* Keeps the textarea resizable vertically */
+        max-height: 50px;
+        /* Maximum height before scrolling, adjust as needed */
     }
-        
-    
-    
+
+
+
     /* Keep the scrollbar styles as they are */
     .multiline-input::-webkit-scrollbar {
         width: 8px;
     }
-    
+
     .multiline-input::-webkit-scrollbar-thumb {
         background-color: #888;
         border-radius: 4px;
     }
-    
+
+    /* Style for the code block container */
+    .code-block-container {
+        position: relative;
+        background: #282a36;
+        border-radius: 0.5em;
+        margin: 1em 0;
+        padding: 1em;
+      }
+      
+      .code-language-label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.2em 0.5em;
+        background: #44475a;
+        color: white;
+        border-top-right-radius: 0.5em;
+        border-bottom-left-radius: 0.5em;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.75em;
+      }
+      
+      pre[class*='language-'],
+      code[class*='language-'] {
+        padding: 1em;
+        margin: 0;
+        border-radius: 0.3em;
+        overflow-x: auto;
+      }
+      
+      .code-copy-button {
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        padding: 0.2em 0.5em;
+        background: #6272a4;
+        color: white;
+        border: none;
+        border-radius: 0.3em;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 0.75em;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      
+      .code-block-container:hover .code-copy-button {
+        opacity: 1;
+      }
+      
+      .code-copy-button:hover {
+        background: #8be9fd;
+        color: black;
+      }
+      
+
+
+
+
 
 
 

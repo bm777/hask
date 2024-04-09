@@ -64,39 +64,39 @@ const Answer = ({ answer, searching }) => {
 
     useEffect(() => {
         if (answer) {
-          const lines = answer.split("\n");
-          let newFormattedLines = [];
-          let isInsideCodeBlock = false;
-          let codeBlockLines = [];
-      
-          lines.forEach((line) => {
-            if (line.startsWith("```")) {
-              isInsideCodeBlock = !isInsideCodeBlock;
-              if (!isInsideCodeBlock) {
-                // End of a code block
+            const lines = answer.split("\n");
+            let newFormattedLines = [];
+            let isInsideCodeBlock = false;
+            let codeBlockLines = [];
+
+            lines.forEach((line) => {
+                if (line.startsWith("```")) {
+                    isInsideCodeBlock = !isInsideCodeBlock;
+                    if (!isInsideCodeBlock) {
+                        // End of a code block
+                        newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
+                        codeBlockLines = []; // Reset the code block lines
+                    }
+                } else if (isInsideCodeBlock) {
+                    codeBlockLines.push(line);
+                } else {
+                    // Regular line
+                    const purifiedLine = purify(line);
+                    if (purifiedLine) {
+                        newFormattedLines.push(<ParsedText key={uuidv4()} text={purifiedLine} />);
+                    }
+                }
+            });
+
+            // If the answer ends inside a code block, add the remaining lines as a code block
+            if (isInsideCodeBlock && codeBlockLines.length > 0) {
                 newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
-                codeBlockLines = []; // Reset the code block lines
-              }
-            } else if (isInsideCodeBlock) {
-              codeBlockLines.push(line);
-            } else {
-              // Regular line
-              const purifiedLine = purify(line);
-              if (purifiedLine) {
-                newFormattedLines.push(<ParsedText key={uuidv4()} text={purifiedLine} />);
-              }
             }
-          });
-      
-          // If the answer ends inside a code block, add the remaining lines as a code block
-          if (isInsideCodeBlock && codeBlockLines.length > 0) {
-            newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
-          }
-      
-          setFormattedLines(newFormattedLines);
+
+            setFormattedLines(newFormattedLines);
         }
-      }, [answer]);
-      
+    }, [answer]);
+
 
 
     const openLinkInNewTab = (event, url) => {
@@ -214,37 +214,38 @@ const Answer = ({ answer, searching }) => {
         });
     }
 
-    const processLine = (line) => {
-        // Detect the start of a code block
-        if (line.startsWith("```") && !isCodeBlock) {
-            setIsCodeBlock(true);
-            // Remove the starting backticks and language identifier from the line if present
-            setCodeBlockContent([line.replace(/^```(\w+)?/, '').trim()]);
-            return null;
-        }
+    const processLine = (line, index, array) => {
+        // Check if the current line starts a code block
+        if (line.startsWith("```")) {
+            setIsCodeBlock(!isCodeBlock);
 
-        // If we're currently in a code block, we append the line to the codeBlockContent
-        if (isCodeBlock) {
-            // Detect the end of a code block
-            if (line.endsWith("```")) {
-                setIsCodeBlock(false);
-                // Combine the accumulated lines into one block and create a CodeText component
-                const completeCodeBlock = [...codeBlockContent, line.replace(/```$/, '').trim()].join("\n");
-                setCodeBlockContent([]); // Reset the code block content
-                return <CodeText key={uid()}>{completeCodeBlock}</CodeText>;
-            } else {
-                // Still inside the code block, keep accumulating lines
-                setCodeBlockContent([...codeBlockContent, line]);
-                return null;
+            // If ending a code block, send the accumulated lines to CodeText
+            if (!isCodeBlock) {
+                const completeCodeBlock = codeBlockContent.join("\n") + "\n" + line;
+                setCodeBlockContent([]);
+                return <CodeText key={uuidv4()}>{completeCodeBlock}</CodeText>;
             }
-        }
+        } else if (isCodeBlock) {
+            // If currently in a code block, accumulate the content
+            setCodeBlockContent([...codeBlockContent, line]);
 
-        // If it's not a code block, just sanitize and return the line as before
-        if (!isCodeBlock) {
+            // If this is the last line and we're still in a code block, close it off
+            if (index === lines.length - 1) {
+                setIsCodeBlock(false);
+                const completeCodeBlock = codeBlockContent.join("\n");
+                setCodeBlockContent([]);
+                return <CodeText key={uuidv4()}>{completeCodeBlock}</CodeText>;
+            }
+
+            // Don't return anything yet as we are accumulating lines for the code block
+            return null;
+        } else {
+            // Regular line processing
             const purified = purify(line);
-            return purified ? <ParsedText key={uid()} text={purified} /> : null;
+            return purified ? <ParsedText key={uuidv4()} text={purified} /> : null;
         }
     };
+
 
     const saveAnswer = () => {
         const blob = new Blob([answer], { type: 'text/plain;charset=utf-8' });
@@ -294,9 +295,13 @@ const Answer = ({ answer, searching }) => {
                 )}
 
                 <div className={"w-full flex items-center justify-end absolute -bottom-7 ml-3 transition-all duration-500 " + (answer === "" ? "scale-0" : "scale-100")}>
-                    <div onClick={copied} className="copy-button flex py-[1px] px-2 bg-grayish/20 border border-gray-700/20 rounded dark:bg-gray-300/20">
-                        {/* Button Content */}
+                    <div onClick={copied} className="response-copy-button flex py-[1px] px-2 bg-grayish/20 border border-gray-700/20 rounded dark:bg-gray-300/20 hover:cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#B4B4B4" className="w-[14px] h-[14px]">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                        </svg>
+                        <span className="text-sm"> {status} </span>
                     </div>
+
                 </div>
             </div>
             <div className="webview-container" ref={webviewContainerRef} style={{ width: '100%', height: '100vh', display: iframeVisible ? 'block' : 'none' }}></div>

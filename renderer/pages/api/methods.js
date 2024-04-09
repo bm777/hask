@@ -93,30 +93,37 @@ export function retrieve(provider) {
 }
 export function get_code_blocks(lines) {
     let insideCodeBlock = false;
-    let linesWithCodeBlocks = [];
-    let language = '';
-  
+    let currentCodeBlock = null;
+    let result = [];
+
     for (const line of lines) {
-      if (line.startsWith("```")) {
-        if (!insideCodeBlock) {
-          insideCodeBlock = true;
-          language = line.slice(3).trim();
-          linesWithCodeBlocks.push({ language, content: '' });
+        if (line.startsWith("```")) {
+            if (!insideCodeBlock) {
+                insideCodeBlock = true;
+                currentCodeBlock = {
+                    language: line.slice(3).trim(),
+                    content: '',
+                };
+            } else {
+                insideCodeBlock = false;
+                result.push(currentCodeBlock);
+                currentCodeBlock = null;
+            }
         } else {
-          insideCodeBlock = false;
-          language = '';
+            if (insideCodeBlock) {
+                currentCodeBlock.content += line + '\n';
+            } else {
+                result.push(line);
+            }
         }
-      } else {
-        if (insideCodeBlock) {
-          linesWithCodeBlocks[linesWithCodeBlocks.length - 1].content += line + '\n';
-        } else {
-          linesWithCodeBlocks.push({ language: '', content: line });
-        }
-      }
     }
-  
-    return linesWithCodeBlocks;
-  }
+
+    if (currentCodeBlock) {
+        result.push(currentCodeBlock);
+    }
+
+    return result;
+}
 
 // get backtick code blocks
 export function get_backtick_block(lines) {

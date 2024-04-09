@@ -8,8 +8,6 @@ import { v4 as uid } from 'uuid';
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
 import ParsedText from './parsedText';
-import { v4 as uuidv4 } from 'uuid';
-
 
 const Answer = ({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
@@ -23,64 +21,27 @@ const Answer = ({ answer, searching }) => {
 
     const purify = (line) => {
         if (typeof line === 'string') {
-            if (line.trim().startsWith('+')) {
-                if (line.match(/^\t\+\s*/)) {
-                    const content = line.replace(/^\t\+\s*/, '');
-                    const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
-                    return DOMPurify.sanitize(sublist);
-                }
-            }
-            if (line.startsWith('    -')) {
-                if (line.match(/^ {4}-\s*/)) {
-                    const content = line.replace(/^ {4}-\s*/, '');
-                    const sublist = `<ul><ul><li>${converter.makeHtml(content)}</li></ul></ul>`;
-                    return DOMPurify.sanitize(sublist);
-                }
-            }
-    
-            if (line.startsWith("|")) {
-                if (line.match(/^\|.*\|.*\|.*$/)) {
-                    const content = line.split("|").map((item) => item.trim());
-                    const table = content.map((item, index) => {
-                        if (item === "") return;
-                        if (index === 0) {
-                            return `${converter.makeHtml(item)}`;
-                        } else {
-                            if (item.includes("---")) {
-                                return;
-                            }
-                            return `<td>${converter.makeHtml(item)}</td>`;
-                        }
-                    }).join('');
-                    setTableData(prevData => [...prevData, `<tr>${table}</tr>`]);
-                    return null;
-                } else {
-                    return DOMPurify.sanitize(converter.makeHtml(line));
-                }
-            }
-    
             const html = converter.makeHtml(line);
             return DOMPurify.sanitize(html, { ALLOWED_ATTR: ['start', 'target', 'href'] });
         }
-        return null; // Add this line to handle the case when the line is not a string
+        return null;
     };
 
     useEffect(() => {
         if (answer) {
-            const codeBlocks = get_code_blocks(answer.split("\n"));
-            const newFormattedLines = codeBlocks.map((block, index) => {
-                if (typeof block === 'object' && block.language) {
-                    return <CodeText key={index} language={block.language}>{block.content}</CodeText>;
-                } else {
-                    const purifiedLine = purify(block);
+            const result = get_code_blocks(answer.split("\n"));
+            const newFormattedLines = result.map((item, index) => {
+                if (typeof item === 'object' && item.language) {
+                    return <CodeText key={index} language={item.language}>{item.content}</CodeText>;
+                } else if (typeof item === 'string') {
+                    const purifiedLine = purify(item);
                     return purifiedLine ? <ParsedText key={index} text={purifiedLine} /> : null;
                 }
+                return null;
             });
-            setFormattedLines(newFormattedLines);
+            setFormattedLines(newFormattedLines.filter(line => line !== null));
         }
     }, [answer]);
-
-
 
     const openLinkInNewTab = (event, url) => {
         event.preventDefault();
@@ -284,13 +245,11 @@ const Answer = ({ answer, searching }) => {
                         </svg>
                         <span className="text-sm"> {status} </span>
                     </div>
-
                 </div>
             </div>
             <div className="webview-container" ref={webviewContainerRef} style={{ width: '100%', height: '100vh', display: iframeVisible ? 'block' : 'none' }}></div>
         </div>
     );
-
-}
+};
 
 export default Answer;

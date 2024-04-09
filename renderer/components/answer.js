@@ -8,6 +8,8 @@ import { v4 as uid } from 'uuid';
 import DOMPurify from 'dompurify';
 import showdown from 'showdown';
 import ParsedText from './parsedText';
+import { v4 as uuidv4 } from 'uuid';
+
 
 const Answer = ({ answer, searching }) => {
     const [formattedLines, setFormattedLines] = useState([]);
@@ -61,22 +63,40 @@ const Answer = ({ answer, searching }) => {
     }
 
     useEffect(() => {
-        console.log('Answer prop type:', typeof answer, '; value:', answer); // Add this line
-
         if (answer) {
-            let lines = answer.split("\n");
-            const linesWithLinksParsed = lines.map(line => parseLink(line));
-            const rg = /.*\|.*\|.*$/; // rg for checking if the line is a table
-            const linesWithCodeBlocks = !rg.test(linesWithLinksParsed) ? linesWithLinksParsed : get_code_blocks(linesWithLinksParsed);
-
-            if (answer === " " && searching) {
-                setFormattedLines([]);
-                setTableContent(null);
+          const lines = answer.split("\n");
+          let newFormattedLines = [];
+          let isInsideCodeBlock = false;
+          let codeBlockLines = [];
+      
+          lines.forEach((line) => {
+            if (line.startsWith("```")) {
+              isInsideCodeBlock = !isInsideCodeBlock;
+              if (!isInsideCodeBlock) {
+                // End of a code block
+                newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
+                codeBlockLines = []; // Reset the code block lines
+              }
+            } else if (isInsideCodeBlock) {
+              codeBlockLines.push(line);
             } else {
-                setFormattedLines(linesWithCodeBlocks.map(processLine));
+              // Regular line
+              const purifiedLine = purify(line);
+              if (purifiedLine) {
+                newFormattedLines.push(<ParsedText key={uuidv4()} text={purifiedLine} />);
+              }
             }
+          });
+      
+          // If the answer ends inside a code block, add the remaining lines as a code block
+          if (isInsideCodeBlock && codeBlockLines.length > 0) {
+            newFormattedLines.push(<CodeText key={uuidv4()}>{codeBlockLines.join('\n')}</CodeText>);
+          }
+      
+          setFormattedLines(newFormattedLines);
         }
-    }, [answer]);
+      }, [answer]);
+      
 
 
     const openLinkInNewTab = (event, url) => {
@@ -195,18 +215,34 @@ const Answer = ({ answer, searching }) => {
     }
 
     const processLine = (line) => {
-        if (line === "") return <div key={uid()} className="h-2 bg-transparent" />;
+        // Detect the start of a code block
+        if (line.startsWith("```") && !isCodeBlock) {
+            setIsCodeBlock(true);
+            // Remove the starting backticks and language identifier from the line if present
+            setCodeBlockContent([line.replace(/^```(\w+)?/, '').trim()]);
+            return null;
+        }
 
-        if (line.includes("```")) {
-            return <CodeText key={uid()} >{line}</CodeText>;
-        } else {
-            const purified = purify(line)
-
-            if (purified === null) {
+        // If we're currently in a code block, we append the line to the codeBlockContent
+        if (isCodeBlock) {
+            // Detect the end of a code block
+            if (line.endsWith("```")) {
+                setIsCodeBlock(false);
+                // Combine the accumulated lines into one block and create a CodeText component
+                const completeCodeBlock = [...codeBlockContent, line.replace(/```$/, '').trim()].join("\n");
+                setCodeBlockContent([]); // Reset the code block content
+                return <CodeText key={uid()}>{completeCodeBlock}</CodeText>;
+            } else {
+                // Still inside the code block, keep accumulating lines
+                setCodeBlockContent([...codeBlockContent, line]);
                 return null;
             }
+        }
 
-            return <ParsedText key={uid()} text={purified} />;
+        // If it's not a code block, just sanitize and return the line as before
+        if (!isCodeBlock) {
+            const purified = purify(line);
+            return purified ? <ParsedText key={uid()} text={purified} /> : null;
         }
     };
 

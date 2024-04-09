@@ -391,20 +391,28 @@
         font-weight: bold;
     }
 
-    .copy-button {
-        position: absolute;
-        bottom: 0px;
-        right: 10px;
+    /* ... */
+
+    .response-copy-button {
+        display: flex;
+        align-items: center;
+        padding: 0.25em;
+        background: transparent;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .response-copy-button:hover {
+        color: #8be9fd;
     }
 
-    .copy-button svg {
-        margin: 0 auto;
+    .response-copy-button svg {
+        width: 14px;
+        height: 14px;
     }
 
-    .copy-button {
-        width: 32px;
-        height: 32px;
-    }
 
     .markdown-body a {
         color: #4299e1;
@@ -470,7 +478,7 @@
         border-radius: 0.5em;
         margin: 1em 0;
     }
-    
+
     .code-block-header {
         display: flex;
         justify-content: space-between;
@@ -481,7 +489,7 @@
         border-top-right-radius: 0.5em;
         height: 1.25em;
     }
-    
+
     .code-language-label {
         color: rgb(169, 167, 167);
         text-transform: uppercase;
@@ -489,7 +497,7 @@
         font-size: 0.5em;
         line-height: 1;
     }
-    
+
     pre[class*='language-'],
     code[class*='language-'] {
         padding: 0.25em 1em;
@@ -498,7 +506,7 @@
         border-bottom-right-radius: 0.5em;
         overflow-x: auto;
     }
-    
+
     .code-copy-button {
         display: flex;
         align-items: center;
@@ -509,17 +517,17 @@
         cursor: pointer;
         transition: color 0.2s;
     }
-    
+
     .code-copy-button:hover {
         color: #8be9fd;
     }
-    
+
     .code-copy-button svg {
         width: 10px;
         height: 10px;
         margin-right: 0.25em;
     }
-    
+
 
 
 

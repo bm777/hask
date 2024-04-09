@@ -57,21 +57,25 @@ export const optionsConstructor = (url, key, model, query) => {
 }
 
 export const parseLink = (line) => {
+    if (typeof line !== 'string') {
+      return line;
+    }
+  
     const urlRegex = /((?:https?:\/\/|www\.)[^\s>"]+)/g;
     const markdownLinkRegex = /\[([^\]]+)\]\(((?:https?:\/\/|www\.)[^)"]+)\)/g;
-
+  
     line = line.replace(markdownLinkRegex, (match, text, url) => {
-        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
-        return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${text}</a>`;
+      const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+      return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${text}</a>`;
     });
-
+  
     line = line.replace(urlRegex, (match, url) => {
-        const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
-        return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>`;
+      const trimmedUrl = url.replace(/[.,)"\]]+$/, '');
+      return `<a href="${trimmedUrl}" target="_blank" class="text-blue-600">${trimmedUrl}</a>`;
     });
-
+  
     return line;
-};
+  };
 export function store(provdider, models) {
     try {
         const data = JSON.stringify(models);

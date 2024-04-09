@@ -181,6 +181,11 @@ export default function Search() {
                 default:
                     break;
             }
+
+            // Log provider information separately
+            window.ipc.send("logger", `Provider: ${providerName}`);
+            window.ipc.send("logger", `Status: ${providerStatus}`);
+            window.ipc.send("logger", `Possible Providers: ${possibleProviders}`);
         }
     };
 

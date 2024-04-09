@@ -8,25 +8,37 @@
 //!
 #[macro_use]
 extern crate diesel;
-
 use actix_web::{error, get, web, middleware, post, App, HttpResponse, HttpServer, Result, Responder};
+use qdrant_client::{
+    client::QdrantClient, 
+    qdrant::{
+        PointStruct, vectors_config::Config
+    }
+};
 use serde_derive::{Deserialize, Serialize};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
 use dotenvy;
 use env_logger;
-
 use shellexpand;
+use serde_json::json;
+use uuid::Uuid;
 
 mod schema;
 mod models;
 mod utils;
 mod cohere;
+mod qdrant;
 
 use crate::cohere::{
     embed::generate_embed,
     rerank::rerank,
     sum::summarize,
+};
+use crate::qdrant::qdrant::{
+    check_collection,
+    insert_vectors,
+    search_points,
 };
 
 // Database connection pool -> thoughout teh APP
@@ -51,21 +63,21 @@ async fn root() -> impl Responder {
 }
 
 // save_url fn
-#[post("/url")]
-async fn save_url(
-    pool: web::Data<DbPool>,
-    form: web::Json<models::NewLink>
-) -> Result::<HttpResponse> {
-    println!("Saving the url: {}...", form.url);
-    let link = web::block(move || {
-        let mut conn = pool.get().expect("couldn't get db connection from pool");
-        utils::store_url(&mut conn, &form.url)
-    })
-    .await?
-    .map_err(error::ErrorInternalServerError)?;
+// #[post("/url")]
+// async fn save_url(
+//     pool: web::Data<DbPool>,
+//     form: web::Json<models::NewLink>
+// ) -> Result::<HttpResponse> {
+//     println!("Saving the url: {}...", form.url);
+//     let link = web::block(move || {
+//         let mut conn = pool.get().expect("couldn't get db connection from pool");
+//         utils::store_url(&mut conn, &form.url)
+//     })
+//     .await?
+//     .map_err(error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Created().json(link))
-}
+//     Ok(HttpResponse::Created().json(link))
+// }
 
 // check_url fn
 #[post("/check/url")]
@@ -73,7 +85,6 @@ async fn check_url(
     pool: web::Data<DbPool>,
     form: web::Json<models::NewLink>
 ) -> Result<HttpResponse> {
-    println!("Checking if the url exists: {}...", form.url);
 
     let url_clone = form.url.clone(); // clone the url, because we need to move it to the closure :D
     let exists = web::block(move || {
@@ -104,6 +115,7 @@ async fn main() -> std::io::Result<()> {
     // dev mode: environment variables from a .env file
     dotenvy::dotenv().ok();
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    let client = QdrantClient::from_url("http://localhost:6334").build().unwrap();
 
     // create a connection pool
     let pool = init_db_pool();
@@ -157,12 +169,83 @@ async fn main() -> std::io::Result<()> {
     // println!("Response: {}", response);
     // println!("Summary: {:?}", summary);
 
+    let col = "haskk".to_string();
+    let  _check = check_collection(&client, &384, col.clone()).await; // create a collection if it does not exist
+    println!("checking collection result: {:?}", _check.unwrap());
+
+    // delete a collection
+    // let _ = client.delete_collection(&col).await.unwrap();
+
+    let _vector = generate_embed(&api.to_string(), &vec!["I love python".to_string()]).await.unwrap();
+    // println!("Vector: {:?}", _vector);
+    let _array = _vector.get("embeddings").unwrap().as_array().unwrap()[0].as_array().unwrap();
+    // convert Number to f32 array
+    let _vector: Vec<f32> = _array.iter().map(|x| x.as_f64().unwrap() as f32).collect();
+    // println!("Vector: {:?}", _vector);
+
+    // upload _docs to the collection
+    // for doc in _docs {
+    //     let _vector = generate_embed(&api.to_string(), &vec![doc.clone()]).await.unwrap();
+    //     let _array = _vector.get("embeddings").unwrap().as_array().unwrap()[0].as_array().unwrap();
+    //     let _vector: Vec<f32> = _array.iter().map(|x| x.as_f64().unwrap() as f32).collect();
+    //     let point = PointStruct::new (
+    //         Uuid::new_v4().to_string(), // uuid
+    //         _vector.clone(), // vector
+    //         json!({
+    //             "title": "title", 
+    //             "url": "https://www.google.com", 
+    //             "timestamp": "2021-09-01 12:00:00",
+    //             "page": doc.clone(),
+    //         })
+    //         .try_into()
+    //         .unwrap(),
+    //     );
+    //     let _insert = insert_vectors(&client, &col, &point).await;
+    //     println!("Insert result: {:?}", _insert);
+    // }
+
+    // let point = PointStruct::new (
+    //     Uuid::new_v4().to_string(), // uuid
+    //     _vector.clone(), // vector
+    //     json!({
+    //         "title": "I love programming", 
+    //         "url": "https://www.google.com", 
+    //         "timestamp": "2021-09-01 12:00:00",
+    //         "page": _page.clone(),
+    //     })
+    //     .try_into()
+    //     .unwrap(),
+    // );
+
+    // println!("Point: {:?}", point);
+
+    // let _insert = insert_vectors(&client, &col, &point).await;
+    // println!("Insert result: {:?}", _insert);
+
+    let _search = search_points(&client, &col, &_vector, 3).await;
+    // let _top3pages: Vec<String> = _search.unwrap().iter().map(|x| x.payload.get("page").unwrap().to_string()).collect();
+    let _top3_page_url: Vec<Vec<String>> = _search
+                        .unwrap()
+                        .iter()
+                        .map(
+                            |x|
+                           vec![
+                                x.payload.get("url").unwrap().to_string(),
+                                x.payload.get("page").unwrap().to_string(),
+                            ]    
+                        ).collect();
+    println!("Search result: {:?}", _top3_page_url);
+
+
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(api.clone()))
             .wrap(middleware::Logger::default())
+            .wrap(middleware::Compress::default())
             .service(root)
-            .service(save_url)
+            // .service(save_url)
             .service(check_url)
     })
     .bind(("127.0.0.1", 1777))?

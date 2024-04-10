@@ -7,12 +7,18 @@
   "permissions": ["tabs", "scripting"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
-    "service_worker": ["background.js"]
+    "service_worker": ["src/background.js"]
+  },
+  "icons": {
+    "16": "public/16.png",
+    "32": "public/32.png",
+    "48": "public/48.png",
+    "128": "public/128.png"
   },
   "content_scripts": [
     {
-      "js": ["content-script.js"],
-      "matches": ["https://*/*", "http://*/*"]
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["src/content-script.js"]
     }
   ]
 }

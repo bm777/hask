@@ -55,6 +55,19 @@ struct UrlResponse {
     status: String,
 }
 
+// serialize of ingest request
+#[derive(Deserialize, Debug)]
+struct IngestRequest {
+    url: String,
+    title: String,
+    content: String
+}
+#[derive(Serialize, Debug)]
+struct IngestResponse {
+    status: String,
+    timestamp: String,
+}
+
 // default route
 #[get("/")]
 async fn root() -> impl Responder {
@@ -104,6 +117,22 @@ async fn check_url(
 
 // indexing pipeline of browser history
 // knowledge caming are in the format: (url, title, timestamp, content or chunks)
+#[post("/ingest")]
+async fn ingest(
+    pool: web::Data<DbPool>,
+    // api: web::Data<String>,
+    form: web::Json<IngestRequest>
+) -> Result<HttpResponse> {
+    println!("Ingesting the url: ----------- {}", form.url);
+    println!("Title: ----------- {}", form.title);
+    println!("Content: ----------- {}", form.content);
+
+    let response = IngestResponse {
+        status: "Ingested".to_string(),
+        timestamp: "random time".to_string(),
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
 
 // search function: retrieve most relevant visited url to the user query
 
@@ -246,6 +275,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Compress::default())
             .service(root)
             // .service(save_url)
+            .service(ingest)
             .service(check_url)
     })
     .bind(("127.0.0.1", 1777))?

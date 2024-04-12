@@ -53,5 +53,10 @@ pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
         timestamp TEXT NOT NULL
     )").execute(conn).expect("Error creating links table");
 
-    Ok(format!("Table created successfully!"))
+    sql_query("CREATE TABLE IF NOT EXISTS history (
+        id TEXT PRIMARY KEY, 
+        status TEXT NOT NULL
+    )").execute(conn).expect("Error creating history table");
+
+    Ok(format!("Tables created successfully!"))
 }

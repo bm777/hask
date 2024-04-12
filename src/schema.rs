@@ -5,3 +5,10 @@ table! {
         timestamp -> Text,
     }
 }
+
+table! {
+    history (id) {
+        id -> Text,
+        status -> Text,
+    }
+}

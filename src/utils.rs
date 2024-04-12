@@ -3,6 +3,7 @@ use diesel::SqliteConnection;
 use diesel::prelude::*;
 use diesel::sql_query;
 use uuid::Uuid;
+use chrono::Local;
 
 use crate::models;
 
@@ -19,7 +20,7 @@ pub fn store_url(
     let new_link = models::Link {
         id: Uuid::new_v4().to_string(),
         url: _url.to_string(),
-        timestamp: chrono::Local::now().to_string(),
+        timestamp: Local::now().to_string(),
     };
     diesel::insert_into(links)
         .values(&new_link)

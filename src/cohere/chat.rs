@@ -21,3 +21,21 @@ pub async fn summarize(key: &String, page: &String) -> Result<Value, Error>{
 
     Ok(response.json().await?)
 }
+
+pub async fn chat(key: &String, preambule: &String, prompt: &String) -> Result<Value, Error>{
+    let client = Client::new();
+
+    let mut params: HashMap<&str, Value> = HashMap::new();
+
+    params.insert("preamble", preambule.clone().into());
+    params.insert("message", json!(prompt));
+
+    let response = client.post("https://api.cohere.ai/v1/chat")
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", key))
+        .json(&params)
+        .send()
+        .await?;
+
+    Ok(response.json().await?)
+}

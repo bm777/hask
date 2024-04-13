@@ -12,7 +12,7 @@ use actix_web::{error, get, web, middleware, post, App, HttpResponse, HttpServer
 use qdrant_client::{
     client::QdrantClient, 
     qdrant::{
-        PointStruct, vectors_config::Config, ScoredPoint
+        PointStruct
     }
 };
 use serde_derive::{Deserialize, Serialize};
@@ -80,6 +80,11 @@ struct SearchResponse {
     context: String,
     urls: Vec<String>,
 }
+// history response
+#[derive(Serialize, Debug)]
+struct HistoryResponse {
+    status: String
+}
 
 // struct of api key
 #[derive(Deserialize, Debug, Clone)]
@@ -103,23 +108,43 @@ async fn root() -> impl Responder {
     println!("Request received");
     HttpResponse::Ok().body("Welcome to Hask portal!")
 }
+// check if history is indexed
+#[get("/check/history")]
+async fn check_history(
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse> {
+    let exists = web::block(move || {
+        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        utils::is_history_indexed(&mut conn)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
 
-// save_url fn
-// #[post("/url")]
-// async fn save_url(
-//     pool: web::Data<DbPool>,
-//     form: web::Json<models::NewLink>
-// ) -> Result::<HttpResponse> {
-//     println!("Saving the url: {}...", form.url);
-//     let link = web::block(move || {
-//         let mut conn = pool.get().expect("couldn't get db connection from pool");
-//         utils::store_url(&mut conn, &form.url)
-//     })
-//     .await?
-//     .map_err(error::ErrorInternalServerError)?;
+    let response = UrlResponse {
+        url: "history".to_string(),
+        timestamp: Local::now().to_string(),
+        status: if exists { "indexed".to_string() } else { "not indexed".to_string() },
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
 
-//     Ok(HttpResponse::Created().json(link))
-// }
+// update history status
+#[post("/update/history")]
+async fn update_history(
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse> {
+    let history = web::block(move || {
+        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        utils::update_history_status(&mut conn, &"indexed".to_string())
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    let response = HistoryResponse {
+        status: history.status.clone(),
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
 
 // check_url fn
 #[post("/check/url")]
@@ -135,10 +160,10 @@ async fn check_url(
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
-    println!("Url exists: --------> {}", exists);
+
     let response = UrlResponse {
         url: form.url.clone(),
-        timestamp: "random time".to_string(),
+        timestamp: Local::now().to_string(),
         status: if exists { "exists" } else { "not exists" }.to_string(),
     };
     Ok(HttpResponse::Ok().json(response))
@@ -154,17 +179,18 @@ async fn ingest(
     form: web::Json<IngestRequest>
 ) -> Result<HttpResponse> {
     let client = QdrantClient::from_url("http://localhost:6334").build().unwrap();
-
     // summarize the content
+
     let response = summarize(&api.key.to_string(), &form.content)
                     .await
                     .unwrap();
+
     let summary = response.get("text").unwrap().to_string();
-    // println!("Summary: {:?}", summary);
+    // println!("=========Summary: {:?}", summary);
 
     // generate the embeddings of the summarized content
     let summary = format!("title: {} url: {} xcsummary{}", form.title.clone(), form.url.clone(), summary);
-    println!("----->{}", summary);
+    // println!("----->{}", summary);
     let embed = generate_embed(&api.key.to_string(), &vec![summary.clone()])
                     .await
                     .unwrap();
@@ -198,13 +224,13 @@ async fn ingest(
     );
     // println!("Point: {:?}", point);
     // insert the point into the collection
-    let insert = insert_vectors(&client, &col.name.to_string(), &point).await;
+    let _insert = insert_vectors(&client, &col.name.to_string(), &point).await;
     // println!("Insert result: {:?}", insert.unwrap());
 
     // store the url in the database
     let link = web::block(move || {
         let mut conn = pool.get().expect("couldn't get db connection from pool");
-        utils::store_url(&mut conn, &form.url)
+        utils::store_url(&mut conn, &form.url.to_string())
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
@@ -222,7 +248,7 @@ async fn ingest(
 // search function: retrieve most relevant visited url to the user query
 #[post("/search")]
 async fn search(
-    pool: web::Data<DbPool>,
+    // pool: web::Data<DbPool>,
     api: web::Data<ApiKey>,
     col: web::Data<CollectionName>,
     top_n: web::Data<TopResults>,
@@ -315,7 +341,7 @@ async fn search(
     }
 
     // ------------> Step 3: join the results of step 1 and step 2 and rerank -> top-5
-    let mut top_pages: Vec<String> = joined_pages.iter().map(|x| x[1].clone()).collect();
+    let top_pages: Vec<String> = joined_pages.iter().map(|x| x[1].clone()).collect();
     println!("----------Top pages: {:?}", top_pages);
     // feed context + query -> answer(s)
     let response = rerank(&api.key.to_string(), &query_text_rewritten, &top_pages)
@@ -365,7 +391,7 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("Server running.... -> 1777");
 
-    let api = ApiKey { key: "C6z92rBNOj1oZ28eZmMiLJdn2SKYOh8QNh4aiyP0".to_string() };
+    let api = ApiKey { key: "TNxdOZ2RdEvlBM8fhZxcpNO7XbFcZJTNHDZmLnwl".to_string() };
     let col = CollectionName { name: "haskk".to_string() };
     // let response = generate_embed(&api.to_string(), &vec!["I ping you!".to_string(), "I try another string".to_string()])
     //                 .await

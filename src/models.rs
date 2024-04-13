@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use crate::schema::links;
+use crate::schema::{links, history};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
 #[diesel(table_name = links)]
@@ -7,6 +7,14 @@ pub struct Link {
     pub id: String, // fro the moment, we don't use yet.
     pub url: String,
     pub timestamp: String,
+}
+
+// struct for history
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
+#[diesel(table_name = history)]
+pub struct History {
+    pub id: String,
+    pub status: String,
 }
 
 // New url details

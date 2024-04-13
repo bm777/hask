@@ -12,7 +12,7 @@ type DbError = Box<dyn std::error::Error + Send + Sync>; // share data between d
 // store url in the database
 pub fn store_url(
     conn: &mut SqliteConnection,
-    _url: &str, //// prevent collision with `url` column imported inside the function
+    _url: &String, //// prevent collision with `url` column imported inside the function
 ) -> Result<models::Link, DbError> {
     // importing this, to prevent import collition and namespace pullution
     use crate::schema::links::dsl::*;
@@ -32,7 +32,7 @@ pub fn store_url(
 // check if the url exists in the database
 pub fn is_url_exists(
     conn: &mut SqliteConnection,
-    _url: &str, //// prevent collision with `url` column imported inside the function
+    _url: &String, //// prevent collision with `url` column imported inside the function
 ) -> Result<bool, DbError> {
     use crate::schema::links::dsl::*;
 
@@ -42,6 +42,41 @@ pub fn is_url_exists(
         .optional()?;
 
     Ok(result.is_some()) // if some ? true : false
+}
+// check if hisotry is indexed
+pub fn is_history_indexed(
+    conn: &mut SqliteConnection,
+) -> Result<bool, DbError> {
+    use crate::schema::history::dsl::*;
+
+    let result = history
+        .filter(status.eq("indexed".to_string()))
+        .first::<models::History>(conn) 
+        .optional()?;
+
+    Ok(result.is_some()) // if some (indexed) ? true : false
+}
+
+// update the history status
+pub fn update_history_status(
+    conn: &mut SqliteConnection,
+    _status: &String,
+) -> Result<models::History, DbError> {
+    use crate::schema::history::dsl::*;
+
+    let result = history
+        .filter(status.eq("not indexed".to_string()))
+        .first::<models::History>(conn) 
+        .optional()?;
+
+    let mut updater = result.unwrap();
+    updater.status = "indexed".to_string();
+
+    diesel::update(&updater)
+        .set(status.eq(&updater.status))
+        .execute(conn)?;
+
+    Ok(updater)
 }
 
 // create the database table: links
@@ -57,6 +92,15 @@ pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
         id TEXT PRIMARY KEY, 
         status TEXT NOT NULL
     )").execute(conn).expect("Error creating history table");
+
+    // insert the first history
+    let new_history = models::History {
+        id: Uuid::new_v4().to_string(),
+        status: "not indexed".to_string(),
+    };
+    diesel::insert_into(crate::schema::history::table)
+        .values(&new_history)
+        .execute(conn)?;
 
     Ok(format!("Tables created successfully!"))
 }

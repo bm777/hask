@@ -1,4 +1,3 @@
-use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Client, Error};
 use serde_json::{Value, json};
 use std::collections::HashMap;

@@ -7,7 +7,6 @@ use qdrant_client::{
     },
 };
 use anyhow::{Result, Error};
-use serde_json::Value;
 
 pub async fn check_collection(client: &QdrantClient, dim: &u64, col: String) -> Result<String>{
     let collections_result = client.list_collections().await.unwrap();
@@ -62,7 +61,7 @@ pub async fn search_points(client: &QdrantClient, col: &String, vector: &Vec<f32
 }
 
 pub async fn insert_vectors(client: &QdrantClient, col: &String, point: &PointStruct) -> Result<String> {
-    let insert_result = client.upsert_points_blocking(
+    let _insert_result = client.upsert_points_blocking(
         col.clone(),
         None,
         vec![point.clone()],

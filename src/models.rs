@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use crate::schema::{links, history};
+use crate::schema::{links, history, activity};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
 #[diesel(table_name = links)]
@@ -13,6 +13,14 @@ pub struct Link {
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
 #[diesel(table_name = history)]
 pub struct History {
+    pub id: String,
+    pub status: String,
+}
+
+// struct for HBE status -> Activity
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
+#[diesel(table_name = activity)]
+pub struct Activity {
     pub id: String,
     pub status: String,
 }

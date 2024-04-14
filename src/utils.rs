@@ -22,6 +22,7 @@ pub fn store_url(
         url: _url.to_string(),
         timestamp: Local::now().to_string(),
     };
+
     diesel::insert_into(links)
         .values(&new_link)
         .execute(conn)?;
@@ -79,6 +80,38 @@ pub fn update_history_status(
     Ok(updater)
 }
 
+// get the hbe status
+pub fn get_hbe_status(
+    conn: &mut SqliteConnection,
+) -> Result<models::Activity, DbError> {
+    use crate::schema::activity::dsl::*;
+
+    let result = activity
+        .first::<models::Activity>(conn)?;
+
+    Ok(result)
+}
+
+// update the hbe status
+pub fn update_hbe_status(
+    conn: &mut SqliteConnection,
+    _status: &String,
+) -> Result<models::Activity, DbError> {
+    use crate::schema::activity::dsl::*;
+
+    let result = activity
+        .first::<models::Activity>(conn)?;
+
+    let mut updater = result;
+    updater.status = _status.to_string();
+
+    diesel::update(&updater)
+        .set(status.eq(&updater.status))
+        .execute(conn)?;
+
+    Ok(updater)
+}
+
 // create the database table: links
 pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
     // id is uuid
@@ -93,6 +126,11 @@ pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
         status TEXT NOT NULL
     )").execute(conn).expect("Error creating history table");
 
+    sql_query("CREATE TABLE IF NOT EXISTS activity (
+        id TEXT PRIMARY KEY, 
+        status TEXT NOT NULL
+    )").execute(conn).expect("Error creating activity table");
+
     // insert the first history
     let new_history = models::History {
         id: Uuid::new_v4().to_string(),
@@ -100,6 +138,15 @@ pub fn create_table(conn: &mut SqliteConnection) -> Result<String, DbError> {
     };
     diesel::insert_into(crate::schema::history::table)
         .values(&new_history)
+        .execute(conn)?;
+
+    // insert the first hbe status
+    let new_hbe = models::Activity {
+        id: Uuid::new_v4().to_string(),
+        status: "on".to_string(),
+    };
+    diesel::insert_into(crate::schema::activity::table)
+        .values(&new_hbe)
         .execute(conn)?;
 
     Ok(format!("Tables created successfully!"))

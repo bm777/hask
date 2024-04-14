@@ -80,9 +80,10 @@ struct SearchResponse {
     context: String,
     urls: Vec<String>,
 }
-// history response
-#[derive(Serialize, Debug)]
-struct HistoryResponse {
+// history + hbe response 
+// hbe request
+#[derive(Serialize, Debug, Deserialize, Clone)]
+struct Status {
     status: String
 }
 
@@ -140,11 +141,49 @@ async fn update_history(
     .await?
     .map_err(error::ErrorInternalServerError)?;
 
-    let response = HistoryResponse {
+    let response = Status {
         status: history.status.clone(),
     };
     Ok(HttpResponse::Ok().json(response))
 }
+
+// get hbe status
+#[get("/hbe")]
+async fn hbe_fn(
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse> {
+    let hbe_status = web::block(move || {
+        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        utils::get_hbe_status(&mut conn)
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    let response = Status {
+        status: hbe_status.status.clone(),
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
+
+// update hbe status
+#[post("/update/hbe")]
+async fn update_hbe(
+    pool: web::Data<DbPool>,
+    _hbe: web::Json<Status>
+) -> Result<HttpResponse> {
+    let hbe = web::block(move || {
+        let mut conn = pool.get().expect("couldn't get db connection from pool");
+        utils::update_hbe_status(&mut conn, &_hbe.status.to_string())
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)?;
+
+    let response = Status {
+        status: hbe.status.clone(),
+    };
+    Ok(HttpResponse::Ok().json(response))
+}
+
 
 // check_url fn
 #[post("/check/url")]

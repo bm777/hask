@@ -12,3 +12,10 @@ table! {
         status -> Text,
     }
 }
+
+table! {
+    activity (id) {
+        id -> Text,
+        status -> Text,
+    }
+}

@@ -149,7 +149,7 @@ async fn update_history(
 
 // get hbe status
 #[get("/hbe")]
-async fn hbe_fn(
+async fn get_hbe(
     pool: web::Data<DbPool>,
 ) -> Result<HttpResponse> {
     let hbe_status = web::block(move || {
@@ -559,6 +559,8 @@ async fn main() -> std::io::Result<()> {
             .service(ingest)
             .service(check_url)
             .service(search)
+            .service(get_hbe)
+            .service(update_hbe)
     })
     .bind(("127.0.0.1", 1777))?
     .run()

@@ -1,6 +1,5 @@
-export const pplxModelList = [
-    "pplx-7b-online", "pplx-70b-online", "pplx-8x7b-online", 
-    "sonar-small-online", "sonar-medium-online", "sonar-medium-chat", "sonar-small-chat"
+export const perplexityModelList = [
+    "sonar-medium-online","sonar-small-online", "sonar-medium-chat", "sonar-small-chat", "pplx-7b-online", "pplx-70b-online", "pplx-8x7b-online"
 ];
 export const groqModelList = [
     "llama2-70b-4096", "mixtral-8x7b-32768"
@@ -9,7 +8,7 @@ export const openaiModelList = [
     "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"
 ]    
 export const anthropicModelList = [
-    "claude-2.1", "claude-3-opus-20240229", "claude-2.0", "claude-instant-1.2", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"
+    "claude-3-haiku-20240307", "claude-3-sonnet-20240229","claude-3-opus-20240229", "claude-2.1", "claude-2.0", "claude-instant-1.2" 
 ]
 export const cohereModelList = [
     "command", "command-light", "command-r", "command-nightly", "command-light-nightly"

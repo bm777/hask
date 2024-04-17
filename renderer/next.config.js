@@ -1,6 +1,6 @@
 
 module.exports = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     unoptimized: true,
     domains: ['127.0.0.1']

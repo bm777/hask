@@ -5,11 +5,13 @@
 @layer base {
 
     .no-scrollbar::-webkit-scrollbar {
-        display: none; 
+        display: none;
     }
+
     .draggable {
         -webkit-app-region: drag;
     }
+
     ::-webkit-scrollbar {
         width: 8px;
         background: #2d2d2d00;
@@ -22,19 +24,21 @@
         width: 100%;
         border-radius: 15px;
         /* background-color: #1e1e1e; */
-      }
-      th {
+    }
+
+    th {
         padding: 5px;
         /* border: 1px solid #424242; */
         font-weight: bold;
-      }
-      td {
+    }
+
+    td {
         padding: 5px;
         border-bottom: 1px solid #424242;
         /* text-align: center; */
         white-space: nowrap;
-      }
-      
+    }
+
 
     pre[class*="language-"],
     code[class*="language-"] {
@@ -66,6 +70,7 @@
     }
 
     @media print {
+
         pre[class*="language-"],
         code[class*="language-"] {
             text-shadow: none;
@@ -79,12 +84,13 @@
         background: #1e1e1e;
     }
 
-    :not(pre) > code[class*="language-"] {
+    :not(pre)>code[class*="language-"] {
         padding: .1em .3em;
         border-radius: .3em;
         color: #db4c69;
         background: #1e1e1e;
     }
+
     /*********************************************************
     * Tokens
     */
@@ -266,6 +272,7 @@
     .token.namespace {
         color: #4ec9b0;
     }
+
     /*********************************************************
     * Language Specific
     */
@@ -298,10 +305,11 @@
     .language-html .token.punctuation {
         color: #808080;
     }
+
     /*********************************************************
     * Line highlighting
     */
-    pre[class*="language-"] > code[class*="language-"] {
+    pre[class*="language-"]>code[class*="language-"] {
         position: relative;
         z-index: 1;
     }
@@ -321,14 +329,14 @@
         margin: 1em 0;
     }
 
-    .markdown-body > table {
+    .markdown-body>table {
         border-collapse: collapse;
         margin: 1em 0;
         border: 1px solid #ddd;
     }
-    
-    .markdown-body > table > th,
-    .markdown-body > table > td {
+
+    .markdown-body>table>th,
+    .markdown-body>table>td {
         border: 1px solid #ddd;
         padding: 0.5em;
         text-align: left;
@@ -346,26 +354,30 @@
         margin: 10px 0;
         list-style-type: disc;
     }
+
     .markdown-body ul ul {
         /* List unordored nested */
         padding-left: 32px;
         margin: 10px 0;
         list-style-type: square;
     }
+
     .markdown-body ol {
         /* List ordored styles */
         padding-left: 32px;
         list-style-type: decimal;
         margin: 10px 0;
     }
+
     .markdown-body hr {
         /* List ordored styles */
         /* padding-left: 32px; */
         margin: 5px 0;
         border-color: #49484C
-        /* for light TBD */ 
+            /* for light TBD */
     }
-    .markdown-body :not(pre) > code {
+
+    .markdown-body :not(pre)>code {
         /* Inline code styles */
         padding: 2px 4px;
         font-size: 80%;
@@ -379,7 +391,151 @@
         font-weight: bold;
     }
 
+    /* ... */
+
+    .response-copy-button {
+        display: flex;
+        align-items: center;
+        padding: 0.25em;
+        background: transparent;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .response-copy-button:hover {
+        color: #8be9fd;
+    }
+
+    .response-copy-button svg {
+        width: 14px;
+        height: 14px;
+    }
+
+
+    .markdown-body a {
+        color: #4299e1;
+        text-decoration: none;
+    }
+
+    .markdown-body a:hover {
+        text-decoration: underline;
+    }
+
+    .navigation-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #f0f0f0;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        z-index: 9999;
+    }
+
+    .navigation-bar button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .multiline-input {
+        min-height: 1em;
+        /* Typically the line-height of a single line of text */
+        overflow-y: auto;
+        /* Hides the scrollbar initially */
+        padding: 12px;
+        /* Adjust to your preferred padding */
+        line-height: 1.2em;
+        /* Typically line-height for single line, adjust to your preference */
+        resize: vertical;
+        /* Keeps the textarea resizable vertically */
+        max-height: 50px;
+        /* Maximum height before scrolling, adjust as needed */
+    }
+
+
+
+    /* Keep the scrollbar styles as they are */
+    .multiline-input::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .multiline-input::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 4px;
+    }
+
+    /* Style for the code block container */
+    .code-block-container {
+        position: relative;
+        background: #282a36;
+        border-radius: 0.5em;
+        margin: 1em 0;
+    }
+
+    .code-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25em 0.5em;
+        background: rgba(68, 71, 90, 0.8);
+        border-top-left-radius: 0.5em;
+        border-top-right-radius: 0.5em;
+        height: 1.25em;
+    }
+
+    .code-language-label {
+        color: rgb(169, 167, 167);
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.5em;
+        line-height: 1;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+        padding: 0.25em 1em;
+        margin: 0;
+        border-bottom-left-radius: 0.5em;
+        border-bottom-right-radius: 0.5em;
+        overflow-x: auto;
+    }
+
+    .code-copy-button {
+        display: flex;
+        align-items: center;
+        padding: 0.125em;
+        background: transparent;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .code-copy-button:hover {
+        color: #8be9fd;
+    }
+
+    .code-copy-button svg {
+        width: 10px;
+        height: 10px;
+        margin-right: 0.25em;
+    }
+
+
+
+
+
+
+
+
+
 
 
 }
-

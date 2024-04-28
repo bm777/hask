@@ -2,6 +2,33 @@ import extractPageText from './content-script.js';
 
 let url;
 let title;
+// check if history is indexed, and start indexing if not -> 1 weeks
+chrome.runtime.onInstalled.addListener(async (details) => {
+
+    if (details.reason === 'install') {
+        console.log('This is a first install!');
+        // check if the history is indexed
+        let response = await fetch('http://localhost:1777/check/history', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json'}
+        });
+        let data = await response.json();
+        if (data.status === "not indexed") {
+            console.log("History not indexed, start indexing");
+            // implementation in v2
+        }
+    }
+});
+
+// listen for connections from the content script
+chrome.runtime.onConnect.addListener((port) => {
+    // add listenerfor the onDisconnect event
+    port.onDisconnect.addListener(() => {
+        console.log('Port disconnected');
+    });
+});
+
+
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     try {

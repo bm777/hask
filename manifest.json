@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Extracts text content from the body of web pages and summarize it.",
   "action": { "default_popup": "index.html" },
-  "permissions": ["tabs", "scripting"],
+  "permissions": ["tabs", "scripting", "history"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
     "service_worker": ["src/background.js"]

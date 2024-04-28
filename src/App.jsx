@@ -1,11 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import hask from '/hask-512.png'
 
 function App() {
   const [isOn, setIsOn] = useState(false)
+  const [logError, setLogError] = useState(false)
+  const [textError, setTextError] = useState("")
 
-  const handleStatus = () => {
-    setIsOn(!isOn)
+  useEffect(() => {
+    const checking = async () => {
+      try {
+        const response = await fetch('http://localhost:1777/hbe')
+        const data = await response.json()
+        setIsOn(data.status === "on")
+        setLogError(false)
+        setTextError("")
+      } catch (error) {
+        console.log("error fetching /hbe", error)
+        setLogError(true)
+        setLogError("No connection to Hask Service. Error code: 303")
+      }
+    }
+    checking()
+  }, [])
+
+  const handleStatus = async () => {
+    try {
+      const response = await fetch('http://localhost:1777/update/hbe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: isOn ? "off" : "on"})
+      })
+      const _data = await response.json()
+      console.log("update status:", _data)
+      setIsOn(!isOn)
+    } catch (error) {
+      console.log("error updating status", error)
+    }
   }
 
   return ( // [#1E1E1E]
@@ -33,7 +63,12 @@ function App() {
       </div>
       <div className='h-[90px] mt-1 flex items-center justify-center'>
         <div className='w-[200px] h-[65px] bg-[#2973fc] border border-[#ffffff06] rounded flex items-center justify-center'>
-          <p className='text-white text-xl'>Hask is { isOn ? "ON" : "OFF" }</p>
+          {
+            logError ? 
+              <p className='text-gray-300 text-sm text-center'>{textError}</p>
+              :
+              <p className='text-white text-xl text-center'>Hask is { isOn ? "ON" : "OFF" }</p>
+          }
         </div>
       </div>
 

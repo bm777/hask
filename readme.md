@@ -6,8 +6,6 @@ Hask AI is a customizable, open-source application that allows users to quickly 
 
 
 
-This is only 10% of what we want to achieve.
-
 Wanna join our little discord community? [Join HASK discord server](https://discord.gg/cSf3RpQdws)
 
 
